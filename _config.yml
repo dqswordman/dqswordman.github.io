@@ -6,7 +6,7 @@
 # `jekyll serve`. If you change this file, please restart the server process.
 
 # Site Settings
-title                    : "Wenzhang Du1"
+title                    : "Wenzhang Du"
 description              : "Department of Computer Engineering, International College (MUTIC), Mahanakorn University of Technology, Bangkok, Thailand."
 repository               : "dqswordman/dqswordman.github.io"
 google_scholar_stats_use_cdn : true
