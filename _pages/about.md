@@ -114,13 +114,13 @@ redirect_from:
     <tr>
       <td>EdgeFireNet: A Lightweight Anchor-Free Fire Detection Network for Edge Devices</td>
       <td>Du Wenzhang, Suphongsa Khetkeeree, Suchada Sitjongsataporn</td>
-      <td>Preprint</td>
+      <td>17th International Conference on Graphics and Image Processing (ICGIP 2025)</td>
       <td>2025</td>
     </tr>
     <tr>
       <td>Improving EEG Emotion Recognition with Projection Layer and Output-Gated GRU Network</td>
       <td>W Du, S Sitjongsataporn, P Sakarin</td>
-      <td>Preprint</td>
+      <td>The International Conference on Power, Energy and Innovations (ICPEI)</td>
       <td>2025</td>
     </tr>
   </tbody>
