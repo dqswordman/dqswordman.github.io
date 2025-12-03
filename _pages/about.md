@@ -18,20 +18,19 @@ redirect_from:
 <span class='anchor' id='about-me'></span>
 
 <div class="hero-panel">
-  <p class="eyebrow">International College (MUTIC) · <a href="https://www.mut.ac.th">Mahanakorn University of Technology (MUT)</a> · Bangkok</p>
+  <p class="eyebrow">International College (MUTIC) · <a href="https://www.mut.ac.th">MUT</a> · Bangkok</p>
   <h1>Wenzhang Du</h1>
-  <p class="hero-lede">Researcher in computer engineering exploring natural language processing, remote sensing super-resolution, computer vision, temporal neural networks, game theory, and machine learning theory.</p>
+  <p class="hero-lede">Researcher in computer engineering exploring natural language processing, remote sensing super-resolution, computer vision, temporal neural networks (RNN/LSTM/GRU), game theory, and machine learning theory.</p>
   <div class="hero-tags">
     <span class="pill">Natural language processing</span>
     <span class="pill">Remote sensing super-resolution</span>
     <span class="pill">Computer vision</span>
     <span class="pill">Temporal neural networks</span>
+    <span class="pill">LSTM</span>
     <span class="pill">Game theory</span>
     <span class="pill">Machine learning theory</span>
   </div>
 </div>
-
-You can find my Google Scholar profile <a href='https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en'>here</a>, with total <strong><span id='total_cit'>loading</span></strong> citations tracked automatically <a href='https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en'><img src="https://img.shields.io/endpoint?url={{ url | url_encode }}&logo=Google%20Scholar&labelColor=f6f6f6&color=9cf&style=flat&label=citations"></a>.
 
 **Links:** [GitHub](https://github.com/dqswordman) | [Google Scholar](https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en)
 
@@ -39,7 +38,7 @@ You can find my Google Scholar profile <a href='https://scholar.google.com/citat
 - 2025-12: Personal homepage refreshed with current publications, awards, and internship details.
 
 ## Research Interests
-- Natural language processing; Remote sensing super-resolution; Computer vision; Temporal neural networks; Game theory; Machine learning theory.
+- Natural language processing; Remote sensing super-resolution; Computer vision; Temporal neural networks; LSTM; Game theory; Machine learning theory.
 
 ## Publications
 <table class="pub-table">
@@ -52,6 +51,24 @@ You can find my Google Scholar profile <a href='https://scholar.google.com/citat
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td>Retrieval-Augmented Memory for Online Learning</td>
+      <td>W Du</td>
+      <td>arXiv preprint arXiv:2512.02333</td>
+      <td>2025</td>
+    </tr>
+    <tr>
+      <td>City-Conditioned Memory for Multi-City Traffic and Mobility Forecasting</td>
+      <td>W Du</td>
+      <td>arXiv preprint arXiv:2512.00851</td>
+      <td>2025</td>
+    </tr>
+    <tr>
+      <td>Prediction-space Knowledge Markets for Communication-efficient Federated Learning on Multimedia Tasks</td>
+      <td>W Du</td>
+      <td>arXiv preprint arXiv:2512.00841</td>
+      <td>2025</td>
+    </tr>
     <tr>
       <td>When+ 1% Is Not Enough: A Paired Bootstrap Protocol for Evaluating Small Improvements</td>
       <td>W Du</td>
@@ -94,6 +111,18 @@ You can find my Google Scholar profile <a href='https://scholar.google.com/citat
       <td>2025 13th International Electrical Engineering Congress (iEECON), 1-4</td>
       <td>2025</td>
     </tr>
+    <tr>
+      <td>EdgeFireNet: A Lightweight Anchor-Free Fire Detection Network for Edge Devices</td>
+      <td>Du Wenzhang, Suphongsa Khetkeeree, Suchada Sitjongsataporn</td>
+      <td>Preprint</td>
+      <td>2025</td>
+    </tr>
+    <tr>
+      <td>Improving EEG Emotion Recognition with Projection Layer and Output-Gated GRU Network</td>
+      <td>W Du, S Sitjongsataporn, P Sakarin</td>
+      <td>Preprint</td>
+      <td>2025</td>
+    </tr>
   </tbody>
 </table>
 
@@ -102,4 +131,4 @@ You can find my Google Scholar profile <a href='https://scholar.google.com/citat
 - 2025: Best Conference Paper, ICPEI 2025.
 
 ## Internships
-- Jul 2025 - Mar 2026: Satellite Laboratory Intern, <a href="https://www.mut.ac.th">Mahanakorn University of Technology (MUT)</a>.
+- Jul 2025 - Mar 2026: Satellite Laboratory Intern, <a href="https://www.mut.ac.th">MUT</a>.
