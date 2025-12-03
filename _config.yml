@@ -7,7 +7,7 @@
 
 # Site Settings
 title                    : "Wenzhang Du"
-description              : "Department of Computer Engineering, International College (MUTIC), Mahanakorn University of Technology, Bangkok, Thailand."
+description              : "Machine learning and remote sensing researcher at MUTIC (Mahanakorn University of Technology), focusing on NLP, vision, temporal models, and ML theory."
 repository               : "dqswordman/dqswordman.github.io"
 google_scholar_stats_use_cdn : true
 
@@ -22,10 +22,10 @@ baidu_site_verification  :  # get baidu_site_verification from https://ziyuan.ba
 # Site Author
 author:
   name             : "Wenzhang Du"
-  avatar           : "images/android-chrome-512x512.png"
-  bio              : "Department of Computer Engineering, International College (MUTIC), Mahanakorn University of Technology"
+  avatar           : "resource/icon.jpg"
+  bio              : "Computer engineering researcher exploring NLP, vision, temporal models, and machine learning theory."
   location         : "Bangkok, Thailand"
-  employer         : "Mahanakorn University of Technology"
+  employer         : "<a href=\"https://www.mut.ac.th\">Mahanakorn University of Technology (MUT)</a>"
   pubmed           : 
   googlescholar    : "https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en"
   email            : ""
