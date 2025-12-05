@@ -52,6 +52,18 @@ redirect_from:
   </thead>
   <tbody>
     <tr>
+      <td>Contract-Driven QoE Auditing for Speech and Singing Services: From MOS Regression to Service Graphs</td>
+      <td>W Du</td>
+      <td>arXiv preprint arXiv:2512.04827</td>
+      <td>2025</td>
+    </tr>
+    <tr>
+      <td>Contract-Governed Training for Earth Observation: Observed Service Agreement Graphs and Coverage-Accuracy Trade-offs</td>
+      <td>W Du</td>
+      <td>arXiv preprint arXiv:2512.04644</td>
+      <td>2025</td>
+    </tr>
+    <tr>
       <td>Retrieval-Augmented Memory for Online Learning</td>
       <td>W Du</td>
       <td>arXiv preprint arXiv:2512.02333</td>
