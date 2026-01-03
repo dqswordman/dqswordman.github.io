@@ -52,6 +52,12 @@ redirect_from:
   </thead>
   <tbody>
     <tr>
+      <td>Optimistic Feasible Search for Closed-Loop Fair Threshold Decision-Making</td>
+      <td>Wenzhang Du</td>
+      <td>arXiv preprint arXiv:2512.22313</td>
+      <td>2025</td>
+    </tr>
+    <tr>
       <td>Contract-Driven QoE Auditing for Speech and Singing Services: From MOS Regression to Service Graphs</td>
       <td>W Du</td>
       <td>arXiv preprint arXiv:2512.04827</td>
