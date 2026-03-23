@@ -1,0 +1,103 @@
+- title: "ARC-CTRL: Audit-Guided Closed-Loop Trust Control for Surrogate-Assisted Evolutionary Hyperparameter Optimization"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+  venue: "WCCI 2026 (CEC 2026)"
+  year: 2026
+
+- title: "Optimistic Feasible Search for Closed-Loop Fair Threshold Decision-Making"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+  venue: "WCCI 2026 (IJCNN 2026)"
+  year: 2026
+
+- title: "When +1% Is Not Enough: A Paired Bootstrap Protocol for Evaluating Small Improvements"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+  venue: "PAKDD 2026"
+  year: 2026
+
+- title: "Contract-Governed Training for Earth Observation: Observed Service Agreement Graphs and Coverage-Accuracy Trade-offs"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+  venue: "IGARSS 2026"
+  year: 2026
+
+- title: "Contract-Driven QoE Auditing for Speech and Singing Services: From MOS Regression to Service Graphs"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+  venue: "IGARSS 2026"
+  year: 2026
+
+- title: "AutoCompress: Mixed-Precision Quantization-Aware NAS under Strict Memory Budgets"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+    - name: "Suphongsa Khetkeeree"
+  venue: "iEECON 2026"
+  year: 2026
+
+- title: "IBSR: Variational Information Bottleneck for Efficient Multispectral Image Super-Resolution"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+    - name: "Suphongsa Khetkeeree"
+  venue: "iEECON 2026"
+  year: 2026
+
+- title: "Structure-Aware Loss Functions for Remote-Sensing Super-Resolution"
+  authors:
+    - name: "Suphongsa Khetkeeree"
+    - name: "Wenzhang Du"
+      me: true
+  venue: "iEECON 2026"
+  year: 2026
+
+- title: "Architecture and Application of Cloud Computing in Education with Case Study Insights"
+  authors:
+    - name: "Suchada Sitjongsataporn"
+    - name: "Wenzhang Du"
+      me: true
+    - name: "P. Nurarak"
+  venue: "iSTEM-Ed 2025"
+  year: 2025
+
+- title: "Adaptive Feature Optimization with Dynamic GRU for EEG Emotion Classification"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+    - name: "Suchada Sitjongsataporn"
+    - name: "Pipat Sakarin"
+  venue: "ECTI-CON 2025"
+  year: 2025
+
+- title: "Light-Weight Gated Recurrent Unit for Electroencephalogram Emotion Classification"
+  authors:
+    - name: "Suchada Sitjongsataporn"
+    - name: "Wenzhang Du"
+      me: true
+    - name: "Pipat Sakarin"
+  venue: "iEECON 2025"
+  year: 2025
+
+- title: "EdgeFireNet: A Lightweight Anchor-Free Fire Detection Network for Edge Devices"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+    - name: "Suphongsa Khetkeeree"
+    - name: "Suchada Sitjongsataporn"
+  venue: "ICGIP 2025"
+  year: 2025
+
+- title: "Improving EEG Emotion Recognition with Projection Layer and Output-Gated GRU Network"
+  authors:
+    - name: "Wenzhang Du"
+      me: true
+    - name: "Suchada Sitjongsataporn"
+    - name: "Pipat Sakarin"
+  venue: "ICPEI 2025"
+  year: 2025
