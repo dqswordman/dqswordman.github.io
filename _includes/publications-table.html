@@ -11,7 +11,16 @@
     <tbody>
       {% for publication in site.data.publications %}
       <tr>
-        <td>{{ publication.title }}</td>
+        <td>
+          {% if publication.scholar_url %}
+            <a href="{{ publication.scholar_url }}">{{ publication.title }}</a>
+          {% else %}
+            {{ publication.title }}
+          {% endif %}
+          {% if publication.citation_id %}
+            <span class="show_paper_citations" data="{{ publication.citation_id }}"></span>
+          {% endif %}
+        </td>
         <td>
           {% for author in publication.authors %}
             {% if author.me %}

@@ -60,7 +60,7 @@ My background combines safety-oriented evaluation, service auditing, efficient d
 - LLM safety; Trustworthy AI; AI agent evaluation; Model auditing; Robust empirical ML; Failure-case analysis; Service-level trust analysis; Computer vision; Remote sensing; Efficient deep learning.
 
 ## Publications
-Conference publications and accepted papers.
+Conference publications and accepted papers. Indexed citations are maintained on [Google Scholar](https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en).
 
 {% include publications-table.html %}
 
