@@ -1,2 +1,5 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Keep generated and source text consistent across Windows and CI.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

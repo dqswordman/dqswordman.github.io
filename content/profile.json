@@ -1,0 +1,219 @@
+{
+  "name": "Wenzhang Du",
+  "initials": "WD",
+  "url": "https://dqswordman.github.io",
+  "email": "dqswordman@gmail.com",
+  "github": "https://github.com/dqswordman",
+  "scholar": "https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en",
+  "universityUrl": "https://www.mut.ac.th",
+  "updated": "2026-10",
+  "visitorStats": { "enabled": true },
+  "copyrightStart": 2025,
+  "education": {
+    "start": "2022-06",
+    "end": "2026",
+    "gpa": "3.5",
+    "gpaScale": "4"
+  },
+  "internshipStart": "2025-07",
+  "featured": ["pairsafe", "paired-bootstrap", "arc-ctrl", "contract-governed-training"],
+  "locales": {
+    "en": {
+      "description": "Wenzhang Du — Independent researcher exploring LLM safety, trustworthy AI, AI agent evaluation, model auditing, and robust empirical machine learning.",
+      "identity": "Independent Researcher",
+      "role": "AI safety & empirical machine learning",
+      "location": "Daqing, China",
+      "heroEyebrow": "INDEPENDENT RESEARCHER",
+      "heroStatement": ["AI moves fast.", "I work to close the gaps."],
+      "heroIntro": "As AI accelerates research, rigorous validation needs to keep pace. I work to uncover blind spots, test assumptions, and address hidden failures through model auditing, statistical evaluation, and empirical research.",
+      "heroNote": "B.Eng. in Computer Engineering and Artificial Intelligence",
+      "university": "Mahanakorn University of Technology",
+      "college": "International College",
+      "degree": "B.Eng. in Computer Engineering and Artificial Intelligence",
+      "graduate": "Graduated",
+      "internshipRole": "Research Intern",
+      "internshipTeam": "Earth and Space Center",
+      "present": "Present",
+      "aboutTitle": "Better questions.\nMore reliable answers.",
+      "aboutLead": "My research starts with a simple question: how do we know an AI system is behaving reliably?",
+      "aboutParagraphs": [
+        "I am an independent researcher and a B.Eng. graduate of the International College at Mahanakorn University of Technology. My interests center on LLM safety, trustworthy AI, AI agent evaluation, and rigorous empirical machine learning.",
+        "I am interested in practical ways to uncover failure cases, test prompt and instruction robustness, detect hallucinations and risk, and compare models with statistical care. My background also spans efficient deep learning, computer vision, and remote sensing.",
+        "For graduate research, I hope to build evaluation frameworks that make AI system behavior easier to test, compare, and improve."
+      ],
+      "researchTitle": "Three connected\nresearch directions.",
+      "researchIntro": "From understanding failure to measuring progress and putting reliable learning into practice.",
+      "research": [
+        {
+          "id": "safety",
+          "title": "Trustworthy AI",
+          "description": "Understanding how language models and AI agents fail, and how to make their behavior easier to audit.",
+          "tags": ["LLM safety", "Agent evaluation", "Model auditing"],
+          "icon": "shield"
+        },
+        {
+          "id": "evaluation",
+          "title": "Rigorous evaluation",
+          "description": "Building careful comparisons through paired tests, bootstrap confidence intervals, and reproducible experiments.",
+          "tags": ["Robust empirical ML", "Failure analysis", "Service-level trust"],
+          "icon": "chart"
+        },
+        {
+          "id": "applied",
+          "title": "Learning in the real world",
+          "description": "Exploring efficient models and reliable learning for computer vision, Earth observation, and resource-constrained devices.",
+          "tags": ["Remote sensing", "Computer vision", "Efficient deep learning"],
+          "icon": "globe"
+        }
+      ],
+      "publicationIntro": "Conference publications and accepted papers, spanning trustworthy learning, evaluation, and applied AI.",
+      "selectedTitle": "A closer look at\nrecent work.",
+      "experienceTitle": "A foundation built\nthrough research.",
+      "awardsTitle": "Recognition\n& support.",
+      "awards": [
+        { "date": "2025", "title": "Best Paper Award", "detail": "ICPEI 2025", "kind": "award" },
+        {
+          "date": "2025-11-28",
+          "title": "Honorary Poster Award",
+          "detail": "Mahanakorn University of Technology · Project Day",
+          "kind": "award"
+        },
+        {
+          "date": "",
+          "title": "Research travel support",
+          "detail": "IEEE CIS Travel Grant · PAKDD Travel Grant · IGARSS Travel Grant",
+          "kind": "grant"
+        }
+      ],
+      "skillsTitle": "Tools & methods",
+      "skills": [
+        {
+          "title": "Programming & research",
+          "text": "Python, C++, Java, experiment scripting, data processing, reproducible workflows, LaTeX"
+        },
+        {
+          "title": "Safety & auditing",
+          "text": "Deep learning, trustworthy AI, LLM safety evaluation, AI agent auditing, hallucination and risk analysis"
+        },
+        {
+          "title": "Statistical evaluation",
+          "text": "Paired tests, bootstrap confidence intervals, multi-seed experiments, metric design, uncertainty reporting"
+        },
+        {
+          "title": "Applied machine learning",
+          "text": "Computer vision, remote sensing, model compression, quantization-aware learning, edge-aware ML"
+        }
+      ],
+      "news": [
+        {
+          "date": "2026-10",
+          "text": "PAIRSAFE: Proxy-Resistant Paired Safety Evaluation for Refusal Boundaries has been accepted at AACL-IJCNLP 2026. Sole author; Independent Researcher."
+        },
+        {
+          "date": "2026-06",
+          "text": "Updated research profile with graduation, publications, travel grants, and internship details."
+        }
+      ],
+      "contactTitle": "Good research starts\nwith a conversation.",
+      "contactIntro": "Interested in trustworthy AI, evaluation, or graduate research? I would be glad to exchange ideas.",
+      "footerNote": "Curiosity, tested carefully."
+    },
+    "zh": {
+      "description": "独立研究者 Wenzhang Du 的个人学术主页。研究兴趣包括大语言模型安全、可信人工智能、智能体评估、模型审计与严谨的实证机器学习。",
+      "identity": "独立研究者",
+      "role": "人工智能安全与实证机器学习",
+      "location": "中国 · 大庆",
+      "heroEyebrow": "独立研究者 · 个人学术主页",
+      "heroStatement": ["AI 加速向前，", "我寻找并弥合缺口。"],
+      "heroIntro": "AI 正在加速科研，严谨的验证也需要跟上。我通过模型审计、统计评估与实证研究，发现盲点、检验假设，并弥补可靠性上的缺口。",
+      "heroNote": "计算机工程与人工智能 · 工学学士",
+      "university": "泰国马汉科理工大学",
+      "college": "国际学院",
+      "degree": "计算机工程与人工智能 · 工学学士",
+      "graduate": "已毕业",
+      "internshipRole": "研究实习生",
+      "internshipTeam": "地球与空间中心",
+      "present": "至今",
+      "aboutTitle": "提出更好的问题，\n寻找更可靠的答案。",
+      "aboutLead": "我的研究始于一个朴素的问题：我们如何知道一个人工智能系统的行为是可靠的？",
+      "aboutParagraphs": [
+        "我是一名独立研究者，毕业于泰国马汉科理工大学国际学院，获得计算机工程与人工智能专业工学学士学位。我的研究兴趣集中于大语言模型安全、可信人工智能、智能体评估与严谨的实证机器学习。",
+        "我关注实用的评估方法，包括失效案例审计、提示与指令鲁棒性、幻觉与风险检测，以及具有统计可靠性的模型比较。我的研究背景也涵盖高效深度学习、计算机视觉和遥感。",
+        "在未来的研究生阶段，我希望构建评估框架，让人工智能系统的行为更容易被测试、比较与改进。"
+      ],
+      "researchTitle": "彼此连接的\n三个研究方向。",
+      "researchIntro": "理解失效、衡量进展，并将可靠的机器学习带入真实场景。",
+      "research": [
+        {
+          "id": "safety",
+          "title": "可信人工智能",
+          "description": "理解语言模型与智能体的失效方式，探索让系统行为更容易被审计的方法。",
+          "tags": ["大模型安全", "智能体评估", "模型审计"],
+          "icon": "shield"
+        },
+        {
+          "id": "evaluation",
+          "title": "严谨的实证评估",
+          "description": "通过配对检验、Bootstrap 置信区间与可复现实验，建立审慎的模型比较。",
+          "tags": ["实证机器学习", "失效分析", "服务级信任"],
+          "icon": "chart"
+        },
+        {
+          "id": "applied",
+          "title": "真实场景中的学习",
+          "description": "面向计算机视觉、对地观测与资源受限设备，探索高效模型与可靠学习。",
+          "tags": ["遥感", "计算机视觉", "高效深度学习"],
+          "icon": "globe"
+        }
+      ],
+      "publicationIntro": "会议论文与已录用论文，涵盖可信学习、实证评估与人工智能应用。",
+      "selectedTitle": "近期研究，\n深入一览。",
+      "experienceTitle": "在研究实践中\n积累与成长。",
+      "awardsTitle": "荣誉\n与支持。",
+      "awards": [
+        { "date": "2025", "title": "最佳论文奖", "detail": "ICPEI 2025", "kind": "award" },
+        {
+          "date": "2025-11-28",
+          "title": "荣誉海报奖",
+          "detail": "马汉科理工大学 · Project Day",
+          "kind": "award"
+        },
+        {
+          "date": "",
+          "title": "学术会议差旅资助",
+          "detail": "IEEE CIS Travel Grant · PAKDD Travel Grant · IGARSS Travel Grant",
+          "kind": "grant"
+        }
+      ],
+      "skillsTitle": "工具与方法",
+      "skills": [
+        {
+          "title": "编程与科研",
+          "text": "Python、C++、Java、实验脚本、数据处理、可复现工作流、LaTeX"
+        },
+        {
+          "title": "安全与审计",
+          "text": "深度学习、可信人工智能、大模型安全评估、智能体审计、幻觉与风险分析"
+        },
+        {
+          "title": "统计评估",
+          "text": "配对检验、Bootstrap 置信区间、多随机种子实验、指标设计、不确定性报告"
+        },
+        {
+          "title": "应用机器学习",
+          "text": "计算机视觉、遥感、模型压缩、量化感知学习、边缘设备机器学习"
+        }
+      ],
+      "news": [
+        {
+          "date": "2026-10",
+          "text": "PAIRSAFE: Proxy-Resistant Paired Safety Evaluation for Refusal Boundaries 已被 AACL-IJCNLP 2026 录用，即将发表；本人为唯一作者，以独立研究者身份完成。"
+        },
+        { "date": "2026-06", "text": "更新研究资料，包括毕业情况、论文、差旅资助及研究实习经历。" }
+      ],
+      "contactTitle": "好的研究，\n从交流开始。",
+      "contactIntro": "如果你对可信人工智能、实证评估或研究生阶段的研究有兴趣，欢迎交流想法。",
+      "footerNote": "保持好奇，审慎求证。"
+    }
+  }
+}
