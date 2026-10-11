@@ -5,11 +5,13 @@ import { gzipSync } from 'node:zlib';
 import assert from 'node:assert/strict';
 import { outputRoot, projectRoot } from './build.mjs';
 import { loadContent, legacyAnchors, normalizeBasePath } from '../src/content.mjs';
+import { history, historyRoutes, validateHistory } from '../src/history.mjs';
 
 const root = fileURLToPath(outputRoot);
 const { profile, publications } = await loadContent(projectRoot);
 const basePath = normalizeBasePath(process.env.BASE_PATH || '');
 const errors = [];
+validateHistory();
 const check = (condition, message) => {
   if (!condition) errors.push(message);
 };
@@ -103,6 +105,17 @@ for (const locale of ['en', 'zh']) {
   );
   check(!/>\s*undefined\s*</.test(html), `Missing translated content in ${locale}`);
 }
+for (const route of historyRoutes()) {
+  const page = pages.get(resolve(root, route, 'index.html'));
+  check(Boolean(page), `Missing miscellany route: ${route}`);
+  if (!page) continue;
+  check((page.html.match(/<h1\b/g) || []).length === 1, `Expected one h1: ${route}`);
+  check((page.html.match(/<main\b/g) || []).length === 1, `Expected one main: ${route}`);
+  check(page.html.includes(`href="${profile.url}${basePath}/${route}"`), `Wrong canonical: ${route}`);
+  check(!page.html.includes('undefined'), `Missing history data: ${route}`);
+  check(!/<script\b[^>]*src="https?:\/\//.test(page.html), `Third-party initial runtime: ${route}`);
+  if (/\/(events|people|chapters|themes)\/.+\/$/.test(route)) check(page.ids.has('references'), `Missing article sources: ${route}`);
+}
 for (const path of paths.filter((path) => /\.(css|js)$/.test(path))) {
   const content = await readFile(path, 'utf8');
   check(
@@ -134,6 +147,7 @@ check(files.has(resolve(root, '.nojekyll')), 'Missing .nojekyll');
 const sitemap = await readFile(resolve(root, 'sitemap.xml'), 'utf8');
 check(sitemap.includes(`${profile.url}${basePath}/zh/`), 'Chinese page missing from sitemap');
 check(!sitemap.includes('404.html'), '404 should not be indexed');
+for (const route of historyRoutes()) check(sitemap.includes(`${profile.url}${basePath}/${route}`), `Miscellany page missing from sitemap: ${route}`);
 const pngSignature = '89504e470d0a1a0a';
 for (const name of ['assets/social-card.png', 'assets/apple-touch-icon.png']) {
   const path = resolve(root, name);

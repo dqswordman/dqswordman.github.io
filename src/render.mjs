@@ -192,7 +192,7 @@ function header(profile, copy, t, locale, basePath, isError) {
   return `<header class="site-header" data-header>
     <div class="container header-inner">
       <a class="brand" href="${isError ? home : '#top'}">${monogram()}<span>${h(profile.name)}<small>${h(copy.role)}</small></span></a>
-      <nav class="main-nav" id="main-nav" aria-label="${h(t.primaryNav)}">${navigationIds.map((id, i) => `<a href="${anchor(id)}" data-nav="${id}">${h(t.nav[i])}</a>`).join('')}<a class="mobile-contact" href="${anchor('contact')}">${h(t.contact)} ${icon('external')}</a></nav>
+      <nav class="main-nav" id="main-nav" aria-label="${h(t.primaryNav)}">${navigationIds.map((id, i) => `<a href="${anchor(id)}" data-nav="${id}">${h(t.nav[i])}</a>`).join('')}<a href="${basePath}/misc/">${locale === 'en' ? 'Miscellany' : '杂项'}</a><a class="mobile-contact" href="${anchor('contact')}">${h(t.contact)} ${icon('external')}</a></nav>
       <div class="header-actions"><a class="language-link" data-language href="${alternate}" lang="${locale === 'en' ? 'zh-CN' : 'en'}" hreflang="${locale === 'en' ? 'zh-CN' : 'en'}" aria-label="${h(t.language)} — ${h(t.languageLabel)}">${h(t.language)}</a><a class="header-contact" href="${anchor('contact')}">${h(t.contact)} ${icon('external')}</a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="${h(t.menu)}" data-open-label="${h(t.menu)}" data-close-label="${h(t.closeMenu)}" data-menu hidden>${icon('menu')}<span class="sr-only">${h(t.menu)}</span></button></div>
     </div>
   </header>`;

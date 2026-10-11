@@ -65,6 +65,32 @@ npm run dev -- --port 4174
 
 论文年份、总数和分组均由数据自动计算。搜索支持标题、作者、会议、年份及方向名称，多关键词以 AND 方式组合。年份、方向与查询同步到网址，可分享，也会随语言切换保留。
 
+## 杂项与中国近代史研究
+
+中英文主页导航均有“杂项 / Miscellany”入口，地址为 `/misc/`。五个栏目分别为科研项目博客、大部头讲义、中国近代史研究、书籍博客及金融博客。科研项目按 ICLR 2027、WWW 2027、WSDM 2027 预留位置；讲义含明确标为示意的先修学习网格，书籍及金融栏目保留筹备说明。
+
+历史板块位于 `/misc/history/`，包含 **90 个事件、72 位人物、14 章通史、9 个跨时期专题、133 项参考资料和 258 条人物行动记录**。摘要及正文合计约 6.2 万字，另有行动表、时序、分析问题与资料注释。每个事件都已成文，人物传记与逐事件行动复用同一组事实记录，图谱连线也从这些记录生成。
+
+本次验收依据覆盖 1840—2026 年各阶段及主要主题的明确编年总目；包含 1839 年禁烟背景，事实截点为 **2026-10-10**。不声称穷尽每个地方的全部事件。范围、数字口径、资料限制及后续增补方向公开于 `/misc/history/method/`；编年总目位于 `/misc/history/timeline/`，可从方法页下载完整 JSON 总目。
+
+| 文件 | 用途 |
+| --- | --- |
+| `content/history/schema.mjs` | 分期及段落、人物行动、传记的内容结构 |
+| `content/history/events-*.mjs` | 五组事件正文、人物立场与行动、时序和可选图表 |
+| `content/history/people-*.mjs` | 三组人物传记；未知卒年明确标注 |
+| `content/history/essays.mjs` | 通史章节与跨时期专题 |
+| `content/history/sources.mjs` | 来源元数据、直达链接、材料类型与使用限制 |
+| `src/history.mjs` | 内容汇总、关联查询、完整性校验与路由 |
+| `src/misc-render.mjs` / `src/misc.css` | 杂项及历史页面的独立原创结构与设计 |
+| `src/misc-client.js` / `src/history-search.mjs` | 渐进增强导航、检索、筛选与状态恢复 |
+| `src/history-graph.mjs` | 静态与交互页面共用的人物—事件图谱 |
+
+新增事件时使用稳定 ID，提供正文、来源、人物行动、关键节点、分析问题及关联阅读；先在 `sources.mjs` 登记资料。新增人物须提供传记，并至少关联一个有证据的事件。所有引用 ID、事件和人物 ID 会在构建时检查。图谱只表达有记录的事件参与，不自动推断同盟、亲属或影响力。
+
+正文及资料直接生成静态 HTML，不依赖外部接口或 JavaScript 才能阅读。事件支持关键词、分期、主题与包含年份的组合筛选，人物和资料支持检索；URL 可保留筛选状态。图谱支持人物、事件切换、缩放、浏览器后退和节点跳转；数据加载失败时仍保留静态图与人物目录。文章支持打印及浏览器保存 PDF。
+
+维护、引用原则及本次浏览器验收记录见 [历史板块说明](docs/history-notes.md)。
+
 ## 发布到 GitHub Pages
 
 仓库已提供 `.github/workflows/pages.yml`。在仓库的 **Settings → Pages → Build and deployment → Source** 中选择 **GitHub Actions**。这是采用自定义静态构建流程所需的发布源设置，参见 [GitHub 官方文档](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。
