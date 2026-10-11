@@ -2,6 +2,23 @@ import { initVisitorStats } from './visitors.mjs';
 import { matchesHistoryRecord } from './history-search.mjs';
 import { graphModel, graphSvg, escape } from './history-graph.mjs';
 
+const locale = document.documentElement.lang === 'en' ? 'en' : 'zh';
+const t = (zh, en) => locale === 'en' ? en : zh;
+document.querySelectorAll('[data-language-switch]').forEach(link => link.addEventListener('click', () => {
+  const target = new URL(link.href);
+  target.search = location.search;
+  target.hash = location.hash;
+  const currentSection = [...document.querySelectorAll('.h-article > section[id]')].find(section => {
+    const bounds = section.getBoundingClientRect();
+    return bounds.top <= 160 && bounds.bottom > 160;
+  });
+  let currentAnchor;
+  try { currentAnchor = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch { /* Keep an unrecognized fragment unchanged. */ }
+  const anchorVisible = currentAnchor && currentAnchor.getBoundingClientRect().bottom >= 0 && currentAnchor.getBoundingClientRect().top < innerHeight;
+  if (currentSection && !anchorVisible) target.hash = currentSection.id;
+  link.href = target.pathname + target.search + target.hash;
+}));
+
 const menu = document.querySelector('[data-menu]');
 const navigation = document.querySelector('#misc-nav');
 if (menu && navigation) {
@@ -9,7 +26,7 @@ if (menu && navigation) {
   menu.hidden = false;
   const setMenu = (open) => {
     menu.setAttribute('aria-expanded', String(open));
-    menu.setAttribute('aria-label', open ? '关闭导航' : '打开导航');
+    menu.setAttribute('aria-label', open ? t('关闭导航', 'Close navigation') : t('打开导航', 'Open navigation'));
     navigation.classList.toggle('is-open', open);
   };
   menu.addEventListener('click', () => setMenu(menu.getAttribute('aria-expanded') !== 'true'));
@@ -35,7 +52,7 @@ if (form) {
     const state = Object.fromEntries(fields.map((field) => [field.name, field.value]));
     let visible = 0;
     for (const record of records) { record.hidden = !matchesHistoryRecord(record.dataset, state); if (!record.hidden) visible++; }
-    count.textContent = `显示 ${records.length} 项中的 ${visible} 项`;
+    count.textContent = t(`显示 ${records.length} 项中的 ${visible} 项`, `Showing ${visible} of ${records.length} entries`);
     if (empty) empty.hidden = visible > 0;
     if (persist) {
       const url = new URL(location.href);
@@ -79,14 +96,14 @@ async function initNetwork() {
     const draw = (person, event = '', persist = false) => {
       const model = graphModel(data, person, event);
       personSelect.value = model.person.id;
-      eventSelect.replaceChildren(new Option('全部关联事件', ''), ...model.allEvents.map((item) => new Option(`${item.start} · ${item.title}`, item.id)));
+      eventSelect.replaceChildren(new Option(t('全部关联事件', 'All associated events'), ''), ...model.allEvents.map((item) => new Option(`${item.start} · ${item.title}`, item.id)));
       eventSelect.value = model.events.length === 1 && event ? model.events[0].id : '';
-      canvas.innerHTML = graphSvg(model, base);
+      canvas.innerHTML = graphSvg(model, base, 'network-title', locale);
       canvas.querySelector('svg').style.width = `${970 * zoom}px`;
-      status.textContent = `${model.person.name} · ${model.events.length}个事件 · ${model.peers.length}位同事件人物 · ${model.edges.length}条参与记录`;
-      detail.innerHTML = `<h2>${escape(model.person.name)}的事件与行动</h2><ul class="h-network-events">${model.events.map((item) => {
+      status.textContent = t(`${model.person.name} · ${model.events.length}个事件 · ${model.peers.length}位同事件人物 · ${model.edges.length}条参与记录`, `${model.person.name} · ${model.events.length} ${model.events.length === 1 ? 'event' : 'events'} · ${model.peers.length} other ${model.peers.length === 1 ? 'participant' : 'participants'} · ${model.edges.length} action ${model.edges.length === 1 ? 'record' : 'records'}`);
+      detail.innerHTML = `<h2>${escape(model.person.name)} · ${t('事件与行动', 'events and actions')}</h2><ul class="h-network-events">${model.events.map((item) => {
         const actor = item.actors.find((record) => record.person === model.person.id);
-        return `<li><h3><a href="${base}/misc/history/events/${item.id}/">${item.start} · ${escape(item.title)}</a></h3><p><strong>立场</strong> ${escape(actor.stance)}</p><p><strong>行动</strong> ${escape(actor.action)}</p><p><strong>结果</strong> ${escape(actor.result)} <a href="${base}/misc/history/events/${item.id}/#actions">阅读证据 →</a></p><p class="h-small">同事件人物：${item.actors.filter((record) => record.person !== model.person.id).map((record) => { const peer = data.people.find((item) => item.id === record.person); return `<a href="${base}/misc/history/people/${peer.id}/">${escape(peer.name)}</a>`; }).join(' · ') || '本总目暂无其他人物行动记录'}</p></li>`;
+        return `<li><h3><a href="${base}/misc/history/events/${item.id}/">${item.start} · ${escape(item.title)}</a></h3><p><strong>${t('立场', 'Position')}</strong> ${escape(actor.stance)}</p><p><strong>${t('行动', 'Action')}</strong> ${escape(actor.action)}</p><p><strong>${t('结果', 'Outcome')}</strong> ${escape(actor.result)} <a href="${base}/misc/history/events/${item.id}/#actions">${t('阅读证据 →', 'Read evidence →')}</a></p><p class="h-small">${t('同事件人物', 'Other participants')}: ${item.actors.filter((record) => record.person !== model.person.id).map((record) => { const peer = data.people.find((item) => item.id === record.person); return `<a href="${base}/misc/history/people/${peer.id}/">${escape(peer.name)}</a>`; }).join(' · ') || t('本总目暂无其他人物记录', 'No other participant in this catalog')}</p></li>`;
       }).join('')}</ul>`;
       if (persist) {
         const url = new URL(location.href);
@@ -105,7 +122,7 @@ async function initNetwork() {
       const direction = Number(button.dataset.zoom);
       zoom = direction ? Math.min(1.8, Math.max(0.55, zoom + direction * 0.15)) : 1;
       canvas.querySelector('svg').style.width = `${970 * zoom}px`;
-      status.textContent = `图谱缩放 ${Math.round(zoom * 100)}%，可在图谱区域内滚动。`;
+      status.textContent = t(`图谱缩放 ${Math.round(zoom * 100)}%，可在图谱区域内滚动。`, `Zoom ${Math.round(zoom * 100)}%. Scroll within the graph region.`);
     }));
     window.addEventListener('popstate', restore);
     controls.hidden = false;
@@ -114,7 +131,7 @@ async function initNetwork() {
     const notice = document.createElement('p');
     notice.className = 'h-notice';
     notice.setAttribute('role', 'status');
-    notice.textContent = '交互数据暂时无法加载。下方静态图和完整人物目录仍可阅读，请刷新后重试。';
+    notice.textContent = t('交互数据暂时无法加载。静态图和人物目录仍可阅读。', 'Interactive data could not load. The static graph and directory remain available.');
     root.prepend(notice);
   }
 }

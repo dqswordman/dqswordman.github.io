@@ -10,6 +10,84 @@
   --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
   color-scheme:light
 }
+.h-editions {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  padding:16px 0;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin:20px 0 34px;
+}
+.h-editions a {
+  font-size:12px;
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:4px;
+}
+.h-editions a[aria-current] { background:var(--forest); color:var(--paper); border-color:var(--forest) }
+.h-editions a:last-child { margin-left:auto; border-color:transparent }
+.h-book-cover {
+  background:var(--forest);
+  color:var(--paper);
+  border-radius:4px;
+  padding:34px;
+  min-height:390px;
+  border-left:10px solid #31554a;
+  box-shadow:12px 14px 0 var(--wash);
+  transform:rotate(1deg);
+}
+.h-book-cover > span { font-size:11px; letter-spacing:.2em }
+.h-book-cover > strong { display:block; font:100px/1.2 Georgia,serif; margin-top:12px }
+.h-book-cover > p { font-size:12px; margin:5px 0 30px }
+.h-book-cover > div { font:32px/1.25 Georgia,serif; letter-spacing:.04em; border-top:1px solid #718b80; padding-top:20px }
+.h-book-cover > small { display:block; margin-top:20px; font-size:12px; letter-spacing:.12em }
+.m-page-heading.m-page-title { padding:48px 0 24px; max-width:1000px }
+.h-reading-meta { font-size:12px; color:var(--muted); margin-top:0; margin-bottom:30px }
+.h-bars { margin:0; padding:25px; background:var(--wash); border-radius:4px }
+.h-bars figcaption { font-size:13px; color:var(--muted); margin-bottom:22px }
+.h-bar-row { display:grid; grid-template-columns:70px minmax(0,1fr) 100px; gap:16px; align-items:center; margin-bottom:16px; font-size:13px }
+.h-bar-row > div { height:18px; background:var(--line); border-radius:2px; overflow:hidden }
+.h-bar-row > div > span { display:block; height:100%; background:var(--forest) }
+.h-bar-row > strong { font:16px/1.5 Georgia,serif; text-align:right }
+.h-chapter-event { margin:18px 0; border:1px solid var(--line); border-radius:4px; padding:14px 18px }
+.h-chapter-event > summary { cursor:pointer; font-weight:600; font-size:15px; line-height:1.7 }
+.h-chapter-event > p { font-size:14px; margin-top:16px }
+.h-book-pagination { display:grid; grid-template-columns:1fr 1fr; gap:25px; border-top:1px solid var(--line); padding-top:25px; margin:35px 0 }
+.h-book-pagination > a { font-size:13px; line-height:1.8; color:var(--accent) }
+.h-book-pagination > a:last-child { text-align:right }
+.h-full-links { border-left:3px solid var(--accent); padding-left:24px }
+html[lang="en"] .h-prose p { line-height:1.85 }
+html[lang="en"] .h-hero h1 { line-height:1.15; font-size:62px }
+.m-page-title h1, .h-essay-card h3, .h-prose h2, .h-toc a, .h-network-events h3 { overflow-wrap:anywhere }
+@media (max-width:1000px) {
+  .h-full-hero { gap:35px }
+  .h-book-cover { padding:25px; min-height:350px }
+  html[lang="en"] .h-hero h1 { font-size:50px }
+}
+@media (max-width:760px) {
+  .m-page-heading.m-page-title { padding:35px 0 18px }
+  .h-bars { padding:18px }
+  .h-bar-row { grid-template-columns:52px minmax(0,1fr) 80px; gap:10px }
+  .h-book-cover { display:none }
+  .h-full-hero { grid-template-columns:1fr }
+  .h-editions { gap:8px }
+  .h-editions a { padding:9px; font-size:11px }
+  .h-editions a:last-child { margin-left:0 }
+  .h-book-pagination { grid-template-columns:1fr }
+  .h-book-pagination > a:last-child { text-align:left }
+  .h-chapter-event { padding:12px }
+  .h-full-links { padding-left:16px }
+  html[lang="en"] .h-hero h1 { font-size:42px }
+}
+@media print {
+  .m-page-heading.m-page-title { padding:0 0 15px }
+  .m-page-heading.m-page-title h1 { font-size:25pt }
+  .h-editions, .h-book-pagination, .h-book-cover, .h-reading-meta { display:none }
+  .h-chapter-event { break-inside:avoid }
+  .h-chapter-event:not([open]) > :not(summary) { display:block }
+}
 * {
   box-sizing:border-box
 }
@@ -768,9 +846,12 @@ label {
 .h-tags {
   display:flex;
   gap:7px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
+  list-style:none;
+  padding:0;
+  margin:12px 0;
 }
-.h-tags span {
+.h-tags span,.h-tags li {
   font-size:10px;
   padding:2px 8px;
   background:var(--wash);

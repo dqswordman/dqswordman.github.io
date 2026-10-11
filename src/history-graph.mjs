@@ -11,12 +11,18 @@ export function graphModel(data, personId, eventId = '') {
   return { person, allEvents, events, peers, edges };
 }
 
-export function graphSvg(model, base = '', titleId = 'network-title') {
+export function graphSvg(model, base = '', titleId = 'network-title', locale = 'zh') {
   const { person, events, peers } = model;
+  const en = locale === 'en', t = (zh, english) => en ? english : zh;
   const height = Math.max(360, Math.max(events.length, peers.length) * 64 + 80);
   const position = (index, total) => 50 + ((index + 0.5) / Math.max(total, 1)) * (height - 90);
   const center = height / 2;
-  const node = (x, y, width, label, href, selected = false) => `<a href="${escape(href)}" aria-label="${escape(label)}"><title>${escape(label)}</title><rect x="${x}" y="${y - 21}" width="${width}" height="42" rx="5" class="${selected ? 'graph-selected' : 'graph-node'}"/><text x="${x + 13}" y="${y + 5}" class="${selected ? 'graph-selected-text' : ''}">${escape(label.length > 24 ? `${label.slice(0, 23)}…` : label)}</text></a>`;
+  const fit = (label, width) => {
+    let units = 0, output = '';
+    for (const c of label) { units += /[\u3400-\u9fff]/u.test(c) ? 2 : 1; if (units > (width - 40) / 8) return output + '…'; output += c; }
+    return output;
+  };
+  const node = (x, y, width, label, href, selected = false) => `<a href="${escape(href)}" aria-label="${escape(label)}"><title>${escape(label)}</title><rect x="${x}" y="${y - 21}" width="${width}" height="42" rx="5" class="${selected ? 'graph-selected' : 'graph-node'}"/><text x="${x + 13}" y="${y + 5}" class="${selected ? 'graph-selected-text' : ''}">${escape(fit(label, width))}</text></a>`;
   const lines = events.map((event, index) => {
     const y = position(index, events.length);
     return `<path d="M190 ${center} C235 ${center} 240 ${y} 285 ${y}" class="graph-edge graph-primary"/>${event.actors.filter((actor) => actor.person !== person.id).map((actor) => {
@@ -24,5 +30,5 @@ export function graphSvg(model, base = '', titleId = 'network-title') {
       return `<path d="M615 ${y} C665 ${y} 670 ${peerY} 720 ${peerY}" class="graph-edge"/>`;
     }).join('')}`;
   }).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 970 ${height}" width="970" height="${height}" role="group" aria-labelledby="${escape(titleId)}"><title id="${escape(titleId)}">${escape(person.name)}的人物—事件关联图：线表示人物在事件中有行动记录，不表示同盟或亲疏</title><text x="20" y="24" class="graph-label">所选人物</text><text x="285" y="24" class="graph-label">关联事件</text><text x="720" y="24" class="graph-label">同一事件中的其他人物</text>${lines}${node(10, center, 180, person.name, `${base}/misc/history/people/${person.id}/`, true)}${events.map((event, index) => node(285, position(index, events.length), 330, `${event.start} · ${event.title}`, `${base}/misc/history/events/${event.id}/`)).join('')}${peers.map((peer, index) => node(720, position(index, peers.length), 230, peer.name, `${base}/misc/history/people/${peer.id}/`)).join('')}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 970 ${height}" width="970" height="${height}" role="group" aria-labelledby="${escape(titleId)}"><title id="${escape(titleId)}">${escape(person.name)}${t('的人物—事件关联图：线表示行动记录，不表示同盟或亲疏', ': person–event graph. Edges show recorded participation, not alliance or closeness.')}</title><text x="20" y="24" class="graph-label">${t('所选人物', 'Selected person')}</text><text x="285" y="24" class="graph-label">${t('关联事件', 'Associated events')}</text><text x="720" y="24" class="graph-label">${t('同一事件中的其他人物', 'Other participants')}</text>${lines}${node(10, center, 180, person.name, `${base}/misc/history/people/${person.id}/`, true)}${events.map((event, index) => node(285, position(index, events.length), 330, `${event.start} · ${event.title}`, `${base}/misc/history/events/${event.id}/`)).join('')}${peers.map((peer, index) => node(720, position(index, peers.length), 230, peer.name, `${base}/misc/history/people/${peer.id}/`)).join('')}</svg>`;
 }

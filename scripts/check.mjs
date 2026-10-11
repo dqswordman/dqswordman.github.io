@@ -5,13 +5,14 @@ import { gzipSync } from 'node:zlib';
 import assert from 'node:assert/strict';
 import { outputRoot, projectRoot } from './build.mjs';
 import { loadContent, legacyAnchors, normalizeBasePath } from '../src/content.mjs';
-import { history, historyRoutes, validateHistory } from '../src/history.mjs';
+import { history, localizedHistory, historyRoutes, validateHistory } from '../src/history.mjs';
 
 const root = fileURLToPath(outputRoot);
 const { profile, publications } = await loadContent(projectRoot);
 const basePath = normalizeBasePath(process.env.BASE_PATH || '');
 const errors = [];
 validateHistory();
+validateHistory(localizedHistory('en'));
 const check = (condition, message) => {
   if (!condition) errors.push(message);
 };
@@ -105,16 +106,20 @@ for (const locale of ['en', 'zh']) {
   );
   check(!/>\s*undefined\s*</.test(html), `Missing translated content in ${locale}`);
 }
-for (const route of historyRoutes()) {
+for (const locale of ['zh', 'en']) for (const originalRoute of historyRoutes()) {
+  const route = `${locale === 'en' ? 'en/' : ''}${originalRoute}`;
   const page = pages.get(resolve(root, route, 'index.html'));
   check(Boolean(page), `Missing miscellany route: ${route}`);
   if (!page) continue;
   check((page.html.match(/<h1\b/g) || []).length === 1, `Expected one h1: ${route}`);
   check((page.html.match(/<main\b/g) || []).length === 1, `Expected one main: ${route}`);
   check(page.html.includes(`href="${profile.url}${basePath}/${route}"`), `Wrong canonical: ${route}`);
+  const counterpart = `${locale === 'en' ? '' : 'en/'}${originalRoute}`;
+  check(page.html.includes(`hreflang="${locale === 'en' ? 'zh-CN' : 'en'}" href="${profile.url}${basePath}/${counterpart}"`), `Missing language counterpart: ${route}`);
+  check(page.html.includes(`<html lang="${locale === 'en' ? 'en' : 'zh-CN'}"`), `Wrong article language: ${route}`);
   check(!page.html.includes('undefined'), `Missing history data: ${route}`);
   check(!/<script\b[^>]*src="https?:\/\//.test(page.html), `Third-party initial runtime: ${route}`);
-  if (/\/(events|people|chapters|themes)\/.+\/$/.test(route)) check(page.ids.has('references'), `Missing article sources: ${route}`);
+  if (/\/(events|people|chapters|themes|full)\/.+\/$/.test(route)) check(page.ids.has('references'), `Missing article sources: ${route}`);
 }
 for (const path of paths.filter((path) => /\.(css|js)$/.test(path))) {
   const content = await readFile(path, 'utf8');
@@ -147,7 +152,7 @@ check(files.has(resolve(root, '.nojekyll')), 'Missing .nojekyll');
 const sitemap = await readFile(resolve(root, 'sitemap.xml'), 'utf8');
 check(sitemap.includes(`${profile.url}${basePath}/zh/`), 'Chinese page missing from sitemap');
 check(!sitemap.includes('404.html'), '404 should not be indexed');
-for (const route of historyRoutes()) check(sitemap.includes(`${profile.url}${basePath}/${route}`), `Miscellany page missing from sitemap: ${route}`);
+for (const locale of ['zh', 'en']) for (const route of historyRoutes()) check(sitemap.includes(`${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}${route}`), `Miscellany page missing from sitemap: ${locale}/${route}`);
 const pngSignature = '89504e470d0a1a0a';
 for (const name of ['assets/social-card.png', 'assets/apple-touch-icon.png']) {
   const path = resolve(root, name);

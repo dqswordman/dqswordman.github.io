@@ -5,7 +5,7 @@ import { resolve, relative, sep } from 'node:path';
 import { loadContent, normalizeBasePath, escapeHtml as h } from '../src/content.mjs';
 import { renderPage } from '../src/render.mjs';
 import { renderMiscPage, historyRoutes } from '../src/misc-render.mjs';
-import { history, validateHistory, referencesFor } from '../src/history.mjs';
+import { history, localizedHistory, validateHistory, referencesFor, studiesForEvent } from '../src/history.mjs';
 
 export const projectRoot = new URL('../', import.meta.url);
 export const outputRoot = new URL('dist/', projectRoot);
@@ -15,6 +15,7 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   basePath = normalizeBasePath(basePath);
   const { profile, publications } = await loadContent(projectRoot);
   validateHistory();
+  validateHistory(localizedHistory('en'));
   const [css, originalJs, filter, visitors] = await Promise.all(
     ['styles.css', 'client.js', 'filter.mjs', 'visitors.mjs'].map((name) =>
       readFile(new URL(`src/${name}`, projectRoot), 'utf8'),
@@ -33,11 +34,27 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   const searchName = `history-search.${hash(search)}.js`;
   const miscJs = originalMiscJs.replace("'./visitors.mjs'", `'./${visitorsName}'`).replace("'./history-graph.mjs'", `'./${graphName}'`).replace("'./history-search.mjs'", `'./${searchName}'`);
   // Only the graph page fetches this data. Article bodies stay in static HTML.
-  const graphData = JSON.stringify({
-    people: history.people.map(({ id, name }) => ({ id, name })),
-    events: history.events.map(({ id, title, start, end, period, actors }) => ({ id, title, start, end, period, actors })),
-  });
-  Object.assign(assets, { miscCss: `misc.${hash(miscCss)}.css`, miscJs: `misc.${hash(miscJs)}.js`, graphData: `history-data.${hash(graphData)}.json` });
+  const graphFor = locale => {
+    const data = localizedHistory(locale);
+    return JSON.stringify({ locale, people: data.people.map(({ id, name }) => ({ id, name })), events: data.events.map(({ id, title, start, end, period, actors }) => ({ id, title, start, end, period, actors })) });
+  };
+  const graphData = graphFor('zh'), graphDataEn = graphFor('en');
+  Object.assign(assets, { miscCss: `misc.${hash(miscCss)}.css`, miscJs: `misc.${hash(miscJs)}.js`, graphData: `history-data.${hash(graphData)}.json`, graphDataEn: `history-data.${hash(graphDataEn)}.json` });
+  const catalogFor = locale => {
+    const data = localizedHistory(locale), prefix = `${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}misc/history/`;
+    const urls = (kind, id) => Object.fromEntries(['zh', 'en'].map(l => [l, `${profile.url}${basePath}/${l === 'en' ? 'en/' : ''}misc/history/${kind}/${id}/`]));
+    return {
+      version: 2, locale, title: locale === 'en' ? 'Modern Chinese history: edition catalog' : '中国近代史研究 · 双语版本总目', updated: data.updated, cutoff: data.cutoff,
+      range: `1840–2026 (1839 background; ${data.cutoff})`, scope: locale === 'en' ? 'A defined catalog across periods and major themes, not an exhaustive record of every local event.' : '覆盖各阶段与主要主题的明确总目，非穷尽全部地方事件。',
+      counts: { events: data.events.length, people: data.people.length, chapters: data.chapters.length, themes: data.themes.length, fullChapters: data.studies.length, fullSections: data.studies.reduce((n, s) => n + s.sections.length, 0), sources: data.sources.length, actions: data.events.reduce((n, e) => n + e.actors.length, 0) },
+      periods: data.periods,
+      events: data.events.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end, dates: e.dates, period: e.period, tags: e.tags, status: 'complete', url: `${prefix}events/${e.id}/`, urls: urls('events', e.id), people: e.actors.map(a => a.person), references: referencesFor(e), fullChapters: studiesForEvent(e.id, data).map(s => s.id) })),
+      people: data.people.map(p => ({ id: p.id, name: p.name, dates: p.dates, role: p.role, status: 'complete', url: `${prefix}people/${p.id}/`, urls: urls('people', p.id) })),
+      ...Object.fromEntries(['chapters', 'themes', 'studies'].map(kind => [kind, data[kind].map(s => ({ id: s.id, title: s.title, part: s.part, dates: s.dates, summary: s.summary, status: 'complete', edition: kind === 'studies' ? 'Full' : 'Lite', url: `${prefix}${kind === 'studies' ? 'full' : kind}/${s.id}/`, urls: urls(kind === 'studies' ? 'full' : kind, s.id), events: s.events, references: referencesFor(s), ...(kind === 'studies' ? { sections: s.sections } : {}) }))])),
+      sources: data.sources,
+      futureAdditions: locale === 'en' ? ['Local and community histories', 'Standalone war-theater and provincial campaign studies', '1975 floods and 1976 Tangshan earthquake studies', 'More non-elite biographies and oral histories', 'Page-specific citations and archival identifiers', 'Licensed maps and comparable data', 'Events after the evidence cutoff'] : ['地方与社区微观史', '独立战区及各省政治运动专题', '1975年水灾、1976年唐山地震独立专题', '更多普通人物与口述', '精确页码及档案编号', '合法地图与同口径数据', '事实截点之后的新内容'],
+    };
+  };
 
   // This is the only directory cleaned by the build. Its location is fixed,
   // verified, and never taken from environment variables or command-line input.
@@ -58,17 +75,9 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     writeFile(new URL(`assets/${graphName}`, outputRoot), graph),
     writeFile(new URL(`assets/${searchName}`, outputRoot), search),
     writeFile(new URL(`assets/${assets.graphData}`, outputRoot), graphData),
-    writeFile(new URL('assets/history-catalog.json', outputRoot), JSON.stringify({
-      version: 1, title: '中国近代史研究 · 本次验收总目', updated: history.updated, range: '1840—2026（含1839禁烟背景；事实截点2026-10-10）',
-      scope: '覆盖各阶段和主要主题的明确总目，非穷尽每个地区的全部历史事件。',
-      counts: { events: history.events.length, people: history.people.length, chapters: history.chapters.length, themes: history.themes.length, sources: history.sources.length, actions: history.events.reduce((count, event) => count + event.actors.length, 0) },
-      periods: history.periods,
-      events: history.events.map((event) => ({ id: event.id, title: event.title, start: event.start, end: event.end, dates: event.dates, period: event.period, tags: event.tags, status: '正文、时序、人物行动、分析及引用完成', url: `${profile.url}${basePath}/misc/history/events/${event.id}/`, people: event.actors.map((actor) => actor.person), references: referencesFor(event) })),
-      people: history.people.map((person) => ({ id: person.id, name: person.name, dates: person.dates, role: person.role, status: '传记及逐事件行动完成', url: `${profile.url}${basePath}/misc/history/people/${person.id}/` })),
-      ...Object.fromEntries(['chapters', 'themes'].map((kind) => [kind, history[kind].map((item) => ({ id: item.id, title: item.title, status: '正文、关联事件及引用完成', url: `${profile.url}${basePath}/misc/history/${kind}/${item.id}/`, events: item.events, references: referencesFor(item) }))])),
-      sources: history.sources,
-      futureAdditions: ['地方与微观史个案', '更多普通群体的口述与传记', '婚姻、卫生、艺术、宗教及环境专题细分', '合法开放全文、页码、档案号及多语种互证', '有明确边界和许可的历史地图及同口径数据', '2026-10-10以后的新事实及正式年度统计'],
-    }, null, 2) + '\n'),
+    writeFile(new URL(`assets/${assets.graphDataEn}`, outputRoot), graphDataEn),
+    writeFile(new URL('assets/history-catalog.json', outputRoot), JSON.stringify(catalogFor('zh'), null, 2)),
+    writeFile(new URL('assets/history-catalog.en.json', outputRoot), JSON.stringify(catalogFor('en'), null, 2)),
   ]);
 
   for (const locale of ['en', 'zh']) {
@@ -84,10 +93,11 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     renderPage({ profile, publications, basePath, assets, notFound: true }),
   );
   const miscRoutes = historyRoutes();
-  for (const route of miscRoutes) {
-    const folder = new URL(route, outputRoot);
+  for (const locale of ['zh', 'en']) for (const route of miscRoutes) {
+    const folder = new URL(`${locale === 'en' ? 'en/' : ''}${route}`, outputRoot);
     await mkdir(folder, { recursive: true });
-    await writeFile(new URL('index.html', folder), renderMiscPage({ route, profile, basePath, assets }));
+    const localizedAssets = { ...assets, graphData: locale === 'en' ? assets.graphDataEn : assets.graphData };
+    await writeFile(new URL('index.html', folder), renderMiscPage({ route, profile, basePath, assets: localizedAssets, locale }));
   }
 
   const redirect = (target) =>
@@ -108,7 +118,12 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   );
   const urls = [`${profile.url}${basePath}/`, `${profile.url}${basePath}/zh/`];
   const alternates = `<xhtml:link rel="alternate" hreflang="en" href="${h(urls[0])}"/><xhtml:link rel="alternate" hreflang="zh-CN" href="${h(urls[1])}"/>`;
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls.map((url) => `<url><loc>${h(url)}</loc>${alternates}</url>`).join('')}${miscRoutes.map((route) => `<url><loc>${h(profile.url + basePath + '/' + route)}</loc><lastmod>${history.updated}</lastmod></url>`).join('')}</urlset>\n`;
+  const miscSitemap = miscRoutes.map(route => {
+    const pair = ['zh-CN', 'en'].map(locale => [locale, `${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}${route}`]);
+    const links = pair.map(([locale, url]) => `<xhtml:link rel="alternate" hreflang="${locale}" href="${h(url)}"/>`).join('');
+    return pair.map(([, url]) => `<url><loc>${h(url)}</loc><lastmod>${history.updated}</lastmod>${links}</url>`).join('');
+  }).join('');
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls.map((url) => `<url><loc>${h(url)}</loc>${alternates}</url>`).join('')}${miscSitemap}</urlset>\n`;
   await writeFile(new URL('sitemap.xml', outputRoot), sitemap);
   await writeFile(
     new URL('robots.txt', outputRoot),

@@ -1,192 +1,161 @@
 import { escapeHtml as h } from './content.mjs';
 import { icon, monogram } from './components.mjs';
-import { history, historyRoutes, referencesFor, eventsForPerson, readingMinutes } from './history.mjs';
+import { localizedHistory, historyRoutes, referencesFor, eventsForPerson, readingMinutes, studiesForEvent } from './history.mjs';
 import { graphModel, graphSvg } from './history-graph.mjs';
 
 const ext = 'target="_blank" rel="noopener noreferrer"';
-const json = (data) => JSON.stringify(data).replaceAll('<', '\\u003c');
-const kinds = { events: '事件', people: '人物', chapters: '通史', themes: '专题' };
-const categoryLinks = [['', '总览'], ['timeline/', '编年'], ['events/', '事件'], ['people/', '人物'], ['network/', '图谱'], ['sources/', '资料'], ['method/', '收录与方法']];
-const miscSections = [
-  ['research', '01', '科研项目博客', '以会议为线索，记录问题、实验和研究过程。', 'ICLR · WWW · WSDM'],
-  ['lectures', '02', '大部头讲义', '分享系统学习路径、成体系讲义与先修关系。', '学习路径 · 讲义 · 路线图'],
-  ['history', '03', '中国近代史研究', '从事件到人物，从史料到解释，阅读1840—2026年的中国。', '90个事件 · 72位人物 · 14章通史'],
-  ['books', '04', '书籍博客', '以一本书为单位，留下阅读笔记与持续追问。', '书目 · 笔记 · 讨论'],
-  ['finance', '05', '金融博客', '理解金融机制，记录数据、制度与市场之间的关系。', '研究笔记 · 数据与制度'],
-];
+const json = data => JSON.stringify(data).replaceAll('<', '\\u003c');
 
-function header(base, route) {
-  return `<header class="m-header"><div class="m-container m-header-inner"><a class="m-brand" href="${base}/zh/">${monogram()}<span>Wenzhang Du<small>研究之外，保持好奇</small></span></a><nav aria-label="主导航" id="misc-nav" class="m-nav"><a href="${base}/zh/">学术主页</a><a href="${base}/misc/" ${route === 'misc/' ? 'aria-current="page"' : ''}>杂项</a><a href="${base}/misc/history/" ${route.startsWith('misc/history/') ? 'aria-current="page"' : ''}>中国近代史</a><a href="${base}/" lang="en">EN Home</a></nav><button class="m-menu" aria-label="打开导航" aria-controls="misc-nav" aria-expanded="false" data-menu hidden>${icon('menu')}</button></div></header>`;
-}
-
-function footer(profile, base) {
-  return `<footer class="m-footer"><div class="m-container"><div class="m-footer-top"><a class="m-brand" href="${base}/zh/">${monogram()}<span>Wenzhang Du<small>独立构建 · 以证据连接好奇心</small></span></a><a href="#top">返回顶部 ↑</a></div><div class="m-footer-bottom"><p>© 2026 Wenzhang Du · 资料截点 ${history.updated}</p><div class="m-visitors" data-visitors data-site-origin="${h(profile.url)}" data-local-label="本地预览不计入访问量。" data-loading-label="正在加载真实统计…" data-error-label="统计服务暂时不可用。"><span>访客 <strong data-visitor-count>—</strong></span><span>浏览 <strong data-view-count>—</strong></span><small data-visitor-status role="status">启用 JavaScript 后加载真实统计。</small></div></div></div></footer>`;
-}
-
-const crumb = (base, parts = []) => `<nav class="m-breadcrumb" aria-label="面包屑"><a href="${base}/misc/">杂项</a>${parts.map(([label, path]) => `<span aria-hidden="true">/</span>${path ? `<a href="${base}/${path}">${h(label)}</a>` : `<span aria-current="page">${h(label)}</span>`}`).join('')}</nav>`;
-const eyebrow = (text) => `<p class="m-eyebrow">${h(text)}</p>`;
-const title = (label, heading, description) => `<div class="m-page-heading">${eyebrow(label)}<h1>${h(heading)}</h1><p class="m-lead">${h(description)}</p></div>`;
-const historyNav = (base, route) => `<nav class="h-tabs" aria-label="历史板块导航">${categoryLinks.map(([path, label]) => `<a href="${base}/misc/history/${path}" ${route === `misc/history/${path}` ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
-const tagList = (tags) => `<div class="h-tags">${tags.map((tag) => `<span>${h(tag)}</span>`).join('')}</div>`;
-const linkArticle = (item, kind, base) => `${base}/misc/history/${kind}/${item.id}/`;
-
-function eventCard(event, base) {
-  const people = event.actors.map((actor) => history.people.find((person) => person.id === actor.person).name);
-  return `<li class="h-event-card" data-record data-period="${event.period}" data-tags="${h(event.tags.join('|'))}" data-start="${event.start}" data-end="${event.end}" data-search="${h([event.title, event.summary, event.start, event.end, ...event.tags, ...people].join(' '))}"><div class="h-card-date">${event.start === event.end ? event.start : `${event.start}—${event.end}`}</div><div><h3><a href="${linkArticle(event, 'events', base)}">${h(event.title)}</a></h3><p>${h(event.summary)}</p>${tagList(event.tags)}<small>${people.map(h).join(' · ')}</small></div><span class="h-card-arrow" aria-hidden="true">↗</span></li>`;
-}
-
-function essayCard(item, kind, base, index) {
-  return `<a class="h-essay-card" href="${linkArticle(item, kind, base)}"><span class="m-eyebrow">${String(index + 1).padStart(2, '0')} ${item.dates ? ` / ${h(item.dates)}` : ''}</span><h3>${h(item.title)}</h3><p>${h(item.summary)}</p><span class="m-text-link">阅读${kinds[kind]} ${icon('arrow')}</span></a>`;
-}
-
-function stats() {
-  return `<dl class="h-stats">${[[history.events.length, '事件条目'], [history.people.length, '人物传记'], [history.chapters.length, '通史章节'], [history.sources.length, '参考资料']].map(([count, label]) => `<div><dt>${label}</dt><dd>${count}<span> / </span></dd></div>`).join('')}</dl>`;
-}
-
-function filters(kind, extra = '') {
-  return `<form class="h-filters" data-filters hidden><div class="h-search"><label for="q">${kind === 'people' ? '搜索人物、身份或关联事件' : '搜索标题、人物、主题或关键词'}</label><div>${icon('search')}<input id="q" name="q" type="search" placeholder="${kind === 'people' ? '例如：林则徐、教育、1989' : '例如：改革、妇女、林则徐'}" autocomplete="off"></div></div><div><label for="period">历史阶段</label><select name="period" id="period"><option value="">全部阶段</option>${history.periods.map((period) => `<option value="${period.id}">${h(period.dates)} · ${h(period.title)}</option>`).join('')}</select></div>${extra}<button type="reset" class="m-button m-button-light">重置</button><p class="h-filter-count" data-result-count role="status" aria-live="polite"></p></form><noscript><p class="h-notice">当前显示全部条目。启用 JavaScript 可检索和筛选，所有正文均可直接阅读。</p></noscript>`;
-}
-
-function citations(article) {
-  const ids = referencesFor(article);
-  return (refs) => `<span class="h-citations">${refs.map((id) => `<a href="#ref-${h(id)}" aria-label="参考资料 ${ids.indexOf(id) + 1}">[${ids.indexOf(id) + 1}]</a>`).join(' ')}</span>`;
-}
-
-function sourcesList(article) {
-  return `<section class="h-references" id="references"><h2>参考资料与阅读说明</h2><p class="h-small">编号对应正文和人物行动中的引文。官方文件、当事人记述与研究解释各有范围；书目或摘要链接不表示已开放全文。</p><ol>${referencesFor(article).map((id) => {
-    const source = history.sources.find((item) => item.id === id);
-    return `<li id="ref-${id}"><span class="h-source-type">${h(source.type)}</span><a href="${h(source.url)}" ${ext}>${h(source.title)} ${icon('external')}</a><p>${h(source.publisher)} · ${h(source.note)}</p></li>`;
-  }).join('')}</ol></section>`;
-}
-
-function sections(article) {
-  const cite = citations(article);
-  return article.sections.map((section, index) => `<section class="h-prose" id="section-${index + 1}"><h2><span>${String(index + 1).padStart(2, '0')}</span>${h(section.title)}</h2>${section.paragraphs.map((paragraph, paragraphIndex) => `<p>${h(paragraph)}${paragraphIndex === section.paragraphs.length - 1 ? cite(section.refs) : ''}</p>`).join('')}</section>`).join('');
-}
-
-function table(headers, rows, caption) {
-  return `<div class="h-table-wrap" tabindex="0" role="region" aria-label="${h(caption)}"><table><caption>${h(caption)}</caption><thead><tr>${headers.map((header) => `<th scope="col">${h(header)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${row.map((cell, index) => `<${index ? 'td' : 'th scope="row"'}>${cell}</${index ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-}
-
-function chronology(event) {
-  return `<section id="chronology" class="h-prose"><h2><span>时序</span>关键节点</h2><ol class="h-milestones">${event.milestones.map((point) => `<li><time>${h(point.date)}</time><p>${h(point.label)}</p></li>`).join('')}</ol><p class="h-small">节点按顺序排列，间距不表示实际时间长度。未来目标另以文字标明。</p></section>`;
-}
-
-function eventVisual(event) {
-  const visual = event.visual;
-  if (!visual) return '';
-  const cite = citations(event);
-  if (visual.type === 'bars') {
-    const maximum = Math.max(...visual.values.map(([, value]) => value));
-    return `<section class="h-prose" id="visual"><h2><span>图表</span>${h(visual.title)}</h2><figure class="h-bar-chart"><figcaption>${h(visual.title)} · ${h(visual.unit)}</figcaption><ul>${visual.values.map(([label, value]) => `<li><span>${h(label)}</span><div><svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><rect width="${(value / maximum * 100).toFixed(3)}" height="12" rx="1"/></svg></div><strong>${value}${h(visual.unit)}</strong></li>`).join('')}</ul><p>${h(visual.note)} ${cite(visual.refs)}</p></figure></section>`;
+export function renderMiscPage({ route, profile, basePath = '', assets, locale = 'zh' }) {
+  const history = localizedHistory(locale), alternate = localizedHistory(locale === 'en' ? 'zh' : 'en');
+  const en = locale === 'en', t = (zh, english) => en ? english : zh;
+  const base = basePath + (en ? '/en' : ''), root = `${base}/misc/history/`;
+  const home = `${basePath}/${en ? '' : 'zh/'}`;
+  const path = `${base}/${route}`, canonical = profile.url + path;
+  const counterpart = `${basePath}/${en ? '' : 'en/'}${route}`;
+  const kindNames = { events: t('事件', 'Event'), people: t('人物', 'Biography'), chapters: t('概览通史', 'Lite chapter'), themes: t('概览专题', 'Lite theme'), full: t('详细版', 'Full chapter') };
+  const collection = kind => history[kind === 'full' ? 'studies' : kind];
+  const articleUrl = (item, kind) => `${root}${kind}/${item.id}/`;
+  const eyebrow = text => `<p class="m-eyebrow">${h(text)}</p>`;
+  const title = (label, heading, lead) => `<section class="m-page-heading m-page-title">${eyebrow(label)}<h1>${h(heading)}</h1><p class="m-lead">${h(lead)}</p></section>`;
+  const tags = items => `<ul class="h-tags" aria-label="${t('主题', 'Topics')}">${items.map(tag => `<li>${h(tag)}</li>`).join('')}</ul>`;
+  const link = (url, text, cls = '') => `<a${cls ? ` class="${cls}"` : ''} href="${url}">${h(text)}</a>`;
+  const editionNav = selected => `<nav class="h-editions" aria-label="${t('选择版本', 'Choose edition')}">${[['full', t('Full · 详细版', 'Full · extended reading')], ['lite', t('Lite · 概览版', 'Lite · overview')]].map(([id, label]) => `<a href="${root}${id}/"${id === selected ? ' aria-current="page"' : ''}>${label}</a>`).join('')}<a href="${root}method/">${t('范围与方法', 'Scope & method')} ↗</a></nav>`;
+  const stats = () => `<dl class="h-stats">${[[history.studies.length, t('双语长章', 'Bilingual Full chapters')], [history.events.length, t('事件条目', 'Event entries')], [history.people.length, t('人物传记', 'Biographies')], [history.sources.length, t('参考资料', 'Sources')]].map(([count, label]) => `<div><dt>${label}</dt><dd>${count}<span> / </span></dd></div>`).join('')}</dl>`;
+  function table(headers, rows, caption) {
+    return `<div class="h-table-wrap" tabindex="0" role="region" aria-label="${h(caption)}"><table><caption>${h(caption)}</caption><thead><tr>${headers.map(s => `<th scope="col">${h(s)}</th>`).join('')}</tr></thead><tbody>${rows.map(row => `<tr>${row.map((s, i) => `<${i ? 'td' : 'th scope="row"'}>${s}</${i ? 'td' : 'th'}>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
-  return `<section class="h-prose" id="visual"><h2><span>图解</span>${h(visual.title)}</h2>${table(visual.headers, visual.rows.map((row) => row.map(h)), visual.title)}</section>`;
-}
-
-function actions(event, base) {
-  const cite = citations(event);
-  return `<section class="h-prose" id="actions"><h2><span>人物</span>立场、行动与结果</h2>${table(['人物', '立场及目标', '实际行动', '结果与责任'], event.actors.map((actor) => {
-    const person = history.people.find((item) => item.id === actor.person);
-    return [`<a href="${linkArticle(person, 'people', base)}">${h(person.name)}</a>`, h(actor.stance), h(actor.action), `${h(actor.result)} ${cite(actor.refs)}`];
-  }), '此事件中的人物行动记录')}</section>`;
-}
-
-function graphPanel(personId, base, compact = false) {
-  const model = graphModel(history, personId);
-  return `<div class="h-graph-panel"><p class="h-graph-legend"><span>● 所选人物</span><span>▭ 关联事件</span><span>○ 同事件人物</span></p><p class="h-small">连线表示正文中有行动记录，${compact ? '可进入完整图谱筛选事件。' : '可以点击节点进入正文。'}共同参与不表示同盟；图的位置和距离不表示亲疏或影响力。</p><div class="h-graph-scroll" tabindex="0" role="region" aria-label="人物事件图，可在区域内滚动浏览" data-graph-canvas>${graphSvg(model, base)}</div></div>`;
-}
-
-function articleBody(article, kind, base) {
-  let additions = '';
-  if (kind === 'events') additions = chronology(article) + eventVisual(article) + actions(article, base) + `<section class="h-prose" id="analysis"><h2><span>分析</span>理解与讨论</h2><ul class="h-questions">${article.questions.map((question) => `<li>${h(question)}</li>`).join('')}</ul></section>`;
-  if (kind === 'people') {
-    const events = eventsForPerson(article.id);
-    additions = `<section class="h-prose" id="actions"><h2><span>行动</span>在各事件中的立场与行动</h2><p>以下直接对应本总目中 ${events.length} 个事件的记录。只列已收录事件，不表示此人全部人生行动。</p>${table(['事件', '立场及目标', '实际行动', '结果与责任'], events.map((event) => {
-      const actor = event.actors.find((record) => record.person === article.id);
-      return [`<a href="${linkArticle(event, 'events', base)}">${event.start} · ${h(event.title)}</a>`, h(actor.stance), h(actor.action), `${h(actor.result)} <a href="${linkArticle(event, 'events', base)}#actions">查看证据 →</a>`];
-    }), `${article.name}的逐事件行动`)}<h3>人物—事件关联图</h3>${graphPanel(article.id, base, true)}<a class="m-text-link" href="${base}/misc/history/network/?person=${article.id}">在完整图谱中探索 ${icon('arrow')}</a></section>`;
+  function eventCard(event) {
+    const people = event.actors.map(a => history.people.find(p => p.id === a.person).name), other = alternate.events.find(e => e.id === event.id);
+    return `<li class="h-event-card" data-record data-period="${event.period}" data-tags="${h([...event.tags, ...other.tags].join('|'))}" data-start="${event.start}" data-end="${event.end}" data-search="${h([event.title, event.summary, other.title, other.summary, ...other.tags, event.start, event.end, ...event.tags, ...people, ...other.actors.map(a => alternate.people.find(p => p.id === a.person).name)].join(' '))}"><div class="h-card-date">${event.start}${event.end === event.start ? '' : `–${event.end}`}</div><div><h3>${link(articleUrl(event, 'events'), event.title)}</h3><p>${h(event.summary)}</p>${tags(event.tags)}<small>${people.map(h).join(' · ')}</small></div><span class="h-card-arrow" aria-hidden="true">↗</span></li>`;
   }
-  if (article.events) additions += `<section class="h-prose" id="related-events"><h2><span>延伸</span>关联事件</h2><ul class="h-event-list">${article.events.map((id) => eventCard(history.events.find((event) => event.id === id), base)).join('')}</ul></section>`;
-  if (article.related) additions += `<section class="h-prose" id="related"><h2><span>继续</span>关联阅读</h2><div class="h-related">${article.related.map((id) => {
-    const related = history[kind].find((item) => item.id === id);
-    return `<a href="${linkArticle(related, kind, base)}">${h(related.title || related.name)} ${icon('arrow')}</a>`;
-  }).join('')}</div></section>`;
-  const toc = [...article.sections.map((section, index) => [`section-${index + 1}`, section.title]), ...(kind === 'events' ? [['chronology', '关键节点'], ...(article.visual ? [['visual', '图表与图解']] : []), ['actions', '人物行动'], ['analysis', '理解与讨论']] : []), ...(kind === 'people' ? [['actions', '逐事件行动与关联图']] : []), ...(article.events ? [['related-events', '关联事件']] : []), ['references', '参考资料']];
-  return `<div class="h-article-layout"><aside class="h-toc"><nav aria-label="本文目录"><p class="m-eyebrow">本文目录</p>${toc.map(([id, label]) => `<a href="#${id}">${h(label)}</a>`).join('')}</nav><button type="button" data-print hidden>${icon('print')} 打印 / 保存 PDF</button></aside><article class="h-article">${sections(article)}${additions}${sourcesList(article)}<p class="h-article-note">独立编写 · 资料截点 ${history.updated} · <a href="${base}/misc/history/method/">收录范围与方法</a></p></article></div>`;
-}
-
-function miscellaneous(base) {
-  return `${title('MISCELLANY / 杂项', '研究之外，仍有值得追问的世界。', '把科研、学习、历史、阅读与金融放在同一个开放的笔记空间。写下过程，也保留问题。')}<section class="m-hub-grid" aria-label="杂项栏目">${miscSections.map(([id, number, heading, description, line]) => `<a class="m-hub-card ${id === 'history' ? 'm-hub-feature' : ''}" href="${base}/misc/${id}/"><span class="m-eyebrow">${number} / ${id.toUpperCase()}</span><h2>${heading}</h2><p>${description}</p><span>${id === 'history' ? '本次完整专题' : '栏目筹备中'}</span><small>${line}</small>${icon('external')}</a>`).join('')}</section>`;
-}
-
-function placeholder(route, base) {
-  const key = route.split('/')[1];
-  const [, number, heading, description] = miscSections.find(([id]) => id === key);
-  let body;
-  if (key === 'research') body = `<div class="m-placeholder-grid">${['ICLR 2027', 'WWW 2027', 'WSDM 2027'].map((conference, index) => `<article class="m-placeholder-card"><span class="m-eyebrow">${String(index + 1).padStart(2, '0')} / 会议分类</span><h2>${conference}</h2><p>项目博客待补充</p><small>未来将记录研究问题、方法、实验及复盘。此卡片是栏目占位，不表示投稿或录用。</small></article>`).join('')}</div>`;
-  if (key === 'lectures') body = `<section class="m-placeholder-card"><span class="m-status">待发布</span><h2>成体系的学习，而不止是一份书单。</h2><p>这里将分享学习路径、大部头讲义与先修关系网格。讲义和课程清单尚未发布，以下仅示意未来的组织方式。</p><ol class="m-learning-grid"><li><span>01</span><h3>基础模块</h3><p>数学、编程及领域基础</p></li><li><span>02</span><h3>核心模块</h3><p>明确标注先修基础</p></li><li><span>03</span><h3>进阶专题</h3><p>连接理论、论文和实践</p></li><li><span>04</span><h3>研究实践</h3><p>整合已有知识与实验</p></li></ol><p class="h-small">示意顺序：基础 → 核心 → 进阶 → 实践。正式路线发布后，每个模块会提供可查看的先修链接。</p></section>`;
-  if (key === 'books') body = `<section class="m-placeholder-card"><span class="m-status">待建书目</span><h2>每本书，一个持续更新的阅读档案。</h2><p>书籍博客将按书目组织，包含阅读记录、核心问题、批评与延伸资料。目前尚未发布书评。</p><div class="m-book-placeholder" aria-hidden="true"><span>READ</span><span>REFLECT</span><span>RETURN</span></div></section>`;
-  if (key === 'finance') body = `<section class="m-placeholder-card"><span class="m-status">筹备中</span><h2>从机制出发，理解市场。</h2><p>未来在这里记录金融制度、宏观数据、公司分析和研究方法。文章目录将随实际内容发布，目前没有已完成的金融博客。</p><div class="m-finance-lines" aria-hidden="true">DATA / INSTITUTIONS / MARKETS</div></section>`;
-  return `${crumb(base, [[heading]])}${title(`${number} / ${key.toUpperCase()}`, heading, description)}${body}<a class="m-text-link m-return" href="${base}/misc/">← 返回杂项总览</a>`;
-}
-
-function historyHome(base) {
-  return `<section class="h-hero"><div>${eyebrow('CHINA / A HISTORY IN CONTEXT')}<h1>在变化中，<br>理解中国。</h1><p class="h-hero-years">1840 <span>—</span> 2026</p><p class="m-lead">从战争、革命与建设，到日常生活、权利与知识。<br>沿着事件与人物，追问变革如何发生，又由谁承担代价。</p><div class="m-actions"><a class="m-button" href="${base}/misc/history/chapters/opening/">从第一章开始 ${icon('arrow')}</a><a class="m-button m-button-light" href="${base}/misc/history/timeline/">浏览编年总目</a></div></div><div class="h-hero-art" aria-hidden="true"><span>秩序</span><span>变革</span><span>生活</span><svg viewBox="0 0 420 360" fill="none"><path d="M30 310C70 280 80 80 150 110S210 320 270 210 310 30 390 45"/><path d="M30 240C90 270 100 30 180 80S250 280 300 155 350 125 390 100"/><path d="M30 180C110 100 140 260 220 150S310 260 390 170"/><path d="M30 325h360M30 25v300"/><circle cx="150" cy="110" r="7"/><circle cx="270" cy="210" r="7"/><circle cx="390" cy="45" r="7"/></svg><p>连接真实记录，保留解释的边界。</p></div></section>${stats()}<p class="h-scope-note">90个事件与72位人物均已成文。按公开总目验收，覆盖各阶段及主要主题；<a href="${base}/misc/history/method/">查看收录范围、核查方法与后续增补项 →</a></p><section class="h-index-section"><div class="h-section-heading"><div>${eyebrow('01 / 通史')}<h2>十四章，读懂变化的脉络。</h2></div><a href="${base}/misc/history/timeline/">完整编年 ${icon('arrow')}</a></div><div class="h-chapter-grid">${history.chapters.map((chapter, index) => essayCard(chapter, 'chapters', base, index)).join('')}</div></section><section class="h-index-section"><div class="h-section-heading"><div>${eyebrow('02 / 专题')}<h2>同一段历史，不止一种问题。</h2></div></div><div class="h-theme-grid">${history.themes.map((theme, index) => essayCard(theme, 'themes', base, index)).join('')}</div></section><section class="h-explore"><div>${eyebrow('03 / 交叉阅读')}<h2>从一个人物，走进一组事件。</h2><p>图谱以实际行动记录连接人物与事件。可以聚焦人物，再切换到特定事件，阅读其中各方的立场、行动和责任。</p><a class="m-button" href="${base}/misc/history/network/">打开人物—事件图谱 ${icon('arrow')}</a></div><div class="h-feature-people">${['lin-zexu', 'sun-yatsen', 'he-zhen', 'mao-zedong', 'deng-xiaoping', 'tu-youyou'].map((id) => { const person = history.people.find((item) => item.id === id); return `<a href="${linkArticle(person, 'people', base)}"><span>${h(person.name)}</span><small>${h(person.role)}</small>${icon('external')}</a>`; }).join('')}</div></section>`;
-}
-
-function eventIndex(base) {
-  const tags = [...new Set(history.events.flatMap((event) => event.tags))].sort((a, b) => a.localeCompare(b, 'zh-CN'));
-  return `${title('EVENTS / 事件索引', '把大事放回具体处境。', '每个条目包含背景、过程、结果、关键节点和人物行动；数值图表注明统计口径。可按历史阶段、主题、年份及关键词交叉检索。')}${filters('events', `<div><label for="topic">主题</label><select id="topic" name="topic"><option value="">全部主题</option>${tags.map((tag) => `<option>${h(tag)}</option>`).join('')}</select></div><div><label for="year">包含年份</label><input type="number" id="year" name="year" min="1840" max="2026" placeholder="如 1919"></div>`)}<ul class="h-event-list">${history.events.map((event) => eventCard(event, base)).join('')}</ul><p class="h-no-results" data-empty hidden>没有匹配条目。请修改关键词或重置筛选。</p>`;
-}
-
-function peopleIndex(base) {
-  return `${title('PEOPLE / 人物索引', '看见人物，也看见选择的条件。', '每位人物均有独立传记，以及本总目中逐事件的立场、行动和责任记录。人物名单是明确的收录范围，不能代替所有社会群体的历史。')}${filters('people')}<ul class="h-people-grid">${history.people.slice().sort((a, b) => a.born - b.born).map((person) => {
-    const events = eventsForPerson(person.id);
-    return `<li data-record data-period="${[...new Set(events.map((event) => event.period))].join('|')}" data-search="${h([person.name, person.role, person.summary, person.born, ...events.map((event) => `${event.title} ${event.start}`)].join(' '))}"><a href="${linkArticle(person, 'people', base)}"><span class="h-person-initial" aria-hidden="true">${h(person.name.slice(0, 1))}</span><span class="m-eyebrow">${h(person.dates)} · ${events.length}个事件</span><h3>${h(person.name)}</h3><p>${h(person.role)}</p><small>${h(person.summary)}</small></a></li>`;
-  }).join('')}</ul><p class="h-no-results" data-empty hidden>没有匹配人物。请修改关键词或重置筛选。</p>`;
-}
-
-function timeline(base) {
-  return `${title('CHRONOLOGY / 编年总目', '一条时间线，许多种经历。', '这是本次验收的90项明确总目。每项均链接完整事件条目，按事件起始年排序；长时段事件只在起始位置列一次，主题或阶段分类可以交叉。')}${filters('timeline')}<ol class="h-timeline">${history.events.map((event, index) => `<li data-record data-period="${event.period}" data-search="${h([event.title, event.summary, event.start, event.end, ...event.tags, ...event.actors.map((actor) => history.people.find((person) => person.id === actor.person).name)].join(' '))}"><div class="h-timeline-year">${event.start}<small>${String(index + 1).padStart(2, '0')}</small></div><article><span class="m-eyebrow">${h(history.periods.find((period) => period.id === event.period).title)}</span><h2><a href="${linkArticle(event, 'events', base)}">${h(event.title)}</a></h2><p>${h(event.summary)}</p><small>${h(event.dates)}</small>${tagList(event.tags)}</article></li>`).join('')}</ol><p class="h-no-results" data-empty hidden>没有匹配条目。</p>`;
-}
-
-function network(base, assets) {
-  return `${title('CONNECTIONS / 人物—事件图谱', '沿着行动，建立关联。', '选择人物与事件，查看同一事件中的其他参与者。图只表达有正文支持的参与关系，不推断私人关系、同盟或因果强度。')}<div class="h-network-controls" data-network-controls hidden><div><label for="graph-person">聚焦人物</label><select id="graph-person" name="person">${history.people.map((person) => `<option value="${person.id}" ${person.id === 'sun-yatsen' ? 'selected' : ''}>${h(person.name)}</option>`).join('')}</select></div><div><label for="graph-event">聚焦事件</label><select id="graph-event" name="event"><option value="">全部关联事件</option></select></div><div class="h-zoom" role="group" aria-label="图谱缩放"><button type="button" data-zoom="-1" aria-label="缩小图谱">−</button><button type="button" data-zoom="0">重置</button><button type="button" data-zoom="1" aria-label="放大图谱">+</button></div><p role="status" data-graph-status></p></div><section data-network data-url="${base}/assets/${assets.graphData}" data-base="${base}">${graphPanel('sun-yatsen', base)}<div data-graph-detail><h2>孙中山的关联事件</h2><ul class="h-event-list">${eventsForPerson('sun-yatsen').map((event) => eventCard(event, base)).join('')}</ul></div></section><noscript><p class="h-notice">当前显示孙中山的静态图谱。所有人物页都提供独立图谱和行动表，可从下方目录进入。</p></noscript><details class="h-network-directory"><summary>完整人物目录（也可直接进入每人的静态图谱）</summary><div class="h-directory-links">${history.people.map((person) => `<a href="${linkArticle(person, 'people', base)}">${h(person.name)}</a>`).join('')}</div></details>`;
-}
-
-function sourceLibrary(base) {
-  return `${title('SOURCES / 资料库', '让解释回到可追溯的材料。', '133项资料包括条约、档案、当事人记述、统计和学术研究。每项都说明类型、来源和使用边界，正文使用相应编号链接。')}<form class="h-source-search" data-filters hidden><label for="q">搜索资料标题、机构、类型或说明</label><input id="q" name="q" type="search" placeholder="例如：档案、人口、Cambridge"><button type="reset" class="m-button m-button-light">重置</button><p data-result-count role="status"></p></form><ol class="h-source-library">${history.sources.map((source) => `<li id="source-${source.id}" data-record data-search="${h([source.title, source.publisher, source.type, source.note].join(' '))}"><span class="h-source-type">${h(source.type)}</span><h2><a href="${h(source.url)}" ${ext}>${h(source.title)} ${icon('external')}</a></h2><p>${h(source.publisher)}</p><p>${h(source.note)}</p><details><summary>查看引用此资料的文章</summary><div class="h-directory-links">${['events', 'people', 'chapters', 'themes'].flatMap((kind) => history[kind].filter((article) => referencesFor(article).includes(source.id)).map((article) => `<a href="${linkArticle(article, kind, base)}">${h(article.title || article.name)}</a>`)).join('') || '<p>列作延伸资料。</p>'}</div></details></li>`).join('')}</ol><p class="h-no-results" data-empty hidden>没有匹配资料。</p><p class="h-scope-note">资料可访问状态和公开程度可能变化。无法获取全文时保留摘要或书目信息的边界，不以链接数量代替证据质量。</p>`;
-}
-
-function method(base) {
-  return `${title('SCOPE & METHOD / 收录与方法', '公开边界，才能认真讨论完整。', '本次按覆盖1840—2026年各阶段和主要主题的明确编年总目验收。总目内条目均已成文；没有把未收录的地方个案或人物伪装成已完成内容。')}${stats()}<div class="h-method-layout"><section class="h-prose"><h2>收录范围与验收标准</h2><p>主要时间范围为1840年至2026年10月10日。为说明战争起因，首条包含1839年禁烟背景；长时段专题可横跨多个阶段。各阶段是阅读分类，时间有交叠，不表示互斥的历史分期。</p><p>本总目包括政治与制度、战争与外交、经济劳动、妇女家庭、教育科技、边疆民族、台湾港澳、灾害环境及公共卫生。90个事件均有正文、时序、人物行动、分析和引用；72位人物均有传记及事件关联；14章和9专题提供贯通解释。每个事件有时序可视化，需要数值或机制比较时另配图表。</p><p>“已完成”指本页链接的明确总目完成，不表示穷尽186年每个地方的所有事件。编年总目是公开清单，任何增删都需同步修改来源、关联及版本记录。</p><a class="m-text-link" href="${base}/misc/history/timeline/">逐项查看编年总目 ${icon('arrow')}</a><p class="h-small"><a href="${base}/assets/history-catalog.json" download>下载本次验收总目（JSON）</a></p></section><section class="h-prose"><h2>事实、立场与解释</h2><p>正文首先交代可证实的过程，再说明参与者目标和行动。官方文件与个人自述用于确认其立场，不能直接当作中立评价。学术研究用于理解机制；网页只开放书介或摘要时，资料说明如实标注。</p><p>客观公正不等于把否认暴行与有充分证据的记录各占一半。既记录建设、抵抗、改革和生活改善，也记录侵略、镇压、歧视、饥荒和强制。成果不能抵销受害者的伤害，受害身份也不能取消同一人物在其他事件中的责任。</p><p>人物行动表依据已收录事件生成，图谱只连接人物与事件。没有私人关系数据时，不绘制“友谊”“敌对”或影响力排名；同一事件中的人物可能合作，也可能对抗。</p></section><section class="h-prose"><h2>数字、图表与当代史</h2><p>伤亡估计必须区分地区、时段、对象、样本和统计方法。超额死亡不等于少出生人口，医院报告不等于全部死亡，装机不等于发电量。口径不一致时不拼接曲线，不填入没有来源的精确值。</p><p>时序节点间距只表达排列；机制表不是计量因果模型，人物图谱距离不表示关系强弱。数值图表注明单位、来源及限制。</p><p>2026年尚未结束：2026年公布的2025年统计属于既成资料，2026年经济增速预测属于预测，2030和2060气候目标属于承诺。更新时会保留这种区分。</p></section><section class="h-prose"><h2>公开的后续增补项</h2><ul class="h-questions"><li>地方与微观史：省县饥荒、城市劳工、农村生活和具体司法个案的独立档案条目。</li><li>社会群体：更多普通女性、少数民族、移民、残障者、儿童和照护者的口述与传记。</li><li>专题扩展：婚姻法实施、卫生与医疗制度、艺术文学、宗教社群及更细的环境史。</li><li>资料深化：为目前只能公开摘要的研究增加可合法访问的全文，补充页码、档案号及多语种互证。</li><li>空间与数据：有明确边界和许可的历史地图，以及同口径、可下载的原始数据图表。</li><li>当代增补：2026年10月10日之后的新事实与年度正式统计，经核查后追加，不提前填充。</li></ul><p>以上是明确未包含在本次验收中的深化方向，栏目内没有将它们标为完成或制作空白的历史文章。</p></section></div><section class="h-index-section"><div class="h-section-heading"><h2>按阶段核对正文覆盖</h2><span>90 / 90 事件已成文</span></div>${table(['阅读阶段', '时间范围', '事件数', '逐项阅读'], history.periods.map((period) => [`${h(period.title)}`, h(period.dates), String(history.events.filter((event) => event.period === period.id).length), `<a href="${base}/misc/history/events/?period=${period.id}">查看事件 →</a>`]), '阶段覆盖核对表')}<p class="h-small">长时段条目只计入一个编辑分类，不能把事件数理解为历史重要性评分。</p></section>`;
-}
-
-export function renderMiscPage({ route, profile, basePath: base = '', assets }) {
-  let body, heading, description;
-  const historyRoute = route.startsWith('misc/history/');
-  const pieces = route.split('/');
-  const kind = pieces[2], id = pieces[3];
-  const article = id && history[kind]?.find((item) => item.id === id);
-  if (article) {
-    heading = article.title || article.name;
-    description = article.summary;
-    body = `${crumb(base, [['中国近代史', 'misc/history/'], [kinds[kind], kind === 'chapters' || kind === 'themes' ? 'misc/history/' : `misc/history/${kind}/`], [heading]])}<header class="h-article-header">${eyebrow(`${kinds[kind]} / ${article.dates || '专题阅读'}`)}<h1>${h(heading)}</h1>${article.role ? `<p class="h-person-role">${h(article.role)}</p>` : ''}<p class="m-lead">${h(description)}</p><div class="h-article-meta"><span>约${readingMinutes(article)}分钟 · 正文</span><span>资料截点 ${history.updated}</span>${article.tags ? tagList(article.tags) : ''}</div></header>${articleBody(article, kind, base)}`;
+  function essayCard(item, kind, n) {
+    return `<a class="h-essay-card" href="${articleUrl(item, kind)}"><span class="m-eyebrow">${String(n + 1).padStart(2, '0')} / ${h(item.dates || '')}</span><h3>${h(item.title)}</h3><p>${h(item.summary)}</p><span class="m-text-link">${t('阅读', 'Read')} · ${readingMinutes(item, locale)} ${t('分钟', 'min')} ${icon('arrow')}</span></a>`;
+  }
+  function filters(extra = '') {
+    return `<form class="h-filters" data-filters hidden><div class="h-search"><label for="q">${t('搜索标题、人物或关键词', 'Search titles, people or keywords')}</label><div>${icon('search')}<input id="q" name="q" type="search" placeholder="${t('例如：抗战、妇女、1989', 'e.g. resistance, women, 1989')}" autocomplete="off"></div></div><div><label for="period">${t('历史阶段', 'Period')}</label><select name="period" id="period"><option value="">${t('全部阶段', 'All periods')}</option>${history.periods.map(p => `<option value="${p.id}">${h(p.dates)} · ${h(p.title)}</option>`).join('')}</select></div>${extra}<button type="reset" class="m-button m-button-light">${t('重置', 'Reset')}</button><p class="h-filter-count" data-result-count role="status" aria-live="polite"></p></form><noscript><p class="h-notice">${t('当前显示全部条目，所有正文均可直接阅读。', 'All entries and article bodies remain readable without JavaScript.')}</p></noscript>`;
+  }
+  const empty = () => `<p class="h-no-results" data-empty hidden>${t('没有匹配条目，请修改关键词或重置筛选。', 'No matches. Change the query or reset the filters.')}</p>`;
+  function cite(article, refs) {
+    const ids = referencesFor(article);
+    return `<span class="h-citations">${refs.map(id => `<a href="#ref-${id}" aria-label="${t('参考资料', 'Reference')} ${ids.indexOf(id) + 1}">[${ids.indexOf(id) + 1}]</a>`).join(' ')}</span>`;
+  }
+  function references(article) {
+    return `<section class="h-references" id="references"><h2>${t('参考资料与阅读说明', 'References and reading notes')}</h2><p class="h-small">${t('编号对应正文与行动记录。资料注明观察范围；书介、目录或摘要链接不表示已取得整部著作全文。', 'Numbers correspond to the prose and action records. Notes state scope; a catalog, abstract or book description does not imply access to the complete work.')}</p><ol>${referencesFor(article).map(id => {
+      const s = history.sources.find(x => x.id === id);
+      return `<li id="ref-${id}"><span class="h-source-type">${h(s.type)}</span><a href="${h(s.url)}" ${ext}>${h(s.title)} ${icon('external')}</a><p>${h(s.publisher)} · ${h(s.note)}</p></li>`;
+    }).join('')}</ol></section>`;
+  }
+  function chronology(event, id = 'chronology') {
+    return `<section id="${id}" class="h-prose"><h2>${t('关键节点', 'Key chronology')}</h2><ol class="h-milestones">${event.milestones.map(m => `<li><time>${h(m.date)}</time><p>${h(m.label)}</p></li>`).join('')}</ol><p class="h-small">${t('节点间距不代表实际时长；未来目标明确标为承诺。', 'Spacing is schematic. Future milestones are identified as commitments.')}</p></section>`;
+  }
+  function visual(event, id = 'visual', citationArticle = event) {
+    const v = event.visual; if (!v) return '';
+    const body = v.type === 'bars' ? `<figure class="h-bars"><figcaption>${h(v.title)}</figcaption>${v.values.map(([label, value]) => `<div class="h-bar-row"><span>${h(label)}</span><div><span style="width:${100 * value / Math.max(...v.values.map(x => x[1]))}%"></span></div><strong>${value} ${h(v.unit)}</strong></div>`).join('')}<p class="h-small">${h(v.note)} ${cite(citationArticle, v.refs)}</p></figure>` : table(v.headers, v.rows.map(row => row.map(h)), v.title);
+    return `<section class="h-prose" id="${id}"><h2>${t('图表与图解', 'Diagram and comparison')}</h2>${body}</section>`;
+  }
+  function actions(event) {
+    return `<section id="actions" class="h-prose"><h2>${t('人物立场、行动与责任', 'Positions, actions and responsibility')}</h2>${table([t('人物', 'Person'), t('立场及目标', 'Position / aim'), t('实际行动', 'Action'), t('结果与责任', 'Outcome / responsibility')], event.actors.map(a => [link(articleUrl(history.people.find(p => p.id === a.person), 'people'), history.people.find(p => p.id === a.person).name), h(a.stance), h(a.action), h(a.result) + cite(event, a.refs)]), t('此事件的参与记录', 'Recorded participation in this event'))}</section>`;
+  }
+  function graphPanel(id) {
+    return `<div class="h-graph-panel"><p class="h-graph-legend"><span>● ${t('所选人物', 'Selected person')}</span><span>▭ ${t('关联事件', 'Events')}</span><span>○ ${t('同事件人物', 'Other participants')}</span></p><p class="h-small">${t('连线只表示有行动记录，共同参与不表示同盟；位置和距离不表示亲疏或影响力。', 'Edges mean recorded participation. Shared events do not imply alliance; positions and distances do not measure closeness or influence.')}</p><div class="h-graph-scroll" tabindex="0" role="region" aria-label="${t('人物事件图，可在区域内滚动', 'Person–event graph; scroll within this region')}" data-graph-canvas>${graphSvg(graphModel(history, id), base, 'network-title', locale)}</div></div>`;
+  }
+  function readingPaths(events) {
+    const ids = new Set(events.flatMap(id => studiesForEvent(id, history).map(s => s.id)));
+    return `<section class="h-prose h-full-links" id="full-reading"><h2>${t('详细版延伸阅读', 'Continue in the Full edition')}</h2><div class="h-related">${history.studies.filter(s => ids.has(s.id)).map(s => link(articleUrl(s, 'full'), s.title)).join('')}</div></section>`;
+  }
+  function articleBody(article, kind) {
+    const full = kind === 'full';
+    const body = article.sections.map((s, i) => `<section class="h-prose" id="section-${i + 1}"><h2><span>${String(i + 1).padStart(2, '0')}</span>${h(s.title)}</h2>${s.paragraphs.map((p, j) => `<p>${h(p)}${j === s.paragraphs.length - 1 ? cite(article, s.refs) : ''}</p>`).join('')}</section>`).join('');
+    let extra = '', toc = article.sections.map((s, i) => [`section-${i + 1}`, s.title]);
     if (kind === 'events') {
-      const index = history.events.indexOf(article);
-      body += `<nav class="h-prev-next" aria-label="编年相邻条目">${[[history.events[index - 1], '← 上一条'], [history.events[index + 1], '下一条 →']].map(([event, label]) => event ? `<a href="${linkArticle(event, 'events', base)}"><small>${label}</small><span>${event.start} · ${h(event.title)}</span></a>` : '<span></span>').join('')}</nav>`;
+      extra += chronology(article) + visual(article) + actions(article) + `<section class="h-prose" id="analysis"><h2>${t('理解与讨论', 'Questions for interpretation')}</h2><ul class="h-questions">${article.questions.map(q => `<li>${h(q)}</li>`).join('')}</ul></section>` + readingPaths([article.id]);
+      toc.push(['chronology', t('关键节点', 'Chronology')], ...(article.visual ? [['visual', t('图表', 'Diagram')]] : []), ['actions', t('人物行动', 'Actions')], ['analysis', t('讨论', 'Questions')], ['full-reading', t('详细版阅读', 'Full reading')]);
     }
-  } else {
-    const section = pieces[2] || '';
-    const titles = { '': '中国近代史研究', events: '事件索引', people: '人物索引', timeline: '编年总目', network: '人物—事件图谱', sources: '参考资料库', method: '收录范围与方法' };
-    heading = historyRoute ? titles[section] : route === 'misc/' ? '杂项' : miscSections.find(([id]) => id === pieces[1])[2];
-    description = historyRoute ? '1840—2026中国近代与当代史：通史、人物、事件及可追溯的资料。' : 'Wenzhang Du的科研、学习、历史、阅读与金融笔记。';
-    if (!historyRoute) body = route === 'misc/' ? miscellaneous(base) : placeholder(route, base);
-    else body = ({ '': historyHome, events: eventIndex, people: peopleIndex, timeline, network, sources: sourceLibrary, method })[section](base, assets);
+    if (kind === 'people') {
+      const events = eventsForPerson(article.id, history);
+      extra += `<section class="h-prose" id="actions"><h2>${t('逐事件的立场与行动', 'Positions and actions by event')}</h2><p>${t('以下只列本总目已收录的事件，不代表此人所有人生行动。', 'These records cover this catalog, rather than every action in the person’s life.')}</p>${table([t('事件', 'Event'), t('立场', 'Position'), t('行动', 'Action'), t('结果与证据', 'Outcome and evidence')], events.map(e => { const a = e.actors.find(a => a.person === article.id); return [link(articleUrl(e, 'events'), `${e.start} · ${e.title}`), h(a.stance), h(a.action), `${h(a.result)} ${link(articleUrl(e, 'events') + '#actions', t('查看证据 →', 'Evidence →'))}`]; }), t('逐事件行动', 'Actions by event'))}<h3>${t('人物—事件关联', 'Person–event connections')}</h3>${graphPanel(article.id)}${link(root + 'network/?person=' + article.id, t('打开交互图谱 →', 'Explore the interactive graph →'), 'm-text-link')}</section>` + readingPaths(events.map(e => e.id));
+      toc.push(['actions', t('行动与图谱', 'Actions and graph')], ['full-reading', t('详细版阅读', 'Full reading')]);
+    }
+    if (full) {
+      const selected = article.events.map(id => history.events.find(e => e.id === id));
+      extra += `<section class="h-prose" id="chapter-evidence"><h2>${t('事件证据与时序索引', 'Event evidence and chronological index')}</h2><p>${t('下列事件保留独立行动表、引用与完整节点，可与本章交叉核对。时序为示意，间距不表示实际时长。', 'Each event retains its action table, references and dated milestones for cross-checking. Timeline spacing is schematic.')}</p>${selected.map(e => `<details class="h-chapter-event"><summary>${e.start} · ${h(e.title)}</summary><p>${h(e.summary)} ${link(articleUrl(e, 'events'), t('事件、人物行动与证据 →', 'Event, actions and evidence →'))}</p><ol class="h-milestones">${e.milestones.map(m => `<li><time>${h(m.date)}</time><p>${h(m.label)}</p></li>`).join('')}</ol></details>`).join('')}</section>`;
+      const diagrams = selected.filter(e => e.visual);
+      if (diagrams.length) extra += `<section class="h-prose" id="chapter-visuals"><h2>${t('专题图解', 'Chapter diagrams')}</h2>${diagrams.map((e, i) => `${visual(e, `chapter-visual-${i + 1}`, article)}<p class="h-small">${link(articleUrl(e, 'events') + (e.visual.refs ? '#references' : '#visual'), t('图解来源与说明 →', 'Diagram sources and notes →'))}</p>`).join('')}</section>`;
+      const people = history.people.filter(p => selected.some(e => e.actors.some(a => a.person === p.id)));
+      extra += `<section class="h-prose" id="chapter-people"><h2>${t('本章关联人物', 'People connected to this chapter')}</h2><div class="h-directory-links">${people.map(p => link(articleUrl(p, 'people'), p.name)).join('')}</div></section>`;
+      toc.push(['chapter-evidence', t('事件与时序', 'Events and chronology')], ...(diagrams.length ? [['chapter-visuals', t('专题图解', 'Diagrams')]] : []), ['chapter-people', t('关联人物', 'People')]);
+    } else if (article.events) {
+      extra += `<section class="h-prose" id="related-events"><h2>${t('关联事件', 'Related events')}</h2><ul class="h-event-list">${article.events.map(id => eventCard(history.events.find(e => e.id === id))).join('')}</ul></section>` + readingPaths(article.events);
+      toc.push(['related-events', t('关联事件', 'Related events')], ['full-reading', t('详细版阅读', 'Full reading')]);
+    }
+    if (article.related) extra += `<section class="h-prose" id="related"><h2>${t('关联阅读', 'Related reading')}</h2><div class="h-related">${article.related.map(id => { const s = collection(kind).find(x => x.id === id); return link(articleUrl(s, kind), s.title || s.name); }).join('')}</div></section>`;
+    toc.push(['references', t('参考资料', 'References')]);
+    const n = history.studies.findIndex(s => s.id === article.id);
+    const pagination = full ? `<nav class="h-book-pagination" aria-label="${t('章节导航', 'Chapter navigation')}">${n > 0 ? link(articleUrl(history.studies[n - 1], 'full'), `← ${history.studies[n - 1].title}`) : '<span></span>'}${n < history.studies.length - 1 ? link(articleUrl(history.studies[n + 1], 'full'), `${history.studies[n + 1].title} →`) : link(root + 'full/', t('返回详细版目录 →', 'Full contents →'))}</nav>` : '';
+    return `<div class="h-article-layout"><aside class="h-toc"><nav aria-label="${t('本文目录', 'On this page')}"><p class="m-eyebrow">${t('本文目录', 'On this page')}</p>${toc.map(([id, label]) => link('#' + id, label)).join('')}</nav><button type="button" data-print hidden>${icon('print')} ${t('打印 / 保存 PDF', 'Print / save PDF')}</button></aside><article class="h-article">${body}${extra}${references(article)}${pagination}<p class="h-article-note">${t('独立编写', 'Independently authored')} · ${t('事实截点', 'Evidence cutoff')} ${history.cutoff} · ${link(root + 'method/', t('收录与方法', 'Scope and method'))}</p></article></div>`;
   }
-  const canonical = `${profile.url}${base}/${route}`;
-  const structured = article ? { '@context': 'https://schema.org', '@type': 'Article', headline: heading, description, inLanguage: 'zh-CN', dateModified: history.updated, author: { '@type': 'Person', name: profile.name, url: `${profile.url}${base}/` }, mainEntityOfPage: canonical, citation: referencesFor(article).map((id) => history.sources.find((source) => source.id === id).url) } : { '@context': 'https://schema.org', '@type': 'CollectionPage', name: heading, description, inLanguage: 'zh-CN', url: canonical };
-  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#17332e"><title>${h(heading)} · Wenzhang Du</title><meta name="description" content="${h(description)}"><link rel="canonical" href="${h(canonical)}"><meta property="og:type" content="${article ? 'article' : 'website'}"><meta property="og:title" content="${h(heading)} · Wenzhang Du"><meta property="og:description" content="${h(description)}"><meta property="og:url" content="${h(canonical)}"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="${h(profile.url + base)}/assets/social-card.png"><link rel="icon" href="${base}/assets/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="${base}/assets/apple-touch-icon.png"><link rel="manifest" href="${base}/site.webmanifest"><link rel="stylesheet" href="${base}/assets/${assets.miscCss}"><script type="application/ld+json">${json(structured)}</script><script type="module" src="${base}/assets/${assets.miscJs}"></script></head><body id="top"><a class="m-skip" href="#main">跳至正文</a>${header(base, route)}<main id="main" class="m-container">${historyRoute ? historyNav(base, route) : ''}${body}</main>${footer(profile, base)}</body></html>\n`;
+  const miscSections = [
+    ['research', t('科研项目博客', 'Research project journal'), t('按会议记录问题、实验与研究过程。', 'Questions, experiments and research organized by conference.'), 'ICLR 2027 · WWW 2027 · WSDM 2027'],
+    ['lectures', t('大部头讲义', 'Long-form lecture notes'), t('系统学习路径、讲义与先修关系。', 'Study paths, lecture notes and prerequisites.'), t('讲义 · 路线网格', 'Notes · prerequisite graphs')],
+    ['history', t('中国近代史研究', 'Modern Chinese history'), t('中英双语详细版与概览版，连接人物、事件和证据。', 'Full and Lite editions in English and Chinese, connecting people, events and evidence.'), `1840–2026 · ${history.studies.length} ${t('长章', 'Full chapters')}`],
+    ['books', t('书籍博客', 'Book journal'), t('按书籍整理阅读、批评与延伸问题。', 'Reading, criticism and questions organized by book.'), t('书目 · 阅读档案', 'Books · reading files')],
+    ['finance', t('金融博客', 'Finance journal'), t('理解数据、制度和市场的关系。', 'Exploring the relationships between data, institutions and markets.'), 'DATA · INSTITUTIONS · MARKETS'],
+  ];
+  function miscellaneous() {
+    return title('MISCELLANY', t('研究之外，保持好奇。', 'Curiosity beyond research.'), t('科研、学习、历史、阅读与金融，一个持续发展的笔记空间。', 'A growing space for research, learning, history, reading and finance.')) + `<section class="m-hub-grid" aria-label="${t('杂项栏目', 'Miscellany sections')}">${miscSections.map(([id, heading, desc, line], i) => `<a class="m-hub-card ${id === 'history' ? 'm-hub-feature' : ''}" href="${base}/misc/${id}/"><span class="m-eyebrow">0${i + 1} / ${id.toUpperCase()}</span><h2>${heading}</h2><p>${desc}</p><span>${id === 'history' ? t('详细版与概览版', 'Full + Lite editions') : t('筹备中', 'Coming later')}</span><small>${line}</small>${icon('external')}</a>`).join('')}</section>`;
+  }
+  function placeholder() {
+    const key = route.split('/')[1], [, heading, lead] = miscSections.find(x => x[0] === key);
+    const body = key === 'research' ? `<div class="m-placeholder-grid">${['ICLR 2027', 'WWW 2027', 'WSDM 2027'].map(name => `<article class="m-placeholder-card"><span class="m-status">${t('会议分类占位', 'Conference placeholder')}</span><h2>${name}</h2><p>${t('研究问题、方法、实验和复盘待发布。占位不表示投稿或录用。', 'Project questions, methods and experiments will appear here. A placeholder does not imply submission or acceptance.')}</p></article>`).join('')}</div>` : `<section class="m-placeholder-card"><span class="m-status">${t('待发布', 'Not yet published')}</span><h2>${heading}</h2><p>${key === 'lectures' ? t('未来分享成体系讲义、学习路线和可查看先修关系的网格。以下仅示意组织方式。', 'Future notes will include study routes and inspectable prerequisite graphs. The sequence below is illustrative.') : key === 'books' ? t('每本书将有独立阅读档案，目前书评尚未发布。', 'Each book will have a reading file. Reviews have not yet been published.') : t('未来记录制度、宏观数据及研究方法，目前文章尚未发布。', 'Future entries will cover institutions, macroeconomic data and research methods.')}</p>${key === 'lectures' ? `<ol class="m-learning-grid">${[t('基础', 'Foundations'), t('核心', 'Core topics'), t('进阶', 'Advanced topics'), t('研究实践', 'Research practice')].map((s, i) => `<li><span>0${i + 1}</span><h3>${s}</h3><p>${t('先修链接将在正式发布时提供', 'Prerequisite links will accompany published modules')}</p></li>`).join('')}</ol>` : ''}</section>`;
+    return title(key.toUpperCase(), heading, lead) + body + link(`${base}/misc/`, t('← 返回杂项', '← Miscellany'), 'm-return m-text-link');
+  }
+  function fullIndex() {
+    const groups = [['background', t('01 / 时代背景', '01 / Background')], ['war', t('02 / 抗日战争', '02 / War of Resistance')], ['prc', t('03 / 建国后：制度与社会', '03 / Since 1949: institutions and society')], ['society', t('04 / 贯通专题', '04 / Society across periods')]];
+    return `<section class="h-hero h-full-hero"><div>${eyebrow('CHINA / A HISTORY IN CONTEXT')}<h1>${t('在变化中，<br>理解中国。', 'Understand China through change.')}</h1><p class="h-hero-years">1840 <span>—</span> 2026</p><p class="m-lead">${t('详细叙述战争、制度与日常生活。既看见建设与进步，也正视暴力、失误和代价；以证据区分事实、立场与解释。', 'Read war, institutions and everyday life in depth. Examine achievement alongside violence, failure and costs, distinguishing facts, positions and interpretation through evidence.')}</p><div class="m-actions">${link(articleUrl(history.studies[0], 'full'), t('从第一章开始 →', 'Start the first chapter →'), 'm-button')}${link(articleUrl(history.studies.find(s => s.part === 'war'), 'full'), t('进入抗战专篇', 'Start the war chapters'), 'm-button m-button-light')}</div></div><div class="h-book-cover" aria-hidden="true"><span>FULL EDITION</span><strong>23</strong><p>${t('长章 · 双语 · 交叉阅读', 'chapters · bilingual · connected')}</p><div>HISTORY<br>IN CONTEXT</div><small>1840 — 2026</small></div></section>${editionNav('full')}${stats()}<p class="h-scope-note">${t('详细版23章逐节提供中英文正文；90项事件总目、80位人物及行动图谱提供交叉索引。事实截点2026-10-10。', 'All 23 Full chapters have paired English and Chinese sections. Cross-reference 90 events, 80 biographies and the participation graph. Evidence cutoff: 10 October 2026.')} ${link(root + 'method/', t('查看范围与增补项 →', 'Scope and additions →'))}</p>${groups.map(([part, heading]) => `<section class="h-index-section" id="part-${part}"><div class="h-section-heading"><div>${eyebrow(heading)}<h2>${part === 'war' ? t('六章展开全面抗战及其前后。', 'Six chapters on resistance and its aftermath.') : part === 'prc' ? t('从国家建设到当代治理。', 'From state-building to contemporary governance.') : part === 'society' ? t('把制度放回人的生活。', 'Institutions in people’s lives.') : t('危机、改革与革命的来路。', 'The paths to crisis, reform and revolution.')}</h2></div></div><div class="h-chapter-grid">${history.studies.filter(s => s.part === part).map(s => essayCard(s, 'full', history.studies.indexOf(s))).join('')}</div></section>`).join('')}<section class="h-explore"><div>${eyebrow('READ ACROSS')}<h2>${t('从人物与事件交叉验证。', 'Cross-check people and events.')}</h2><p>${t('人物页列出逐事件立场、行动及证据，图谱只连接有记录的参与。', 'Biographies connect positions, actions and evidence. Graph edges represent documented participation.')}</p>${link(root + 'network/', t('打开关联图谱 →', 'Explore connections →'), 'm-button')}</div><div class="h-feature-people">${['chiang-kai-shek', 'mao-zedong', 'minnie-vautrin', 'iwane-matsui', 'deng-xiaoping', 'tu-youyou'].map(id => { const p = history.people.find(p => p.id === id); return `<a href="${articleUrl(p, 'people')}"><span>${h(p.name)}</span><small>${h(p.role)}</small>${icon('external')}</a>`; }).join('')}</div></section>`;
+  }
+  function liteIndex() {
+    return title('LITE / OVERVIEW', t('先建立脉络，再深入细节。', 'Find the outline, then read in depth.'), t('保留原有14章通史与9个专题，作为快速概览。复杂过程请继续阅读详细版对应章节。', 'The original 14 chapters and nine themes remain a compact overview. Follow the Full reading links for extended narratives.')) + editionNav('lite') + `<div class="h-chapter-grid">${history.chapters.map((s, i) => essayCard(s, 'chapters', i)).join('')}</div><section class="h-index-section"><h2>${t('九个贯通专题', 'Nine connecting themes')}</h2><div class="h-theme-grid">${history.themes.map((s, i) => essayCard(s, 'themes', i)).join('')}</div></section>`;
+  }
+  function eventIndex(timeline = false) {
+    const unique = [...new Set(localizedHistory('zh').events.flatMap(e => e.tags))];
+    const extras = timeline ? '' : `<div><label for="topic">${t('主题', 'Topic')}</label><select id="topic" name="topic"><option value="">${t('全部主题', 'All topics')}</option>${unique.map(tag => { const sample = localizedHistory('zh').events.find(e => e.tags.includes(tag)); const label = history.events.find(e => e.id === sample.id).tags[sample.tags.indexOf(tag)]; return `<option value="${h(tag)}">${h(label)}</option>`; }).join('')}</select></div><div><label for="year">${t('包含年份', 'Includes year')}</label><input type="number" id="year" name="year" min="1840" max="2026" placeholder="1919"></div>`;
+    return title(timeline ? 'CHRONOLOGY / CATALOG' : 'EVENTS', timeline ? t('编年总目：公开的90项收录清单。', 'The chronology: a public 90-event catalog.') : t('把事件放回具体处境。', 'Put events back into context.'), t('按起始年排序；每项都有正文、节点、行动与引用，并连接详细版。阶段与长时段主题可以交叠。', 'Ordered by starting year. Every entry has prose, milestones, actions, references and Full reading links. Periods and long-running themes may overlap.')) + filters(extras) + `<ul class="h-event-list">${history.events.map(eventCard).join('')}</ul>` + empty();
+  }
+  function peopleIndex() {
+    return title('PEOPLE', t('看见人物，也看见选择的条件。', 'See people and the conditions of their choices.'), t('80位人物均有传记、逐事件行动与静态关联图；包括中国、日本及盟国的关键参与者。', 'Eighty biographies include actions by event and static graphs, covering participants from China, Japan and the Allies.')) + filters() + `<ul class="h-people-grid">${history.people.slice().sort((a, b) => a.born - b.born).map(p => { const events = eventsForPerson(p.id, history), other = alternate.people.find(x => x.id === p.id); return `<li data-record data-period="${[...new Set(events.map(e => e.period))].join('|')}" data-search="${h([p.name, other.name, p.role, other.role, p.summary, other.summary, p.born, ...events.map(e => `${e.title} ${e.start}`)].join(' '))}"><a href="${articleUrl(p, 'people')}"><span class="h-person-initial" aria-hidden="true">${h(p.name.slice(0, 1))}</span><span class="m-eyebrow">${h(p.dates)} · ${events.length} ${t('个事件', 'events')}</span><h3>${h(p.name)}</h3><p>${h(p.role)}</p><small>${h(p.summary)}</small></a></li>`; }).join('')}</ul>` + empty();
+  }
+  function network() {
+    return title('CONNECTIONS', t('沿着行动，建立关联。', 'Follow actions to discover connections.'), t('可以选择人物和事件。连线不推断私人关系、同盟或影响力。', 'Select a person and event. Edges do not infer friendship, alliance or influence.')) + `<div class="h-network-controls" data-network-controls hidden><div><label for="graph-person">${t('聚焦人物', 'Focus person')}</label><select id="graph-person" name="person">${history.people.map(p => `<option value="${p.id}"${p.id === 'sun-yatsen' ? ' selected' : ''}>${h(p.name)}</option>`).join('')}</select></div><div><label for="graph-event">${t('聚焦事件', 'Focus event')}</label><select id="graph-event" name="event"><option value="">${t('全部关联事件', 'All associated events')}</option></select></div><div class="h-zoom" role="group" aria-label="${t('图谱缩放', 'Graph zoom')}"><button type="button" data-zoom="-1" aria-label="${t('缩小图谱', 'Zoom out')}">−</button><button type="button" data-zoom="0">${t('重置', 'Reset')}</button><button type="button" data-zoom="1" aria-label="${t('放大图谱', 'Zoom in')}">+</button></div><p role="status" data-graph-status></p></div><section data-network data-url="${basePath}/assets/${assets.graphData}" data-base="${base}">${graphPanel('sun-yatsen')}<div data-graph-detail><h2>${t('孙中山的关联事件', 'Events connected to Sun Yat-sen')}</h2><ul class="h-event-list">${eventsForPerson('sun-yatsen', history).map(eventCard).join('')}</ul></div></section><noscript><p class="h-notice">${t('显示静态图；其他人物页面也提供独立静态图谱。', 'The static graph remains visible. Each biography also has its own static graph.')}</p></noscript><details class="h-network-directory"><summary>${t('完整人物目录与静态图谱', 'Complete directory and static graphs')}</summary><div class="h-directory-links">${history.people.map(p => link(articleUrl(p, 'people'), p.name)).join('')}</div></details>`;
+  }
+  function sources() {
+    return title('SOURCES', t('让解释回到可追溯的材料。', 'Return interpretation to traceable evidence.'), t('153项资料标明来源、类型及使用范围。官方、见证与学术材料均须审读，链接不等于全文已经开放。', '153 sources identify provenance, type and limits. Official records, testimony and scholarship require scrutiny; links do not imply full-text access.')) + `<form class="h-source-search" data-filters hidden><label for="q">${t('搜索资料、机构或说明', 'Search sources, institutions or notes')}</label><input id="q" name="q" type="search"><button type="reset" class="m-button m-button-light">${t('重置', 'Reset')}</button><p data-result-count role="status"></p></form><ol class="h-source-library">${history.sources.map(s => `<li id="source-${s.id}" data-record data-search="${h([s.title, s.publisher, s.type, s.note, ...Object.values(alternate.sources.find(x => x.id === s.id))].join(' '))}"><span class="h-source-type">${h(s.type)}</span><h2><a href="${h(s.url)}" ${ext}>${h(s.title)} ${icon('external')}</a></h2><p>${h(s.publisher)}</p><p>${h(s.note)}</p><details><summary>${t('查看引用文章', 'Articles citing this source')}</summary><div class="h-directory-links">${['full', 'events', 'people', 'chapters', 'themes'].flatMap(kind => collection(kind).filter(a => referencesFor(a).includes(s.id)).map(a => link(articleUrl(a, kind), a.title || a.name))).join('')}</div></details></li>`).join('')}</ol>` + empty();
+  }
+  function method() {
+    return title('SCOPE & METHOD', t('公开边界，认真讨论完整。', 'Define the scope and make it inspectable.'), t('本版按明确编年总目验收，覆盖1840—2026年各阶段与主要主题；“完成”指公开清单完成，后续增补另列。', 'Completion refers to the public catalog across 1840–2026 and major themes. Further additions are listed explicitly.')) + stats() + `<div class="h-method-layout"><section class="h-prose"><h2>${t('Full与Lite如何分工', 'Full and Lite editions')}</h2><p>${t('Full详细版为23个连续长章，172个中英对应小节；抗战6章，建国后11章，另有4章背景及2章社会专题。Lite保留原14章通史、9个专题和90个事件索引，作为概览。每项事件均能进入对应详细版章节。', 'The Full edition has 23 extended chapters and 172 paired-language sections: six war chapters, eleven post-1949 chapters, four background chapters and two social studies. Lite retains 14 overview chapters, nine themes and 90 event entries. Every event connects to Full chapters.')}</p><p>${t('主要范围为1840年至2026年10月10日，首条包括1839年禁烟背景。时间分期可交叠，未来气候目标明确标为承诺。80位人物均有传记和逐事件记录，包含8位新增日本及盟国参与者。', 'Coverage runs from 1840 to 10 October 2026, including the 1839 prohibition background. Periods may overlap. Future climate targets remain commitments. Eighty biographies include eight added Japanese and Allied participants.')}</p><p>${t('本版不是186年所有地方事件的穷尽全集。正负评价均按事实收录，人物名单和编年总目是可核查的边界。', 'This is not an exhaustive register of every local event over 186 years. Achievements and harms are recorded through evidence within the inspectable catalog.')}</p>${link(root + 'timeline/', t('查看90项编年总目 →', 'Inspect the 90-event catalog →'))}<p>${link(`${basePath}/assets/${en ? 'history-catalog.en.json' : 'history-catalog.json'}`, t('下载双语版本索引（JSON）', 'Download the edition catalog (JSON)'))}</p></section><section class="h-prose"><h2>${t('事实、立场、解释与责任', 'Facts, positions, interpretation and responsibility')}</h2><p>${t('先说明可证实经过，再分析目标、制度与后果。官方文件确认其发布者立场，不天然成为中立裁判；摘要和书介不冒充已阅读全文。建设与改革成果不能抵销受害者伤害，受害身份也不能取消同一人物在其他事件中的责任。', 'Establish events before examining objectives, institutions and consequences. Official texts state issuers’ positions rather than acting as neutral arbiters. Abstracts are not presented as complete books. Achievements do not cancel harm, and victimization does not erase a person’s responsibility elsewhere.')}</p><p>${t('中立意味着一致证据标准，不意味着否认暴行和充分证实的事实获得同等可信度。数字保留地区、时段、对象与估计方法；超额死亡、出生减少和医院死亡不是同一指标。', 'Neutrality applies consistent standards rather than equal credibility to denial and well-established atrocities. Numbers retain population, area, period and method. Excess deaths, missing births and hospital reports are different measures.')}</p><p>${t('图谱只表示参与记录；节点间距、大小和连线不表示同盟、亲疏或因果强度。机制表不是计量因果系数，时序间距不表示真实时长。', 'Graphs encode recorded participation, not alliance, closeness or causal strength. Mechanism tables are not estimated coefficients; timeline spacing is schematic.')}</p></section><section class="h-prose"><h2>${t('当代史与版本记录', 'Contemporary history and version record')}</h2><p>${t('事实截点2026-10-10，页面版本2026-10-11。2026年发布的2025年数据属于已发布资料，2026年展望属于预测；不编造尚未发生的年终结果。截点不代表收录当天全部新闻。', 'Evidence cutoff: 10 October 2026; edition date: 11 October 2026. Data for 2025 released in 2026 are completed releases; 2026 outlooks remain forecasts. The cutoff does not imply coverage of every news item.')}</p><p>${t('本次升级将原内容明确标为Lite，新增23章双语详细版、8位国际人物与20项资料。保留原事件和人物网址，增加逐章语言切换、目录和交叉阅读。', 'This revision labels the original material Lite, adds 23 bilingual Full chapters, eight international biographies and twenty sources, and preserves existing event and biography URLs.')}</p></section><section class="h-prose"><h2>${t('公开的后续增补项', 'Public additions register')}</h2><ul class="h-questions">${[t('更多县市与社区微观史、普通人的口述与传记。', 'More local and community histories, oral accounts and non-elite biographies.'), t('抗战各战区及占领地的独立长篇个案与原始档案编号。', 'Standalone theater and occupation case studies with archival identifiers.'), t('建国后各省政治运动、1975年水灾、1976年唐山地震等独立专题。', 'Provincial campaign studies and standalone accounts of the 1975 floods and 1976 Tangshan earthquake.'), t('艺术、宗教、劳动争议和社会组织史的进一步细分。', 'Further studies of art, religion, labor disputes and civil organizations.'), t('合法开放全文、精确页码和多语种档案互证。', 'Lawfully open full texts, page-specific citations and multilingual corroboration.'), t('有明确许可、地理边界及统一口径的地图和数据。', 'Licensed historical maps and comparable data with explicit boundaries.'), t('截点以后的事实和正式全年统计。', 'Events after the cutoff and finalized annual statistics.')].map(s => `<li>${s}</li>`).join('')}</ul><p>${t('这些是待增补内容，不计入本版已完成数量。更新必须同步总目、引用和图谱关系。', 'These are additions, not counted as completed in this edition. Changes must update the catalog, citations and graph relationships.')}</p></section></div>`;
+  }
+  let body, pageTitle, article = null, kind;
+  if (route === 'misc/') { body = miscellaneous(); pageTitle = t('杂项', 'Miscellany'); }
+  else if (/^misc\/(research|lectures|books|finance)\/$/.test(route)) { body = placeholder(); pageTitle = miscSections.find(s => s[0] === route.split('/')[1])[1]; }
+  else if (route === 'misc/history/' || route === 'misc/history/full/') { body = fullIndex(); pageTitle = t('中国近代史 · 详细版', 'Modern Chinese history · Full'); }
+  else if (route === 'misc/history/lite/') { body = liteIndex(); pageTitle = t('中国近代史 · Lite概览', 'Modern Chinese history · Lite'); }
+  else if (route === 'misc/history/events/' || route === 'misc/history/timeline/') { body = eventIndex(route.includes('timeline')); pageTitle = t('编年与事件', 'Events and chronology'); }
+  else if (route === 'misc/history/people/') { body = peopleIndex(); pageTitle = t('人物', 'People'); }
+  else if (route === 'misc/history/network/') { body = network(); pageTitle = t('人物—事件图谱', 'Person–event connections'); }
+  else if (route === 'misc/history/sources/') { body = sources(); pageTitle = t('资料库', 'Sources'); }
+  else if (route === 'misc/history/method/') { body = method(); pageTitle = t('收录与方法', 'Scope and method'); }
+  else {
+    const match = route.match(/^misc\/history\/(events|people|chapters|themes|full)\/([^/]+)\/$/);
+    if (!match) throw new Error(`Unknown miscellany route ${route}`);
+    kind = match[1]; article = collection(kind).find(s => s.id === match[2]);
+    if (!article) throw new Error(`Missing article ${route}`);
+    pageTitle = article.title || article.name;
+    body = `<nav class="m-breadcrumb" aria-label="${t('面包屑', 'Breadcrumb')}">${link(root, t('中国近代史', 'Chinese history'))} / ${link(root + (kind === 'full' ? 'full/' : kind === 'chapters' || kind === 'themes' ? 'lite/' : kind + '/'), kindNames[kind])}</nav>` + title(`${kindNames[kind]} / ${article.dates || '1840–2026'}`, pageTitle, article.summary) + `<p class="h-reading-meta">${kind === 'full' ? 'FULL' : 'LITE'} · ${readingMinutes(article, locale)} ${t('分钟阅读', 'min read')} · ${t('资料截点', 'Evidence cutoff')} ${history.cutoff}</p>` + editionNav(kind === 'full' ? 'full' : 'lite') + articleBody(article, kind);
+  }
+  const nav = [['full/', t('详细版', 'Full')], ['lite/', t('概览', 'Lite')], ['timeline/', t('编年', 'Chronology')], ['events/', t('事件', 'Events')], ['people/', t('人物', 'People')], ['network/', t('图谱', 'Graph')], ['sources/', t('资料', 'Sources')], ['method/', t('范围', 'Scope')]];
+  const structured = article ? { '@context': 'https://schema.org', '@type': 'Article', headline: pageTitle, description: article.summary, inLanguage: en ? 'en' : 'zh-CN', dateModified: history.updated, author: { '@type': 'Person', name: profile.name }, mainEntityOfPage: canonical } : { '@context': 'https://schema.org', '@type': 'CollectionPage', name: pageTitle, inLanguage: en ? 'en' : 'zh-CN', url: canonical };
+  const description = article?.summary || t('1840—2026中国近代史，双语详细版与概览，人物事件和来源交叉阅读。', 'Modern Chinese history, 1840–2026: bilingual Full and Lite editions with people, events and sources.');
+  return `<!doctype html><html lang="${en ? 'en' : 'zh-CN'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${h(pageTitle)} · Wenzhang Du</title><meta name="description" content="${h(description)}"><link rel="canonical" href="${h(canonical)}"><link rel="alternate" hreflang="${en ? 'en' : 'zh-CN'}" href="${h(canonical)}"><link rel="alternate" hreflang="${en ? 'zh-CN' : 'en'}" href="${h(profile.url + counterpart)}"><meta property="og:title" content="${h(pageTitle)}"><meta property="og:description" content="${h(description)}"><meta property="og:url" content="${h(canonical)}"><meta property="og:type" content="${article ? 'article' : 'website'}"><meta property="og:image" content="${profile.url}${basePath}/assets/social-card.png"><meta property="og:locale" content="${en ? 'en_US' : 'zh_CN'}"><link rel="icon" href="${basePath}/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="${basePath}/assets/${assets.miscCss}"><script type="application/ld+json">${json(structured)}</script><script type="module" src="${basePath}/assets/${assets.miscJs}"></script></head><body id="top"><a class="m-skip" href="#main">${t('跳至正文', 'Skip to content')}</a><header class="m-header"><div class="m-container m-header-inner"><a class="m-brand" href="${home}">${monogram()}<span>Wenzhang Du<small>${t('研究之外，保持好奇', 'Curiosity beyond research')}</small></span></a><nav aria-label="${t('主导航', 'Main navigation')}" id="misc-nav" class="m-nav">${link(home, t('学术主页', 'Research'))}${link(base + '/misc/', t('杂项', 'Miscellany'))}${link(root, t('中国近代史', 'Chinese history'))}<a href="${counterpart}" data-language-switch lang="${en ? 'zh-CN' : 'en'}" aria-label="${en ? '切换到中文版' : 'Read this page in English'}">${en ? '中文' : 'EN'}</a></nav><button class="m-menu" aria-label="${t('打开导航', 'Open navigation')}" aria-controls="misc-nav" aria-expanded="false" data-menu hidden>${icon('menu')}</button></div></header><main id="main" class="m-container" tabindex="-1">${route.startsWith('misc/history/') ? `<nav class="h-tabs" aria-label="${t('历史栏目导航', 'History navigation')}">${nav.map(([suffix, label]) => `<a href="${root}${suffix}"${route === `misc/history/${suffix}` ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>` : ''}${body}</main><footer class="m-footer"><div class="m-container"><div class="m-footer-top"><a class="m-brand" href="${home}">${monogram()}<span>Wenzhang Du<small>${t('以证据连接好奇心', 'Connect curiosity with evidence')}</small></span></a>${link('#top', t('返回顶部 ↑', 'Back to top ↑'))}</div><div class="m-footer-bottom"><p>© 2026 Wenzhang Du · ${t('事实截点', 'Evidence cutoff')} ${history.cutoff}</p><div class="m-visitors" data-visitors data-site-origin="${h(profile.url)}" data-local-label="${t('本地预览不计入访问量。', 'Local previews are not counted.')}" data-loading-label="${t('正在加载真实统计…', 'Loading live statistics…')}" data-error-label="${t('统计服务暂时不可用。', 'Statistics are temporarily unavailable.')}"><span>${t('访客', 'Visitors')} <strong data-visitor-count>—</strong></span><span>${t('浏览', 'Views')} <strong data-view-count>—</strong></span><small data-visitor-status role="status">${t('启用JavaScript后加载真实统计。', 'Enable JavaScript for live statistics.')}</small></div></div></div></footer></body></html>\n`;
 }
 
 export { historyRoutes };
