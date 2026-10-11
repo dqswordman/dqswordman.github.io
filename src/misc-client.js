@@ -15,7 +15,9 @@ document.querySelectorAll('[data-language-switch]').forEach(link => link.addEven
   let currentAnchor;
   try { currentAnchor = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch { /* Keep an unrecognized fragment unchanged. */ }
   const anchorVisible = currentAnchor && currentAnchor.getBoundingClientRect().bottom >= 0 && currentAnchor.getBoundingClientRect().top < innerHeight;
-  if (currentSection && !anchorVisible) target.hash = currentSection.id;
+  // A citation is an explicit destination even while smooth scrolling is in flight.
+  const referenceAnchor = currentAnchor?.closest('.h-references');
+  if (currentSection && !anchorVisible && !referenceAnchor) target.hash = currentSection.id;
   link.href = target.pathname + target.search + target.hash;
 }));
 
