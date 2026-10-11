@@ -5,7 +5,7 @@ import { resolve, relative, sep } from 'node:path';
 import { loadContent, normalizeBasePath, escapeHtml as h } from '../src/content.mjs';
 import { renderPage } from '../src/render.mjs';
 import { renderMiscPage, historyRoutes } from '../src/misc-render.mjs';
-import { history, localizedHistory, validateHistory, referencesFor, studiesForEvent } from '../src/history.mjs';
+import { history, localizedHistory, validateHistory, referencesFor, studiesForEvent, historyCensus } from '../src/history.mjs';
 
 export const projectRoot = new URL('../', import.meta.url);
 export const outputRoot = new URL('dist/', projectRoot);
@@ -16,6 +16,7 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   const { profile, publications } = await loadContent(projectRoot);
   validateHistory();
   validateHistory(localizedHistory('en'));
+  if (historyCensus().hanCharacters < 200_000) throw new Error('The Full edition requires at least 200,000 unique Chinese narrative characters.');
   const [css, originalJs, filter, visitors] = await Promise.all(
     ['styles.css', 'client.js', 'filter.mjs', 'visitors.mjs'].map((name) =>
       readFile(new URL(`src/${name}`, projectRoot), 'utf8'),
@@ -44,15 +45,15 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     const data = localizedHistory(locale), prefix = `${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}misc/history/`;
     const urls = (kind, id) => Object.fromEntries(['zh', 'en'].map(l => [l, `${profile.url}${basePath}/${l === 'en' ? 'en/' : ''}misc/history/${kind}/${id}/`]));
     return {
-      version: 2, locale, title: locale === 'en' ? 'Modern Chinese history: edition catalog' : '中国近代史研究 · 双语版本总目', updated: data.updated, cutoff: data.cutoff,
+      version: 3, edition: 'Full', narrativeCensus: historyCensus(data), locale, title: locale === 'en' ? 'Modern Chinese history: edition catalog' : '中国近代史研究 · 双语版本总目', updated: data.updated, cutoff: data.cutoff,
       range: `1840–2026 (1839 background; ${data.cutoff})`, scope: locale === 'en' ? 'A defined catalog across periods and major themes, not an exhaustive record of every local event.' : '覆盖各阶段与主要主题的明确总目，非穷尽全部地方事件。',
       counts: { events: data.events.length, people: data.people.length, chapters: data.chapters.length, themes: data.themes.length, fullChapters: data.studies.length, fullSections: data.studies.reduce((n, s) => n + s.sections.length, 0), sources: data.sources.length, actions: data.events.reduce((n, e) => n + e.actors.length, 0) },
       periods: data.periods,
-      events: data.events.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end, dates: e.dates, period: e.period, tags: e.tags, status: 'complete', url: `${prefix}events/${e.id}/`, urls: urls('events', e.id), people: e.actors.map(a => a.person), references: referencesFor(e), fullChapters: studiesForEvent(e.id, data).map(s => s.id) })),
-      people: data.people.map(p => ({ id: p.id, name: p.name, dates: p.dates, role: p.role, status: 'complete', url: `${prefix}people/${p.id}/`, urls: urls('people', p.id) })),
-      ...Object.fromEntries(['chapters', 'themes', 'studies'].map(kind => [kind, data[kind].map(s => ({ id: s.id, title: s.title, part: s.part, dates: s.dates, summary: s.summary, status: 'complete', edition: kind === 'studies' ? 'Full' : 'Lite', url: `${prefix}${kind === 'studies' ? 'full' : kind}/${s.id}/`, urls: urls(kind === 'studies' ? 'full' : kind, s.id), events: s.events, references: referencesFor(s), ...(kind === 'studies' ? { sections: s.sections } : {}) }))])),
+      events: data.events.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end, dates: e.dates, period: e.period, tags: e.tags, status: 'complete', url: `${prefix}events/${e.id}/`, urls: urls('events', e.id), people: e.actors.map(a => a.person), references: referencesFor(e), fullChapters: studiesForEvent(e.id, data).map(s => s.id), summary: e.summary, sections: e.sections })),
+      people: data.people.map(p => ({ id: p.id, name: p.name, dates: p.dates, role: p.role, status: 'complete', url: `${prefix}people/${p.id}/`, urls: urls('people', p.id), summary: p.summary, sections: p.sections })),
+      ...Object.fromEntries(['chapters', 'themes', 'studies'].map(kind => [kind, data[kind].map(s => ({ id: s.id, title: s.title, part: s.part, dates: s.dates, summary: s.summary, status: 'complete', edition: 'Full', url: `${prefix}${kind === 'studies' ? 'full' : kind}/${s.id}/`, urls: urls(kind === 'studies' ? 'full' : kind, s.id), events: s.events, references: referencesFor(s), sections: s.sections, ...(s.figure ? { figure: s.figure } : {}) }))])),
       sources: data.sources,
-      futureAdditions: locale === 'en' ? ['Local and community histories', 'Standalone war-theater and provincial campaign studies', '1975 floods and 1976 Tangshan earthquake studies', 'More non-elite biographies and oral histories', 'Page-specific citations and archival identifiers', 'Licensed maps and comparable data', 'Events after the evidence cutoff'] : ['地方与社区微观史', '独立战区及各省政治运动专题', '1975年水灾、1976年唐山地震独立专题', '更多普通人物与口述', '精确页码及档案编号', '合法地图与同口径数据', '事实截点之后的新内容'],
+      futureAdditions: locale === 'en' ? ['Local and community microhistories beyond the declared catalog', 'Additional provincial and county-level campaign studies', 'More non-elite biographies and oral histories', 'Page-specific citations and archival identifiers where full texts are accessible', 'Historical images with verified authorship and permissions, and comparable data', 'Events after the evidence cutoff'] : ['公开总目之外的地方与社区微观史', '更多省县层面的政治运动专案', '更多普通人物与口述', '取得全文后补充精确页码及档案编号', '核实作者和许可的历史图像及同口径数据', '事实截点之后的新内容'],
     };
   };
 
@@ -100,8 +101,13 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     await writeFile(new URL('index.html', folder), renderMiscPage({ route, profile, basePath, assets: localizedAssets, locale }));
   }
 
-  const redirect = (target) =>
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wenzhang Du · Redirect</title><link rel="canonical" href="${h(profile.url + target)}"><meta http-equiv="refresh" content="0;url=${h(target)}"><script src="${basePath}/assets/redirect.js" defer></script></head><body><p>This page has moved. <a href="${h(target)}">Visit Wenzhang Du’s homepage</a>.</p></body></html>\n`;
+  const redirect = (target, label = 'Visit Wenzhang Du’s homepage', lang = 'en') =>
+    `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wenzhang Du · Redirect</title><link rel="canonical" href="${h(profile.url + target)}"><meta http-equiv="refresh" content="0;url=${h(target)}"><script src="${basePath}/assets/redirect.js" defer></script></head><body><p>${lang === 'zh-CN' ? '此入口已迁移。' : 'This page has moved.'} <a href="${h(target)}">${h(label)}</a>.</p></body></html>\n`;
+  for (const locale of ['zh', 'en']) {
+    const destination = new URL((locale === 'en' ? 'en/' : '') + 'misc/history/lite/', outputRoot);
+    await mkdir(destination, { recursive: true });
+    await writeFile(new URL('index.html', destination), redirect(basePath + '/' + (locale === 'en' ? 'en/' : '') + 'misc/history/full/', locale === 'en' ? 'Read the Full history edition' : '阅读中国近代史 Full 全文', locale === 'en' ? 'en' : 'zh-CN'));
+  }
   for (const folder of ['about', 'zh/about']) {
     const destination = new URL(`${folder}/`, outputRoot);
     await mkdir(destination, { recursive: true });

@@ -6,6 +6,8 @@ import { englishEssays, englishTags } from './en-essays.mjs';
 import { englishActionRows } from './en-actions.mjs';
 import { englishSource } from './en-sources.mjs';
 import { internationalEnglishPeople, internationalEnglishActors } from './people-international.mjs';
+import { dossiers } from './dossiers.mjs';
+import { biographyDossiers } from './biography-dossiers.mjs';
 
 const index = items => new Map(items.map(item => [item.id, item]));
 const eventTexts = index([...englishEarlyEvents, ...englishModernEvents]);
@@ -35,7 +37,7 @@ function translateVisual(event) {
   return { ...event.visual, title, headers, rows };
 }
 export function localizeStudy(item, locale) {
-  return { ...item, title: item.title[locale], summary: item.summary[locale], dates: locale === 'en' && item.dates.includes('/') ? item.dates.split('/').at(-1).trim() : item.dates, sections: item.sections.map(s => s[locale]) };
+  return { ...item, title: item.title[locale], summary: item.summary[locale], dates: locale === 'en' && item.dates.includes('/') ? item.dates.split('/').at(-1).trim() : item.dates, sections: item.sections.map(s => s[locale]), figure: item.figure?.[locale] };
 }
 export function englishHistory(data, rawStudies) {
   return {
@@ -51,11 +53,11 @@ export function englishHistory(data, rawStudies) {
         return { ...actor, stance: triple[0], action: triple[1], result: triple[2] };
       });
       if (n !== rows.length) throw new Error(`English action count mismatch: ${event.id}`);
-      return { ...event, title: text.title, summary: text.summary, dates: `${event.start}${event.end === event.start ? '' : `–${event.end}`}`, tags: event.tags.map(tag => { if (!englishTags[tag]) throw new Error(`Missing English tag ${tag}`); return englishTags[tag]; }), sections: [section('Sequence and context', text.sequence, refs), section('Interpretation and evidence', text.analysis, refs)], actors, milestones: event.milestones.map((m, i) => ({ date: dateLabel(m.date), label: text.milestones[i] })), questions: [text.question], visual: translateVisual(event) };
+      return { ...event, title: text.title, summary: text.summary, dates: `${event.start}${event.end === event.start ? '' : `–${event.end}`}`, tags: event.tags.map(tag => { if (!englishTags[tag]) throw new Error(`Missing English tag ${tag}`); return englishTags[tag]; }), sections: [section('Sequence and context', text.sequence, refs), section('Interpretation and evidence', text.analysis, refs), ...(dossiers[event.id] || []).map(s => s.en)], actors, milestones: event.milestones.map((m, i) => ({ date: dateLabel(m.date), label: text.milestones[i] })), questions: [text.question], visual: translateVisual(event) };
     }),
     people: data.people.map(person => {
       const text = required(peopleTexts, person.id), refs = refsOf(person);
-      return { ...person, name: text.name, role: text.role, summary: text.activity, dates: person.id === 'he-zhen' ? 'c. 1884–death unknown' : person.id === 'claire-chennault' ? '1890 (some sources 1893)–1958' : `${person.born}–${person.died ?? 'living'}`, sections: [section('Background and formation', text.background, refs), section('Activity and historical setting', text.activity, refs), section('Assessment and evidence limits', text.assessment, refs)] };
+      return { ...person, name: text.name, role: text.role, summary: text.activity, dates: person.id === 'he-zhen' ? 'c. 1884–death unknown' : person.id === 'claire-chennault' ? '1890 (some sources 1893)–1958' : `${person.born}–${person.died ?? 'living'}`, sections: [section('Background and formation', text.background, refs), section('Activity and historical setting', text.activity, refs), section('Assessment and evidence limits', text.assessment, refs), ...(biographyDossiers[person.id] || []).map(s => s.en)] };
     }),
     ...Object.fromEntries(['chapters', 'themes'].map(kind => [kind, data[kind].map(item => {
       const text = required(essayTexts, item.id), refs = refsOf(item);

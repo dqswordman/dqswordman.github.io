@@ -13,15 +13,18 @@ import { fullSources } from '../content/history/full-sources.mjs';
 import { internationalSources, internationalPeople, internationalActors } from '../content/history/people-international.mjs';
 import { fullStudies } from '../content/history/full.mjs';
 import { englishHistory, localizeStudy } from '../content/history/english.mjs';
+import { dossiers } from '../content/history/dossiers.mjs';
+import { expandedSources } from '../content/history/expanded-sources.mjs';
+import { biographyDossiers } from '../content/history/biography-dossiers.mjs';
 
 export const history = {
   updated: '2026-10-11',
   cutoff: '2026-10-10',
   locale: 'zh',
-  sources: [...sources, ...fullSources, ...internationalSources],
+  sources: [...sources, ...fullSources, ...internationalSources, ...expandedSources],
   periods,
-  events: [...earlyEvents, ...republicanEvents, ...warEvents, ...prcEvents, ...contemporaryEvents].map(e => ({ ...e, actors: [...e.actors, ...(internationalActors[e.id] || [])] })).sort((a, b) => a.start - b.start),
-  people: [...earlyPeople, ...modernPeople, ...prcPeople, ...internationalPeople],
+  events: [...earlyEvents, ...republicanEvents, ...warEvents, ...prcEvents, ...contemporaryEvents].map(e => ({ ...e, sections: [...e.sections, ...(dossiers[e.id] || []).map(s => s.zh)], actors: [...e.actors, ...(internationalActors[e.id] || [])] })).sort((a, b) => a.start - b.start),
+  people: [...earlyPeople, ...modernPeople, ...prcPeople, ...internationalPeople].map(p => ({ ...p, sections: [...p.sections, ...(biographyDossiers[p.id] || []).map(s => s.zh)] })),
   chapters,
   themes,
   studies: fullStudies.map(s => localizeStudy(s, 'zh')),
@@ -37,6 +40,7 @@ export function referencesFor(article) {
     ...article.sections.flatMap((section) => section.refs),
     ...(article.actors || []).flatMap((actor) => actor.refs),
     ...(article.visual?.refs || []),
+    ...(article.figure?.refs || []),
   ])];
 }
 
@@ -66,6 +70,10 @@ export function validateHistory(data = history) {
       for (const id of referencesFor(item)) if (!identities.get('sources').has(id)) fail(`unknown source ${id} in ${item.id}`);
       for (const id of item.events || []) if (!identities.get('events').has(id)) fail(`unknown event ${id} in ${item.id}`);
       for (const id of item.related || []) if (!identities.get(kind).has(id)) fail(`unknown related ${kind} ${id}`);
+      if (item.figure) {
+        const f = item.figure, nodes = new Set(f.nodes?.map(n => n.id));
+        if (!f.title || !f.note || !f.refs?.length || f.nodes?.length !== 6 || nodes.size !== f.nodes.length || f.nodes.some(n => !/^[a-z0-9-]+$/.test(n.id) || !n.lines?.length || n.lines.some(line => !line)) || !f.edges?.length || f.edges.some(e => !nodes.has(e.from) || !nodes.has(e.to) || e.from === e.to)) fail(`invalid mechanism figure in ${item.id}`);
+      }
     }
   }
   for (const event of data.events) {
@@ -97,7 +105,7 @@ export function validateHistory(data = history) {
   }
   if (data.locale === 'en') {
     for (const kind of ['events', 'people', 'chapters', 'themes', 'studies']) for (const item of data[kind]) {
-      const prose = [item.title || item.name, item.dates, item.role, articleText(item), ...(item.actors || []).flatMap(a => [a.stance, a.action, a.result]), ...(item.milestones || []).flatMap(m => [m.date, m.label])].join(' ');
+      const prose = [item.title || item.name, item.dates, item.role, articleText(item), item.figure?.title, item.figure?.note, ...(item.figure?.nodes || []).flatMap(n => n.lines), ...(item.actors || []).flatMap(a => [a.stance, a.action, a.result]), ...(item.milestones || []).flatMap(m => [m.date, m.label])].join(' ');
       if (/[\u3400-\u9fff]/u.test(prose)) fail(`untranslated English content ${kind}/${item.id}`);
     }
     for (const source of data.sources) if (/[\u3400-\u9fff]/u.test([source.title, source.publisher, source.note, source.type].join(' '))) fail(`untranslated English source ${source.id}`);
@@ -108,10 +116,28 @@ export function validateHistory(data = history) {
 export const articleText = (article) => [article.summary, ...article.sections.flatMap((s) => [s.title, ...s.paragraphs])].join(' ');
 export const readingMinutes = (article, locale = 'zh') => Math.max(2, Math.ceil(locale === 'en' ? articleText(article).split(/\s+/).length / 220 : articleText(article).length / 350));
 
+// Count stored narrative once, excluding navigation, source notes, action tables,
+// titles, translations and repeated renderings of the same paragraph.
+export function historyCensus(data = history) {
+  const seen = new Set();
+  const groups = Object.fromEntries(['studies', 'chapters', 'themes', 'events', 'people'].map(kind => {
+    let hanCharacters = 0, words = 0, paragraphs = 0;
+    for (const article of data[kind]) for (const text of [article.summary, ...article.sections.flatMap(s => s.paragraphs)]) {
+      const normalized = text.trim().replace(/\s+/g, ' ');
+      if (seen.has(normalized)) continue;
+      seen.add(normalized); paragraphs++;
+      hanCharacters += (normalized.match(/[\u3400-\u9fff]/gu) || []).length;
+      words += normalized.split(/\s+/).filter(Boolean).length;
+    }
+    return [kind, { articles: data[kind].length, paragraphs, hanCharacters, words }];
+  }));
+  return { groups, hanCharacters: Object.values(groups).reduce((n, g) => n + g.hanCharacters, 0), words: Object.values(groups).reduce((n, g) => n + g.words, 0), method: 'Unique narrative summaries and paragraphs; excludes headings, navigation, actions, references, translated duplicates and repeated rendering.' };
+}
+
 export function historyRoutes(data = history) {
   return [
     'misc/', 'misc/research/', 'misc/lectures/', 'misc/books/', 'misc/finance/',
-    'misc/history/', 'misc/history/lite/', 'misc/history/full/', 'misc/history/events/', 'misc/history/people/',
+    'misc/history/', 'misc/history/full/', 'misc/history/events/', 'misc/history/people/',
     'misc/history/timeline/', 'misc/history/network/', 'misc/history/sources/', 'misc/history/method/',
     ...['events', 'people', 'chapters', 'themes'].flatMap((kind) => data[kind].map((item) => `misc/history/${kind}/${item.id}/`)),
     ...data.studies.map(item => `misc/history/full/${item.id}/`),

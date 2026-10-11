@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { history, localizedHistory, validateHistory, referencesFor, eventsForPerson, historyRoutes, studiesForEvent, articleText } from '../src/history.mjs';
+import { history, localizedHistory, validateHistory, referencesFor, eventsForPerson, historyRoutes, studiesForEvent, articleText, historyCensus } from '../src/history.mjs';
+import { dossiers } from '../content/history/dossiers.mjs';
+import { biographyDossiers } from '../content/history/biography-dossiers.mjs';
+import { mechanismSvg } from '../src/history-figures.mjs';
 import { graphModel, graphSvg } from '../src/history-graph.mjs';
 import { matchesHistoryRecord } from '../src/history-search.mjs';
 import { renderMiscPage } from '../src/misc-render.mjs';
@@ -17,7 +20,7 @@ test('the declared catalog covers every period with complete, connected articles
   assert.equal(history.people.length, 80);
   assert.equal(history.chapters.length, 14);
   assert.equal(history.themes.length, 9);
-  assert.equal(history.sources.length, 153);
+  assert.equal(history.sources.length, 181);
   for (const period of history.periods) assert.ok(history.events.some((event) => event.period === period.id));
   for (const person of history.people) assert.ok(eventsForPerson(person.id).length);
 });
@@ -39,10 +42,10 @@ test('content validation rejects missing evidence, unknown actors and dangling c
 
 test('Full has substantive bilingual chapters, prioritizes war and post-1949, and covers the complete event catalog', () => {
   const en = validateHistory(localizedHistory('en'));
-  assert.equal(history.studies.length, 23);
-  assert.equal(history.studies.reduce((n, s) => n + s.sections.length, 0), 172);
+  assert.equal(history.studies.length, 27);
+  assert.equal(history.studies.reduce((n, s) => n + s.sections.length, 0), 199);
   assert.equal(history.studies.filter(s => s.part === 'war').length, 6);
-  assert.equal(history.studies.filter(s => s.part === 'prc').length, 11);
+  assert.equal(history.studies.filter(s => s.part === 'prc').length, 14);
   assert.deepEqual(historyRoutes(en), historyRoutes(history));
   for (const kind of ['events', 'people', 'chapters', 'themes', 'studies', 'sources']) {
     assert.deepEqual(en[kind].map(s => s.id), history[kind].map(s => s.id), kind);
@@ -75,6 +78,9 @@ test('unknown death dates and living people do not get fabricated death years', 
   assert.match(he.dates, /不详/);
   assert.equal(history.people.find((person) => person.id === 'tu-youyou').died, null);
   assert.match(history.people.find((person) => person.id === 'li-keqiang').dates, /2023/);
+  assert.equal(history.people.find(person => person.id === 'zhu-rongji').died, 2026);
+  assert.match(localizedHistory('en').people.find(person => person.id === 'zhu-rongji').dates, /1928.*2026/);
+  assert.ok(referencesFor(history.people.find(person => person.id === 'zhu-rongji')).includes('zhu-obituary-2026'));
   assert.match(history.people.find((person) => person.id === 'claire-chennault').dates, /1890.*1893/);
   assert.match(articleText(localizedHistory('en').people.find((person) => person.id === 'joseph-stalin')), /1878[\s\S]*1879/);
 });
@@ -152,7 +158,8 @@ test('Full diagrams use chapter citation numbers, with a real reference target f
 test('published acceptance catalog includes all article URLs and the contemporaneous data boundary', async () => {
   for (const locale of ['zh', 'en']) {
     const catalog = JSON.parse(await readFile(new URL(`assets/history-catalog${locale === 'en' ? '.en' : ''}.json`, outputRoot), 'utf8'));
-    assert.equal(catalog.version, 2);
+    assert.equal(catalog.version, 3);
+    assert.equal(catalog.edition, 'Full');
     assert.equal(catalog.locale, locale);
     assert.equal(catalog.events.length, history.events.length);
     assert.equal(catalog.people.length, history.people.length);
@@ -160,7 +167,8 @@ test('published acceptance catalog includes all article URLs and the contemporan
     assert.equal(catalog.themes.length, history.themes.length);
     assert.equal(catalog.sources.length, history.sources.length);
     assert.equal(catalog.studies.length, history.studies.length);
-    assert.equal(catalog.counts.fullSections, 172);
+    assert.equal(catalog.counts.fullSections, 199);
+    assert.deepEqual(catalog.narrativeCensus, historyCensus(localizedHistory(locale)));
     assert.equal(catalog.counts.actions, history.events.reduce((count, event) => count + event.actors.length, 0));
     assert.ok(catalog.futureAdditions.length);
     assert.match(catalog.scope, /非穷尽|not an exhaustive/);
@@ -168,12 +176,76 @@ test('published acceptance catalog includes all article URLs and the contemporan
     for (const event of catalog.events) {
       assert.ok(event.references.length && event.people.length && event.fullChapters.length && event.status);
       assert.ok(event.urls.zh && event.urls.en);
+      assert.ok(event.sections.length >= 6);
     }
     for (const chapter of catalog.studies) {
       assert.equal(chapter.edition, 'Full');
       assert.ok(chapter.sections.length >= 6);
       assert.ok(chapter.urls.zh && chapter.urls.en);
     }
+    assert.equal(catalog.studies.filter(s => s.figure).length, 4);
+    assert.ok(!catalog.futureAdditions.join(' ').includes('1975'));
   }
   assert.match(history.events.find((event) => event.id === 'china-2026').sections.map((section) => section.paragraphs.join('')).join(''), /预测/);
+});
+
+test('Full has over 200,000 unique Chinese narrative characters, without counting headings or duplicate paragraphs', () => {
+  const census = historyCensus();
+  assert.ok(census.hanCharacters >= 200_000);
+  assert.ok(historyCensus(localizedHistory('en')).words >= 60_000);
+  assert.equal(census.hanCharacters, Object.values(census.groups).reduce((n, group) => n + group.hanCharacters, 0));
+  const fixture = Object.fromEntries(['studies', 'chapters', 'themes', 'events', 'people'].map(kind => [kind, []]));
+  fixture.studies.push({ summary: '甲乙', sections: [{ title: '标题不应计数', paragraphs: ['丙丁', '甲乙'], refs: ['引用不计数'] }] });
+  fixture.people.push({ summary: '丙丁', sections: [{ title: '不计数', paragraphs: ['丙丁', '戊己'] }] });
+  assert.equal(historyCensus(fixture).hanCharacters, 6);
+  assert.equal(Object.values(historyCensus(fixture).groups).reduce((n, group) => n + group.paragraphs, 0), 3);
+});
+
+test('all declared events and expanded biographies have independently paired, sourced substantive sections', () => {
+  assert.deepEqual(Object.keys(dossiers).sort(), history.events.map(e => e.id).sort());
+  for (const event of history.events) {
+    assert.ok(dossiers[event.id].length >= 4, event.id);
+    assert.ok((articleText(event).match(/[\u3400-\u9fff]/gu) || []).length >= 1000, event.id);
+    assert.ok(articleText(localizedHistory('en').events.find(e => e.id === event.id)).split(/\s+/).length >= 300, event.id);
+  }
+  assert.equal(Object.keys(biographyDossiers).length, 30);
+  for (const groups of [dossiers, biographyDossiers]) for (const [id, sections] of Object.entries(groups)) for (const s of sections) {
+    assert.ok(s.zh.paragraphs.length && s.en.paragraphs.length && s.zh.refs.length, id);
+    assert.deepEqual(s.zh.refs, s.en.refs, id);
+  }
+});
+
+test('original mechanism diagrams have bilingual evidence, text alternatives and safe SVG labels', () => {
+  for (const locale of ['zh', 'en']) {
+    const data = localizedHistory(locale), studies = data.studies.filter(s => s.figure);
+    assert.equal(studies.length, 4);
+    for (const study of studies) {
+      const html = renderMiscPage({ route: `misc/history/full/${study.id}/`, profile, assets, locale });
+      assert.match(html, /id="mechanism"/);
+      assert.match(html, /class="h-mechanism-text"/);
+      assert.match(html, /class="h-mechanism-svg"[^>]*role="img"[^>]*aria-labelledby=/);
+      for (const ref of study.figure.refs) assert.ok(referencesFor(study).includes(ref));
+    }
+    const invalid = structuredClone(data);
+    invalid.studies.find(s => s.figure).figure.edges[0].to = 'missing-node';
+    assert.throws(() => validateHistory(invalid), /mechanism figure/);
+  }
+  const f = structuredClone(history.studies.find(s => s.figure).figure);
+  f.nodes[0].lines[0] = '<script>unsafe</script>';
+  const svg = mechanismSvg(f, 'test-diagram');
+  assert.ok(!svg.includes('<script>'));
+  assert.ok(svg.includes('&lt;script&gt;'));
+});
+
+test('Full is the only selectable edition and legacy Lite entries redirect to it in both languages', async () => {
+  assert.ok(!historyRoutes().some(route => route.includes('/lite/')));
+  for (const locale of ['zh', 'en']) {
+    const html = renderMiscPage({ route: 'misc/history/full/', profile, assets, locale });
+    assert.ok(!/href="[^"]*\/lite\//.test(html));
+    assert.ok(html.indexOf('id="part-war"') < html.indexOf('id="introductions"'));
+    const legacy = await readFile(new URL(`${locale === 'en' ? 'en/' : ''}misc/history/lite/index.html`, outputRoot), 'utf8');
+    assert.match(legacy, /http-equiv="refresh"/);
+    assert.ok(legacy.includes(`${locale === 'en' ? '/en' : ''}/misc/history/full/`));
+  }
+  assert.ok(!(await readFile(new URL('sitemap.xml', outputRoot), 'utf8')).includes('/lite/'));
 });

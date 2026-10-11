@@ -174,6 +174,7 @@ export const englishSourceNotes = {
 };
 
 export function englishSource(source) {
+  if (source.en) return { ...source, ...source.en };
   if (!englishSourceNotes[source.id]) throw new Error(`Missing English source note: ${source.id}`);
   const type = /一手|法律|条约|规章|政策原|气候承诺/.test(source.type) ? 'Primary document'
     : /规范/.test(source.type) ? 'Authority record'

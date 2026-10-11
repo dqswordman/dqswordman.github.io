@@ -46,6 +46,16 @@
 .m-page-heading.m-page-title { padding:48px 0 24px; max-width:1000px }
 .h-reading-meta { font-size:12px; color:var(--muted); margin-top:0; margin-bottom:30px }
 .h-bars { margin:0; padding:25px; background:var(--wash); border-radius:4px }
+.h-mechanism { margin:0 }
+.h-mechanism-scroll { max-width:100%; overflow:auto; border:1px solid var(--line); border-radius:8px; background:var(--wash) }
+.h-mechanism-svg { display:block; width:100%; min-width:730px; height:auto }
+.h-mechanism-lines>path { fill:none; stroke:#50756d; stroke-width:2 }
+.h-mechanism-svg marker path { fill:#50756d }
+.h-mechanism-nodes rect { fill:#f8f7f3; stroke:#50756d; stroke-width:1.5 }
+.h-mechanism-nodes text { fill:#17332e; font:14px system-ui,sans-serif; text-anchor:middle }
+.h-mechanism figcaption { padding-top:16px }
+.h-mechanism-text { margin:20px 0; padding:16px 0; border-block:1px solid var(--line) }
+.h-mechanism-text>summary { cursor:pointer; color:var(--forest); font-weight:600 }
 .h-bars figcaption { font-size:13px; color:var(--muted); margin-bottom:22px }
 .h-bar-row { display:grid; grid-template-columns:70px minmax(0,1fr) 100px; gap:16px; align-items:center; margin-bottom:16px; font-size:13px }
 .h-bar-row > div { height:18px; background:var(--line); border-radius:2px; overflow:hidden }
@@ -82,6 +92,9 @@ html[lang="en"] .h-hero h1 { line-height:1.15; font-size:62px }
   html[lang="en"] .h-hero h1 { font-size:42px }
 }
 @media print {
+  .h-mechanism-scroll { overflow:visible }
+  .h-mechanism-svg { min-width:0 }
+  .h-mechanism { break-inside:avoid }
   .m-page-heading.m-page-title { padding:0 0 15px }
   .m-page-heading.m-page-title h1 { font-size:25pt }
   .h-editions, .h-book-pagination, .h-book-cover, .h-reading-meta { display:none }
