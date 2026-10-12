@@ -345,6 +345,7 @@ export function renderPage({
   <link rel="apple-touch-icon" href="${basePath}/assets/apple-touch-icon.png">
   <link rel="manifest" href="${basePath}/site.webmanifest">
   <link rel="stylesheet" href="${basePath}/assets/${assets.css}">
+  ${assets.experienceCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.experienceCss}">` : ''}
   ${notFound ? '' : `<script type="application/ld+json">${JSON.stringify(person).replace(/</g, '\\u003c')}</script>`}
   <script type="module" src="${basePath}/assets/${assets.js}"></script>
 </head>

@@ -79,11 +79,21 @@ export function trustField() {
     <defs><radialGradient id="field-glow"><stop stop-color="#86a494" stop-opacity=".12"/><stop offset="1" stop-color="#86a494" stop-opacity="0"/></radialGradient><linearGradient id="orbit-stroke" x1="40" y1="100" x2="500" y2="460" gradientUnits="userSpaceOnUse"><stop stop-color="#d5b88b" stop-opacity=".2"/><stop offset=".52" stop-color="#d5b88b"/><stop offset="1" stop-color="#d5b88b" stop-opacity=".3"/></linearGradient></defs>
     <circle cx="280" cy="280" r="255" fill="url(#field-glow)"/>
     <g fill="#b7c9b8">${stars}</g>
-    <g stroke="#9fb7a4" stroke-width=".65">${mesh.join('')}</g>
+    <g class="field-mesh" stroke="#9fb7a4" stroke-width=".65">${mesh.join('')}</g>
     <ellipse cx="280" cy="280" rx="249" ry="87" transform="rotate(-30 280 280)" stroke="url(#orbit-stroke)" stroke-width="1.1"/>
     <ellipse cx="280" cy="280" rx="231" ry="233" stroke="#a9b9a9" stroke-opacity=".13" stroke-dasharray="2 8"/>
     <path d="M63 130h52l42 43M403 383l43 43h52M280 31v27M280 502v27M31 280h27M502 280h27" stroke="#a6b7a5" stroke-opacity=".37" stroke-width=".8"/>
     <g fill="#dfc69e"><circle cx="157" cy="173" r="3"/><circle cx="403" cy="383" r="3"/><circle cx="477" cy="163" r="4"/></g>
     <circle class="field-pulse" cx="477" cy="163" r="10" stroke="#dfc69e" stroke-opacity=".45"/>
+    <g class="field-satellite" fill="#dfc69e"><circle cx="280" cy="48" r="3"/><circle cx="280" cy="48" r="9" fill="none" stroke="#dfc69e" stroke-opacity=".3"/></g>
   </svg>`;
+}
+
+// Abstract layers of time, drawn for this site; this is not a geographic map.
+export function historyField() {
+  const layers = Array.from({ length: 17 }, (_, i) => {
+    const y = 75 + i * 21;
+    return `<path d="M-30 ${y} C100 ${y - 82} 185 ${y + 106} 290 ${y + 5} S470 ${y - 110} 610 ${y + 8}"/>`;
+  }).join('');
+  return `<svg class="h-book-field" viewBox="0 0 560 480" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width=".7" opacity=".26">${layers}</g><path d="M-30 243C100 161 185 349 290 248S470 133 610 251" stroke="#d4b98c" stroke-width="1.5" opacity=".75"/><g fill="#d4b98c"><circle cx="138" cy="248" r="3"/><circle cx="294" cy="244" r="4"/><circle cx="443" cy="193" r="3"/></g><path d="M294 214v-16m-8 8h16" stroke="#d4b98c" opacity=".7"/></svg>`;
 }

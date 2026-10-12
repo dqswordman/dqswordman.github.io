@@ -1,6 +1,8 @@
 import { initVisitorStats } from './visitors.mjs';
 import { matchesHistoryRecord } from './history-search.mjs';
 import { graphModel, graphSvg, escape } from './history-graph.mjs';
+import { initExperience } from './experience.mjs';
+import { initLibrary, initReading, initReferencePreviews, initGraphFocus } from './reading.mjs';
 
 const locale = document.documentElement.lang === 'en' ? 'en' : 'zh';
 const t = (zh, en) => locale === 'en' ? en : zh;
@@ -8,16 +10,17 @@ document.querySelectorAll('[data-language-switch]').forEach(link => link.addEven
   const target = new URL(link.href);
   target.search = location.search;
   target.hash = location.hash;
-  const currentSection = [...document.querySelectorAll('.h-article > section[id]')].find(section => {
-    const bounds = section.getBoundingClientRect();
-    return bounds.top <= 160 && bounds.bottom > 160;
-  });
+  const readingOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--reading-offset')) || 160;
+  // Keep the last reached heading even when the reading line lies in the gap
+  // between sections. Otherwise an old fragment can replace the visible chapter.
+  const currentSection = [...document.querySelectorAll('.h-article > section[id]')].filter(section => section.getBoundingClientRect().top <= readingOffset + 32).at(-1);
   let currentAnchor;
   try { currentAnchor = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch { /* Keep an unrecognized fragment unchanged. */ }
   const anchorVisible = currentAnchor && currentAnchor.getBoundingClientRect().bottom >= 0 && currentAnchor.getBoundingClientRect().top < innerHeight;
   // A citation is an explicit destination even while smooth scrolling is in flight.
   const referenceAnchor = currentAnchor?.closest('.h-references');
-  if (currentSection && !anchorVisible && !referenceAnchor) target.hash = currentSection.id;
+  if (anchorVisible && currentAnchor.dataset.alternateAnchor) target.hash = currentAnchor.dataset.alternateAnchor;
+  if (currentSection && !anchorVisible && !referenceAnchor) target.hash = currentSection.dataset.alternateAnchor || currentSection.id;
   link.href = target.pathname + target.search + target.hash;
 }));
 
@@ -95,13 +98,22 @@ async function initNetwork() {
     if (!response.ok) throw new Error('Graph data unavailable');
     const data = await response.json();
     let zoom = 1;
+    const applyZoom = (direction) => {
+      zoom = direction ? Math.min(1.8, Math.max(0.55, Math.round((zoom + direction * 0.15) * 100) / 100)) : 1;
+      canvas.querySelector('svg').style.width = `${970 * zoom}px`;
+      if (!direction) canvas.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+      controls.querySelector('[data-zoom="-1"]').disabled = zoom === 0.55;
+      controls.querySelector('[data-zoom="1"]').disabled = zoom === 1.8;
+      controls.querySelector('[data-zoom-level]').textContent = `${Math.round(zoom * 100)}%`;
+    };
     const draw = (person, event = '', persist = false) => {
       const model = graphModel(data, person, event);
       personSelect.value = model.person.id;
       eventSelect.replaceChildren(new Option(t('全部关联事件', 'All associated events'), ''), ...model.allEvents.map((item) => new Option(`${item.start} · ${item.title}`, item.id)));
       eventSelect.value = model.events.length === 1 && event ? model.events[0].id : '';
       canvas.innerHTML = graphSvg(model, base, 'network-title', locale);
-      canvas.querySelector('svg').style.width = `${970 * zoom}px`;
+      applyZoom(0);
+      if (document.documentElement.dataset.motion === 'on') canvas.querySelector('svg').animate([{ opacity: .45 }, { opacity: 1 }], { duration: 280, easing: 'ease-out' });
       status.textContent = t(`${model.person.name} · ${model.events.length}个事件 · ${model.peers.length}位同事件人物 · ${model.edges.length}条参与记录`, `${model.person.name} · ${model.events.length} ${model.events.length === 1 ? 'event' : 'events'} · ${model.peers.length} other ${model.peers.length === 1 ? 'participant' : 'participants'} · ${model.edges.length} action ${model.edges.length === 1 ? 'record' : 'records'}`);
       detail.innerHTML = `<h2>${escape(model.person.name)} · ${t('事件与行动', 'events and actions')}</h2><ul class="h-network-events">${model.events.map((item) => {
         const actor = item.actors.find((record) => record.person === model.person.id);
@@ -122,10 +134,16 @@ async function initNetwork() {
     eventSelect.addEventListener('change', () => draw(personSelect.value, eventSelect.value, true));
     controls.querySelectorAll('[data-zoom]').forEach((button) => button.addEventListener('click', () => {
       const direction = Number(button.dataset.zoom);
-      zoom = direction ? Math.min(1.8, Math.max(0.55, zoom + direction * 0.15)) : 1;
-      canvas.querySelector('svg').style.width = `${970 * zoom}px`;
+      applyZoom(direction);
       status.textContent = t(`图谱缩放 ${Math.round(zoom * 100)}%，可在图谱区域内滚动。`, `Zoom ${Math.round(zoom * 100)}%. Scroll within the graph region.`);
     }));
+    canvas.addEventListener('keydown', (event) => {
+      if (event.target !== canvas || !['+', '=', '-', '0'].includes(event.key)) return;
+      event.preventDefault();
+      const direction = event.key === '0' ? 0 : event.key === '-' ? -1 : 1;
+      applyZoom(direction);
+      status.textContent = t(`图谱缩放 ${Math.round(zoom * 100)}%`, `Graph zoom ${Math.round(zoom * 100)}%`);
+    });
     window.addEventListener('popstate', restore);
     controls.hidden = false;
     restore();
@@ -139,3 +157,8 @@ async function initNetwork() {
 }
 initNetwork();
 initVisitorStats();
+initExperience();
+initLibrary();
+initReading();
+initReferencePreviews();
+initGraphFocus();

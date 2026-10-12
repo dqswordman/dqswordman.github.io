@@ -474,7 +474,6 @@ svg {
 .field-pulse {
   transform-box: fill-box;
   transform-origin: center;
-  animation: pulse 5s ease-in-out infinite;
 }
 @keyframes pulse {
   0%,

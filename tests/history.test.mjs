@@ -118,6 +118,46 @@ test('graph labels escape arbitrary text and honor project base paths', () => {
   assert.ok(svg.includes('/preview/misc/history/people/sun-yatsen/'));
 });
 
+test('graph highlight metadata connects exactly the rendered endpoints and recorded actions', () => {
+  for (const locale of ['zh', 'en']) for (const person of history.people) {
+    const model = graphModel(localizedHistory(locale), person.id);
+    const svg = graphSvg(model, '', 'network-title', locale);
+    const edges = [...svg.matchAll(/data-edge-person="([^"]+)" data-edge-event="([^"]+)"/g)].map(([, person, event]) => `${person}/${event}`).sort();
+    assert.deepEqual(edges, model.edges.map(edge => `${edge.person}/${edge.event}`).sort());
+    for (const edge of model.edges) {
+      assert.ok(svg.includes(`data-node-kind="person" data-node-id="${edge.person}"`));
+      assert.ok(svg.includes(`data-node-kind="event" data-node-id="${edge.event}"`));
+    }
+  }
+});
+
+test('citation origins and section destinations map to real counterpart anchors in both languages', () => {
+  for (const kind of ['full', 'events', 'people', 'chapters', 'themes']) {
+    const items = history[kind === 'full' ? 'studies' : kind];
+    for (const item of items) {
+      const pages = Object.fromEntries(['zh', 'en'].map(locale => [locale, renderMiscPage({ route: `misc/history/${kind}/${item.id}/`, profile, assets, locale })]));
+      for (const locale of ['zh', 'en']) {
+        const html = pages[locale], opposite = pages[locale === 'zh' ? 'en' : 'zh'];
+        const origins = [...html.matchAll(/id="(citation-[^"]+)" data-alternate-anchor="#([^"]+)"/g)];
+        assert.equal(new Set(origins.map(([, id]) => id)).size, origins.length);
+        assert.ok(origins.length > 0);
+        for (const [, id, target] of origins) assert.ok(opposite.includes(`id="${target}"`), `${kind}/${item.id}/${locale}/${id}`);
+        for (const [, id, target] of html.matchAll(/id="(section-\d+)" data-alternate-anchor="#(section-\d+)"/g)) {
+          assert.ok(opposite.includes(`id="${target}"`), `${kind}/${item.id}/${locale}/${id}`);
+          assert.ok(html.includes(`id="citation-${id}" data-alternate-anchor="#citation-${target}"`));
+        }
+        if (kind === 'events') {
+          const data = localizedHistory(locale), other = localizedHistory(locale === 'en' ? 'zh' : 'en');
+          const localCount = data.events.find(a => a.id === item.id).sections.length, otherCount = other.events.find(a => a.id === item.id).sections.length;
+          for (let i = 0; i < dossiers[item.id].length; i++) {
+            assert.ok(html.includes(`id="section-${localCount - i}" data-alternate-anchor="#section-${otherCount - i}"`), `Paired dossier ${item.id}/${locale}/${i}`);
+          }
+        }
+      }
+    }
+  }
+});
+
 test('search combines words, period memberships, exact topics and inclusive year ranges', () => {
   const record = { search: '1919 五四运动 胡适 ＡＩ', period: 'republic|revolution', tags: '思想|社会', start: '1918', end: '1920' };
   assert.equal(matchesHistoryRecord(record, { q: '胡适 ai', period: 'revolution', topic: '思想', year: '1919' }), true);

@@ -17,23 +17,26 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   validateHistory();
   validateHistory(localizedHistory('en'));
   if (historyCensus().hanCharacters < 200_000) throw new Error('The Full edition requires at least 200,000 unique Chinese narrative characters.');
-  const [css, originalJs, filter, visitors] = await Promise.all(
-    ['styles.css', 'client.js', 'filter.mjs', 'visitors.mjs'].map((name) =>
+  const [css, originalJs, filter, visitors, experience, experienceCss, reading] = await Promise.all(
+    ['styles.css', 'client.js', 'filter.mjs', 'visitors.mjs', 'experience.mjs', 'experience.css', 'reading.mjs'].map((name) =>
       readFile(new URL(`src/${name}`, projectRoot), 'utf8'),
     ),
   );
   const filterName = `filter.${hash(filter)}.js`;
   const visitorsName = `visitors.${hash(visitors)}.js`;
+  const experienceName = `experience.${hash(experience)}.js`;
+  const readingName = `reading.${hash(reading)}.js`;
   const js = originalJs
     .replace("'./filter.mjs'", `'./${filterName}'`)
-    .replace("'./visitors.mjs'", `'./${visitorsName}'`);
-  const assets = { css: `site.${hash(css)}.css`, js: `site.${hash(js)}.js` };
+    .replace("'./visitors.mjs'", `'./${visitorsName}'`)
+    .replace("'./experience.mjs'", `'./${experienceName}'`);
+  const assets = { css: `site.${hash(css)}.css`, js: `site.${hash(js)}.js`, experienceCss: `experience.${hash(experienceCss)}.css` };
   const [miscCss, originalMiscJs, graph, search] = await Promise.all(
     ['misc.css', 'misc-client.js', 'history-graph.mjs', 'history-search.mjs'].map((name) => readFile(new URL(`src/${name}`, projectRoot), 'utf8')),
   );
   const graphName = `history-graph.${hash(graph)}.js`;
   const searchName = `history-search.${hash(search)}.js`;
-  const miscJs = originalMiscJs.replace("'./visitors.mjs'", `'./${visitorsName}'`).replace("'./history-graph.mjs'", `'./${graphName}'`).replace("'./history-search.mjs'", `'./${searchName}'`);
+  const miscJs = originalMiscJs.replace("'./visitors.mjs'", `'./${visitorsName}'`).replace("'./history-graph.mjs'", `'./${graphName}'`).replace("'./history-search.mjs'", `'./${searchName}'`).replace("'./experience.mjs'", `'./${experienceName}'`).replace("'./reading.mjs'", `'./${readingName}'`);
   // Only the graph page fetches this data. Article bodies stay in static HTML.
   const graphFor = locale => {
     const data = localizedHistory(locale);
@@ -71,6 +74,9 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     writeFile(new URL(`assets/${assets.js}`, outputRoot), js),
     writeFile(new URL(`assets/${filterName}`, outputRoot), filter),
     writeFile(new URL(`assets/${visitorsName}`, outputRoot), visitors),
+    writeFile(new URL(`assets/${experienceName}`, outputRoot), experience),
+    writeFile(new URL(`assets/${readingName}`, outputRoot), reading),
+    writeFile(new URL(`assets/${assets.experienceCss}`, outputRoot), experienceCss),
     writeFile(new URL(`assets/${assets.miscCss}`, outputRoot), miscCss),
     writeFile(new URL(`assets/${assets.miscJs}`, outputRoot), miscJs),
     writeFile(new URL(`assets/${graphName}`, outputRoot), graph),

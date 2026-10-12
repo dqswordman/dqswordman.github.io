@@ -1,7 +1,9 @@
 import { matchesPaper, readFilterState, writeFilterState } from './filter.mjs';
 import { initVisitorStats } from './visitors.mjs';
+import { initExperience } from './experience.mjs';
 
 initVisitorStats();
+initExperience();
 
 const header = document.querySelector('[data-header]');
 const menuButton = document.querySelector('[data-menu]');
