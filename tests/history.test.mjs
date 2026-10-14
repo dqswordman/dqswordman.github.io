@@ -20,7 +20,7 @@ test('the declared catalog covers every period with complete, connected articles
   assert.equal(history.people.length, 80);
   assert.equal(history.chapters.length, 14);
   assert.equal(history.themes.length, 9);
-  assert.equal(history.sources.length, 181);
+  assert.equal(history.sources.length, 194);
   for (const period of history.periods) assert.ok(history.events.some((event) => event.period === period.id));
   for (const person of history.people) assert.ok(eventsForPerson(person.id).length);
 });

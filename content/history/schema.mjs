@@ -10,7 +10,7 @@ export const point = (date, label) => ({ date, label });
 
 export const biography = (id, name, born, died, role, summary, background, career, assessment, refs, dates) => ({
   id, name, born, died, role, summary, dates: dates || `${born}—${died ?? '在世'}`,
-  sections: [section('生平与形成背景', background, refs), section('主要活动与历史处境', career, refs), section('评价、责任与阅读边界', assessment, refs)],
+  sections: [section('生平与形成背景', background, refs), section('主要活动与历史处境', career, refs), section('历史影响与责任', assessment, refs)],
 });
 
 export const periods = [

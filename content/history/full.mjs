@@ -1,16 +1,36 @@
-import { backgroundStudies } from './full-background.mjs';
-import { warStudies } from './full-war.mjs';
-import { earlyPrcStudies } from './full-prc-early.mjs';
-import { laterPrcStudies } from './full-prc-later.mjs';
-import { thematicStudies } from './full-themes.mjs';
-import { warCases } from './full-war-cases.mjs';
-import { prcCases } from './full-prc-cases.mjs';
-import { disasterStudies } from './full-disasters.mjs';
+import imperialCrisis from './narrative/imperial-crisis.mjs';
+import lateQing from './narrative/late-qing-reconstruction.mjs';
+import republic from './narrative/republic-and-society.mjs';
+import revolution from './narrative/revolution-and-invasion.mjs';
+import flood1931 from './narrative/flood-1931.mjs';
+import war1937 from './narrative/war-1937.mjs';
+import fronts from './narrative/fronts-1938-1944.mjs';
+import occupation from './narrative/occupation-and-atrocities.mjs';
+import homefront from './narrative/wartime-homefront.mjs';
+import resistance from './narrative/resistance-and-politics.mjs';
+import victory from './narrative/alliance-and-victory.mjs';
+import stateBuilding from './narrative/state-building.mjs';
+import planning from './narrative/planning-and-dissent.mjs';
+import flood1954 from './narrative/flood-1954.mjs';
+import famine from './narrative/great-famine.mjs';
+import culturalRevolution from './narrative/cultural-revolution.mjs';
+import banqiao from './narrative/banqiao-1975.mjs';
+import tangshan from './narrative/tangshan-1976.mjs';
+import coldWar from './narrative/cold-war.mjs';
+import reform from './narrative/reform-1976-1989.mjs';
+import protests from './narrative/protests-1989.mjs';
+import markets from './narrative/market-transformation.mjs';
+import governance from './narrative/governance-2012-2026.mjs';
+import strait from './narrative/strait-and-hongkong.mjs';
+import borderlands from './narrative/borderlands-and-rights.mjs';
+import welfare from './narrative/population-and-welfare.mjs';
+import science from './narrative/science-and-environment.mjs';
 import { fullFigures } from './full-figures.mjs';
-const cases = { ...warCases, ...prcCases };
-const insertAfter = { 'flood-1931': 'revolution-and-invasion', 'flood-1954': 'planning-and-dissent', 'banqiao-1975': 'cultural-revolution', 'tangshan-1976': 'cultural-revolution' };
-export const fullStudies = [...backgroundStudies, ...warStudies, ...earlyPrcStudies, ...laterPrcStudies, ...thematicStudies].flatMap(chapter => [chapter, ...disasterStudies.filter(extra => insertAfter[extra.id] === chapter.id)]).map(chapter => ({
-  ...chapter,
-  figure: fullFigures[chapter.id],
-  sections: chapter.sections.flatMap((section, index) => [section, ...(cases[chapter.id] || []).filter(group => group.after === index + 1).flatMap(group => group.sections)]),
-}));
+
+export const fullStudies = [
+  imperialCrisis, lateQing, republic, revolution, flood1931,
+  war1937, fronts, occupation, homefront, resistance, victory,
+  stateBuilding, planning, flood1954, famine, culturalRevolution,
+  banqiao, tangshan, coldWar, reform, protests, markets, governance,
+  strait, borderlands, welfare, science,
+].map(chapter => ({ ...chapter, figure: fullFigures[chapter.id] }));

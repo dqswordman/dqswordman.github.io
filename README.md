@@ -76,7 +76,7 @@ npm run dev -- --port 4174
 
 历史板块只保留 **Full 全文版**，中文位于 `/misc/history/full/`，英文位于 `/en/misc/history/full/`。全文体系包含 **27 个长章、199 个双语对应长章小节、90 篇事件专文、80 位人物传记、14 篇分期导论与9篇主题导论**。长章分为背景5章、抗战6章、建国后14章及贯通社会专题2章。原 Lite 入口仅作迁移重定向，导论与原有文章链接纳入同一 Full 体系。
 
-本版去重后的叙述正文为 **211,872 个汉字 / 67,241 个英文词**。只计算摘要与正文段落，相同段落全站计一次；不含标题、导航、行动表、图表、引用、来源说明、另一语言或重复渲染。`historyCensus()` 在每次构建时重新计算，构建要求中文正文不少于200,000汉字。两种语言计数单位不同，不能直接比较。全部90篇事件扩充了独立双语内容，30位关键人物增加生涯专论；全站有 **181 项资料、268 条人物行动记录**，图谱直接使用有来源的参与记录。
+本版去重后的叙述正文为 **230,084 个汉字 / 78,078 个英文词**。只计算摘要与正文段落，相同段落全站计一次；不含标题、导航、行动表、图表、引用、来源说明、另一语言或重复渲染。`historyCensus()` 在每次构建时重新计算，构建要求中文正文不少于200,000汉字。27章全部重写为连续历史叙述，199个小节在每种语言中各有800个正文段落。全部90篇事件扩充了独立双语内容，30位关键人物增加生涯专论；全站有 **194 项资料、268 条人物行动记录**，图谱直接使用有来源的参与记录。
 
 验收依据覆盖 1840—2026 年各阶段及主要主题的明确编年总目；包含 1839 年禁烟背景，事实截点为 **2026-10-10**。不声称穷尽每个地方的全部事件。范围、数字口径、资料限制及后续增补方向公开于 `/misc/history/method/`；编年总目位于 `/misc/history/timeline/`。中英方法页分别提供 `history-catalog.json` / `history-catalog.en.json`，v3总目包含实际正文统计、双语URL、全部文章正文、原创机制图、来源和增补项。2026年预测与已公布的历史统计分别表述。
 
@@ -90,10 +90,10 @@ npm run dev -- --port 4174
 | `content/history/biography-dossiers.mjs` | 30位关键人物的双语生涯专论 |
 | `content/history/people-*.mjs` | 三组人物传记；未知卒年明确标注 |
 | `content/history/essays.mjs` | 通史章节与跨时期专题 |
-| `content/history/full-*.mjs` / `full.mjs` | Full 双语长章、具体案例、来源及章节汇总 |
+| `content/history/narrative/` / `full.mjs` / `full-outline.mjs` | 27章双语叙述、章节次序及事件关联 |
 | `content/history/en-*.mjs` / `english.mjs` | 英文正文、人物、行动、图表和来源本地化 |
 | `content/history/people-international.mjs` | 日本及盟国人物传记、英文正文与参与记录 |
-| `content/history/sources.mjs` | 来源元数据、直达链接、材料类型与使用限制 |
+| `content/history/sources.mjs` | 统一中英文元数据、直达链接、材料类型与内容说明 |
 | `src/history.mjs` | 内容汇总、关联查询、完整性校验与路由 |
 | `src/misc-render.mjs` / `src/misc.css` | 杂项及历史页面的独立原创结构与设计 |
 | `src/misc-client.js` / `src/history-search.mjs` | 渐进增强导航、检索、筛选与状态恢复 |

@@ -9,28 +9,27 @@ import { earlyPeople } from '../content/history/people-early.mjs';
 import { modernPeople } from '../content/history/people-modern.mjs';
 import { prcPeople } from '../content/history/people-prc.mjs';
 import { chapters, themes } from '../content/history/essays.mjs';
-import { fullSources } from '../content/history/full-sources.mjs';
-import { internationalSources, internationalPeople, internationalActors } from '../content/history/people-international.mjs';
+import { internationalPeople, internationalActors } from '../content/history/people-international.mjs';
 import { fullStudies } from '../content/history/full.mjs';
 import { englishHistory, localizeStudy } from '../content/history/english.mjs';
 import { dossiers } from '../content/history/dossiers.mjs';
-import { expandedSources } from '../content/history/expanded-sources.mjs';
 import { biographyDossiers } from '../content/history/biography-dossiers.mjs';
+import { reviseReferences } from '../content/history/source-edition.mjs';
 
-export const history = {
-  updated: '2026-10-11',
+export const history = reviseReferences({
+  updated: '2026-10-14',
   cutoff: '2026-10-10',
   locale: 'zh',
-  sources: [...sources, ...fullSources, ...internationalSources, ...expandedSources],
+  sources,
   periods,
   events: [...earlyEvents, ...republicanEvents, ...warEvents, ...prcEvents, ...contemporaryEvents].map(e => ({ ...e, sections: [...e.sections, ...(dossiers[e.id] || []).map(s => s.zh)], actors: [...e.actors, ...(internationalActors[e.id] || [])] })).sort((a, b) => a.start - b.start),
   people: [...earlyPeople, ...modernPeople, ...prcPeople, ...internationalPeople].map(p => ({ ...p, sections: [...p.sections, ...(biographyDossiers[p.id] || []).map(s => s.zh)] })),
   chapters,
   themes,
   studies: fullStudies.map(s => localizeStudy(s, 'zh')),
-};
+});
 
-const english = englishHistory(history, fullStudies);
+const english = reviseReferences(englishHistory(history, fullStudies));
 export const localizedHistory = (locale = 'zh') => locale === 'en' ? english : history;
 export const studiesForEvent = (id, data = history) => data.studies.filter(s => s.events.includes(id));
 

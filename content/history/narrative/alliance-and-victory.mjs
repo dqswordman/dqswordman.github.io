@@ -1,0 +1,103 @@
+import { chapter as c, d } from './schema.mjs';
+export default c('alliance-and-victory',
+  '抗战胜利后的中国向何处去：盟国合作、和平谈判与解放战争',
+  'China after victory: Allied cooperation, peace negotiations and the civil war',
+  '外援与中国长期抵抗共同推动日本战败，开罗与波茨坦文件宣告侵略秩序将被终结。胜利后的接收、和平建国与土地改革却进入尖锐竞争；军政组织的分立、国民政府财政崩溃和农村动员，把国家带向1949年的政权更替与两岸分治。',
+  'Chinese resistance and Allied assistance contributed to Japan’s defeat, while Cairo and Potsdam announced the dismantling of its empire. Takeover, peaceful reconstruction and land reform became contested after victory. Rival military organizations, Nationalist financial collapse and rural mobilization carried China toward the change of government and division across the Taiwan Strait in 1949.', [
+  d('中国抗战与国际反法西斯同盟', 'Chinese resistance and the international anti-fascist alliance', [
+    '全面战争初期，中国获得苏联飞机、航空人员及其他军事援助，也继续从不同渠道采购装备。中国空军与外国志愿人员共同作战，帮助抵抗日本的海空优势。各国援助随欧洲局势和远东安全目标变化，1930年代末的合作始终处于国际危机之中。',
+    '1941年苏日签订中立条约，德国随后进攻苏联，苏联资源进一步集中于西线。美国逐步扩大援华，租借法案和飞虎队等行动带来新的支持。珍珠港事件后，中、美、英等正式进入共同对日战争，中国成为重要盟国。',
+    '中国已承受多年大规模陆战，持续抵抗牵制日本军队与资源；盟国援助则改善航空、部分陆军装备和对外联系。中国的国际地位提高，蒋介石参加开罗会议，国家主权恢复与全球战争安排联系起来。',
+    '各国在同盟内仍追求本国利益，美国的欧洲优先政策、英国的殖民利益和中国维持全国抵抗的需要，经常产生分歧。反法西斯合作在这些矛盾中持续运行，胜利来自长期抵抗与跨国协作，也来自亿万民众承担的代价。',
+  ], [
+    'Early in the full-scale war, China received Soviet aircraft, aviators and other military assistance while purchasing equipment through additional channels. Chinese and foreign volunteer airmen fought together against Japanese advantages. Assistance changed with European events and Far Eastern security concerns.',
+    'The Soviet–Japanese Neutrality Pact of 1941 and Germany’s invasion of the USSR shifted Soviet resources westward. American support grew through lend-lease and initiatives including the Flying Tigers. After Pearl Harbor, China, the United States, Britain and other powers became formal partners in the war against Japan.',
+    'Years of Chinese land warfare had already committed Japanese forces and resources. Allied assistance improved aviation, selected army formations and foreign links. China’s international standing rose, and Chiang’s participation at Cairo connected sovereignty with the wider wartime settlement.',
+    'Allies continued pursuing their own interests. American priority for Europe, British colonial concerns and China’s need to sustain resistance generated disagreement. Cooperation survived within those tensions, resting on both prolonged fighting and the burdens carried by civilian populations.',
+  ], ['army-stilwell-mission', 'army-china-defensive', 'cairo']),
+  d('滇缅公路与驼峰航线上的人', 'People along the Burma Road and the Hump route', [
+    '日本控制沿海港口、切断重要交通后，滇缅公路成为外援进入中国的重要通道。云南、缅甸的工人、司机与地方居民修路、运货，以山地道路维持战争中的联系。车辆、燃料和维修把援助从外交承诺变为前线能够使用的物资。',
+    '1942年缅甸失守，陆路供应被切断。盟军从印度组织飞越喜马拉雅及邻近山区的“驼峰”空运，机组面对高山、恶劣天气和导航困难。坠机、伤亡与地勤劳动构成运输史中持续而沉重的代价。',
+    '运输能力在战争后期逐步扩大，但空运必须同时满足航空作战、陆军整训和其他任务。送到印度的武器还要经过再次运输，军队获得装备后还需训练、弹药和维修。供应不足使盟国对战略轻重的争论更加激烈。',
+    '通道上的劳工、司机、飞行员与维修人员，把国际援助连接到中国内地的抵抗。运输量的增加给后期作战以帮助，也难以挽回此前因缺乏资源造成的损失。每批物资的到达，都建立在具体人员反复承担风险的工作之上。',
+  ], [
+    'Japanese control of the coast and major transport routes made the Burma Road an important entry for assistance. Workers, drivers and residents in Yunnan and Burma built and maintained mountain connections. Vehicles, fuel and repairs turned diplomatic commitments into usable supplies.',
+    'Burma’s fall in 1942 severed the land route. Allied aircraft carried supplies from India across the Himalayan region on the Hump route. Crews faced mountains, severe weather and navigational difficulty; crashes and ground support work imposed continuing costs.',
+    'Capacity expanded later, but aviation, army training and other tasks competed for transport. Weapons reaching India still required onward delivery, followed by training, ammunition and maintenance. Scarcity sharpened disagreements over strategic priorities.',
+    'Laborers, drivers, aircrews and maintenance staff connected international assistance to resistance inland. Increased deliveries helped later operations while earlier losses remained. Every shipment depended on people repeatedly undertaking dangerous work.',
+  ], ['army-stilwell-mission', 'army-stilwell-command', 'army-china-defensive']),
+  d('缅甸撤退与滇西、缅北反攻', 'Retreat from Burma and the counteroffensives', [
+    '1942年中国远征军进入缅甸，与英军共同面对日军进攻。保卫交通线的任务受到盟军指挥分歧、日军推进和撤退安排影响，部分部队退往印度，另一些返回云南。雨季、山地、饥饿和疾病使撤退成为惨重的人道与军事灾难。',
+    '退入印度的中国军队随后接受较系统的训练与装备，重建作战能力。中国军人和盟国部队在缅北反攻，滇西部队于1944年跨越怒江，对腾冲、松山、龙陵等据点发起艰苦攻击。山地与堡垒把每一段推进都变成高代价战斗。',
+    '缅北作战和滇西反攻从不同方向逐步恢复联系，公路建设同时向中国延伸。1945年初陆上通道重新打通，运输车队进入昆明。重新连接中国的道路，经过多年作战、工程劳动与巨大伤亡才得以实现。',
+    '远征军的历史包含初期失败、撤退创伤与后期反攻，幸存军人也经历长期流离。当地居民和劳工承受征用与破坏，解放交通线的成果与他们的损失共同组成这段跨国抗战。',
+  ], [
+    'Chinese expeditionary forces entered Burma in 1942 alongside British troops. Japanese advances, Allied command disputes and retreat arrangements undermined defense of the supply route. Some formations withdrew to India and others to Yunnan. Rain, mountains, hunger and disease turned retreat into a military and humanitarian disaster.',
+    'Chinese forces in India subsequently rebuilt capability through more systematic training and equipment. They fought with Allied troops in northern Burma, while Chinese formations crossed the Salween in 1944 and attacked strongpoints at Tengchong, Songshan and Longling. Fortifications and terrain made advances costly.',
+    'Operations from northern Burma and western Yunnan gradually restored contact as road construction advanced. A land connection reopened early in 1945, and convoys reached Kunming. Years of fighting, engineering work and casualties made this route possible.',
+    'Expeditionary history includes initial defeat, traumatic retreat and later counteroffensive. Surviving soldiers endured displacement, while local residents and laborers faced requisition and destruction. The restored connection and those losses belong together in the history of transnational resistance.',
+  ], ['army-stilwell-mission', 'army-stilwell-command', 'army-china-defensive']),
+  d('蒋介石、史迪威与陈纳德的战略分歧', 'Chiang Kai-shek, Stilwell and Chennault', [
+    '史迪威希望通过整训中国陆军、反攻缅甸和恢复陆路供应扩大抗日作战。他同时承担美军指挥、援助管理和对华军事联络，能够影响有限物资的分配。陈纳德则主张优先发展航空力量，打击日军交通、据点和运输。',
+    '蒋介石要考虑全国战线、保存军队和国内政治，要求装备与供应先得到改善，又警惕外国指挥扩大对中国军队的控制。英国关心缅甸、印度及战后殖民秩序，军事任务的排序与中美也存在差别。',
+    '空军与陆军争夺驼峰运量，国内防御与缅甸反攻争夺装备和部队。豫湘桂失败加深分歧，美国要求史迪威掌握更大指挥权，蒋拒绝接受。罗斯福于1944年召回史迪威，魏德迈接手中国战区的美方任务。',
+    '合作继续，指挥安排与援助关系则发生变化。这场争执把国家主权、盟国战略和军队组织问题集中到个人关系之中。中国持续抵抗需要外援，也始终面对怎样保持自主决定权的困难。',
+  ], [
+    'Stilwell favored rebuilding Chinese ground forces, retaking Burma and restoring land supply. His roles in command, aid administration and liaison gave him influence over scarce resources. Chennault preferred aviation attacks on Japanese communications, strongpoints and transport.',
+    'Chiang considered nationwide defense, preservation of forces and domestic politics. He sought improved equipment while resisting greater foreign control of Chinese troops. Britain’s interests in Burma, India and the postwar empire also affected strategic priorities.',
+    'Ground and air forces competed for Hump capacity, while defense within China and operations in Burma competed for equipment. Ichi-Go intensified the dispute. American demands for greater Stilwell command met Chiang’s refusal, and Roosevelt recalled Stilwell in 1944; Wedemeyer took over the American role in China.',
+    'Cooperation continued under altered command and aid arrangements. The dispute concentrated sovereignty, Allied strategy and military organization in difficult personal relations. China needed assistance while confronting the challenge of retaining control over its own war decisions.',
+  ], ['army-stilwell-command', 'army-china-defensive']),
+  d('开罗、波茨坦与日本投降', 'Cairo, Potsdam and Japan’s surrender', [
+    '1943年开罗会议把中国纳入讨论日本战后处置的主要盟国行列。12月公布的开罗公报提出日本侵占的中国领土，包括东北、台湾和澎湖归还中国，并提出朝鲜独立。中国长期争取国家主权的抗争，在盟国战后安排中得到明确表达。',
+    '1945年7月波茨坦公告提出日本投降条件，要求消除军国主义、解除军队武装并执行开罗条款。欧洲战争结束后，盟军进一步集中对日作战。中国仍在抵抗，美国海空打击与封锁持续削弱日本。',
+    '8月美国在广岛、长崎投下原子弹，苏联对日宣战并进入东北。日本领导层在军事失败、国内毁坏与外部压力下接受投降条件，裕仁于8月15日广播宣布。9月2日，日本在东京湾签署投降书。',
+    '9月9日中国战区在南京受降，台湾于10月由中华民国方面接收，日本殖民统治结束。各地缴械、接收和遣返随后陆续进行。战后和平条约和代表权争议继续发展，1945年的胜利首先为恢复主权和重建生活打开了历史机会。',
+  ], [
+    'The Cairo Conference of 1943 placed China among the principal Allies discussing Japan’s postwar settlement. Its communiqué called for the return of territories taken from China, including Manchuria, Taiwan and the Pescadores, and for Korean independence. China’s struggle for sovereignty gained explicit recognition within Allied plans.',
+    'The Potsdam Declaration of July 1945 set surrender terms, including dismantling militarism, disarmament and implementation of Cairo. After the war in Europe ended, Allied pressure intensified. China continued resisting while American sea and air operations weakened Japan.',
+    'In August the United States dropped atomic bombs on Hiroshima and Nagasaki, and the Soviet Union declared war and entered Manchuria. Japan accepted surrender amid military defeat and destruction. Hirohito broadcast the decision on 15 August, and the surrender instrument was signed on 2 September.',
+    'The China theater received surrender at Nanjing on 9 September. Republic of China authorities took over Taiwan in October, ending Japanese colonial government. Disarmament, takeover and repatriation continued locally, while later treaties and representation disputes developed. Victory opened an opportunity to restore sovereignty and rebuild life.',
+  ], ['cairo', 'potsdam', 'nara-japan', 'civilwar-us', 'taiwan-republic']),
+  d('接收与和平建国的机会', 'Takeover and the opportunity for peace', [
+    '抗战胜利后，民众期待停止战争、恢复生产和建设新的国家秩序。蒋介石与毛泽东于1945年在重庆谈判，10月签署双十协定，提出和平、民主和团结等安排。民主党派、知识界和普通家庭对和平建国寄予希望。',
+    '接收城市、铁路和日军装备同时改变力量分布。美国帮助国民政府运输军队，苏军进入东北后的占领、撤离与装备处理又影响当地格局。国共各自推进实际控制，谈判与战地争夺彼此牵动。',
+    '国民政府接收日伪资产和地方行政时，腐败、争产、失业与物价问题损害民众信任。沦陷区居民期待得到保护和恢复工作，却可能面对新的权力索取。复员军人、归乡难民与等待救济者，都感受到胜利后重建的困难。',
+    '1946年在马歇尔调停下形成停战安排，政治协商会议讨论政府改组、宪政和军队整编。核心争议涉及解放区地位、军事指挥和权力分享，两党缺少能够长期保障协议的信任与制度。',
+    '东北与其他地区战事继续升级，停战和整编逐渐失败。1946年全面内战爆发，和平期待让位于争夺全国政权的军事冲突。领导层的具体战争决定，与武装并立、接收争夺和外部介入共同把中国推向新的灾难。',
+  ], [
+    'Victory raised hopes for an end to war, resumed production and a new political order. Chiang and Mao negotiated at Chongqing in 1945, signing the Double Tenth Agreement in October. Democratic parties, intellectuals and families invested hope in peaceful reconstruction.',
+    'Control of cities, railways and Japanese equipment simultaneously changed the balance of force. The United States transported Nationalist troops; Soviet occupation, withdrawal and handling of equipment affected Manchuria. Both Chinese parties advanced territorial control while negotiating.',
+    'Corruption, property disputes, unemployment and inflation during Nationalist takeover damaged public confidence. Residents expecting protection could encounter new exactions. Veterans, returning refugees and people awaiting relief experienced the difficulties of postwar reconstruction.',
+    'Marshall’s mediation produced a cease-fire in early 1946, while the Political Consultative Conference discussed government, constitutional arrangements and military integration. Disputes over Communist-held areas, command and power-sharing remained unresolved, with little durable trust to sustain agreements.',
+    'Fighting in Manchuria and elsewhere widened, and the agreements broke down. Full-scale civil war began in 1946. Leadership decisions, separate armies, contested takeover and external intervention carried the country from hopes of peace into another catastrophe.',
+  ], ['truman-china', 'civilwar-us', 'frus-1946']),
+  d('土地改革、农村动员与国民政府财政崩溃', 'Land reform, rural mobilization and Nationalist financial collapse', [
+    '内战初期，国民党在军队、城市和国际承认方面拥有优势，中共则依靠根据地与农村组织抵抗。国民党军进攻解放区，中共部队先进行防御，再于1947年前后扩大反攻。军事变化与双方在社会中获得资源和支持的能力紧密相关。',
+    '中共1946年五四指示推动土地政策由减租向重新分配转变，1947年《中国土地法大纲》进一步要求改变土地占有。贫苦农民获得土地的期待与实际收益，扩大了参军、供粮和支前的基础，乡村权力也随动员而重组。',
+    '土地改革包含暴力斗争、错划阶级和伤害中农等问题，1948年前后出现调整与纠偏。分地给许多家庭新的生产和政治位置，过激行动又造成死亡、恐惧和人际裂痕。社会革命的动员能力与其伤害，同时影响新权力的形成。',
+    '国民政府的军费与行政支出不断扩大，货币发行造成恶性通胀。1948年金圆券改革要求兑换黄金、白银和外汇，最初以行政限价试图稳定市场，随后迅速失败。工资、储蓄和居民交出的资产被货币崩溃吞噬，城市中产和劳动者遭受重创。',
+    '征兵、征粮与腐败使农村不满加重，财政崩溃又损害军队补给和士气。中共把土地诉求、基层组织和军事动员结合起来，国民政府则在军事失利与社会信任流失中承受双重危机。战争结局逐渐由战场与民众生活共同塑造。',
+  ], [
+    'At the beginning of civil war, the Nationalists held advantages in armies, cities and international recognition, while the CCP relied on its bases and rural organizations. Communist forces moved from defense toward wider offensives around 1947. These changes depended on each side’s ability to obtain resources and support.',
+    'The CCP’s May Fourth Directive of 1946 shifted policy from rent reduction toward redistribution; the 1947 Outline Land Law advanced changes in ownership. Expectations and gains among poorer farmers broadened recruitment, grain supply and transport support while village authority was reorganized.',
+    'Reform also involved violent struggles, erroneous class assignments and harm to middle peasants, followed by adjustments around 1948. Land gave many households new economic and political positions, while radical excesses produced death, fear and fractured relationships. Mobilization and injury both shaped the emerging order.',
+    'Nationalist military and administrative spending increased as money creation drove hyperinflation. The 1948 Gold Yuan reform required the surrender of gold, silver and foreign exchange and initially imposed price controls. Its collapse destroyed wages, savings and the value of surrendered assets, severely harming urban workers and middle-class households.',
+    'Recruitment, requisitions and corruption deepened rural anger, while fiscal breakdown damaged supply and morale. The CCP linked land demands to organization and military mobilization; the National Government faced battlefield reverses and declining confidence. Civilian life and military campaigns jointly shaped the outcome.',
+  ], ['resolution-1981', 'gold-yuan-records', 'land-property', 'civilwar-us']),
+  d('三大战役、渡江与1949年的国家转折', 'The three campaigns, the Yangzi crossing and the turning point of 1949', [
+    '1948年秋至1949年初，辽沈、淮海和平津战役改变了全国军事格局。东北野战军在林彪、罗荣桓等领导下取得东北主要地区，国民党军在重要城市和交通线的防守被逐步瓦解。大量部队损失和投降，使国民政府失去继续掌握大陆的军事基础。',
+    '淮海战役中，中原与华东部队协同作战，刘伯承、陈毅、邓小平、粟裕、谭震林等参与统一领导与指挥。地方民众推车运粮、救护伤员，军队与农村动员紧密结合。战役胜利体现了作战组织、补给和社会支持的共同作用。',
+    '平津战役中，东北与华北部队控制主要地区，傅作义接受北平和平解决，减少了古都进一步毁坏。长春等被围城市则经历严重饥饿与死亡，军事胜利到来以前，居民已付出沉重代价。',
+    '1949年4月，人民解放军渡过长江，南京国民政府统治结束，大陆主要城市和地区陆续被接管。10月1日中华人民共和国成立，宣告国家政权与发展道路的根本改变。此后的统一、恢复生产和社会改造，仍需在各地具体推进。',
+    '国民政府迁往台湾，两岸形成长期分治。台湾此前的二二八事件镇压和1949年后的戒严，将国家暴力与社会创伤带入新的秩序。迁台家庭、大陆留守亲属与被政治边界隔开的人，在胜负之外经历长期分离。',
+    '从抗战胜利到新中国成立，民族独立、土地问题、民众支持与现代国家建设彼此交织。1949年成为政治断点，普通人的财产、亲情、迁徙和记忆却跨越这条界线。战争后的中国，在重建希望与深刻损失中开启新的历史。',
+  ], [
+    'From autumn 1948 to early 1949, the Liaoshen, Huaihai and Pingjin campaigns transformed the military balance. The Northeast Field Army under Lin Biao, Luo Ronghuan and other leaders secured the principal areas of Manchuria. Nationalist defenses of cities and corridors collapsed as formations were destroyed or surrendered.',
+    'In Huaihai, Central Plains and East China forces coordinated operations under leaders including Liu Bocheng, Chen Yi, Deng Xiaoping, Su Yu and Tan Zhenlin. Civilians carried grain and evacuated wounded people. Operational organization, supply and rural mobilization worked together.',
+    'In Pingjin, northeastern and northern forces gained control, and Fu Zuoyi accepted a negotiated settlement at Beijing that spared further destruction of the ancient capital. Other sieges inflicted severe civilian suffering, including hunger and death during the blockade of Changchun.',
+    'The People’s Liberation Army crossed the Yangzi in April 1949, ending Nationalist rule at Nanjing. Major mainland areas were taken over, and the People’s Republic was founded on 1 October. Unification, economic recovery and social transformation still required continued local action.',
+    'The National Government moved to Taiwan, establishing a durable division across the Strait. Repression after the 1947 February 28 Incident and martial law from 1949 shaped Taiwan’s new order. Migrating families and relatives left on the mainland experienced prolonged separation beyond the military result.',
+    'National independence, land, public support and state-building intertwined between victory over Japan and the establishment of the PRC. The political rupture of 1949 divided institutions while property, kinship, migration and memory crossed it. Reconstruction began amid both hope and profound loss.',
+  ], ['civilwar-us', 'resolution-1981', '228-responsibility', '228-truth', 'gold-yuan-records']),
+]);
