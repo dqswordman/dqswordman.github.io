@@ -15,6 +15,7 @@
     "test": "node --test",
     "check": "node scripts/check.mjs",
     "verify": "npm test && npm run check",
-    "brand:svg": "node scripts/brand-svg.mjs"
+    "brand:svg": "node scripts/brand-svg.mjs",
+    "seal": "node scripts/seal-sections.mjs"
   }
 }

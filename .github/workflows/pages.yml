@@ -29,6 +29,11 @@ jobs:
           package-manager-cache: false
       - name: Build and verify
         run: npm run verify
+      - name: Prepare section availability
+        if: github.event_name != 'pull_request'
+        env:
+          MISC_ACCESS_PASSWORD: ${{ secrets.MISC_ACCESS_PASSWORD }}
+        run: npm run seal
       - name: Configure Pages
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
