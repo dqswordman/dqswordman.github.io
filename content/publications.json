@@ -1,52 +1,70 @@
 [
   {
+    "id": "decision-sufficiency",
+    "title": "Complex Utility, Simple Calibration: Decision Sufficiency in RAG Evidence Selection",
+    "authors": ["Wenzhang Du"],
+    "venue": "WSDM",
+    "year": 2027,
+    "group": "major",
+    "status": "accepted",
+    "acceptedDate": "2026-11-03",
+    "topics": ["evaluation"]
+  },
+  {
     "id": "pairsafe",
     "title": "PAIRSAFE: Proxy-Resistant Paired Safety Evaluation for Refusal Boundaries",
     "authors": ["Wenzhang Du"],
     "affiliation": "Independent Researcher",
-    "venue": "AACL-IJCNLP 2026",
+    "venue": "AACL-IJCNLP",
     "year": 2026,
+    "group": "major",
     "status": "accepted",
+    "acceptedDate": "2026-10",
     "topics": ["evaluation"]
   },
   {
     "id": "arc-ctrl",
     "title": "ARC-CTRL: Audit-Guided Closed-Loop Trust Control for Surrogate-Assisted Evolutionary Hyperparameter Optimization",
     "authors": ["Wenzhang Du"],
-    "venue": "WCCI 2026 (CEC 2026)",
+    "venue": "WCCI (CEC)",
     "year": 2026,
+    "group": "major",
     "topics": ["evaluation"]
   },
   {
     "id": "optimistic-feasible-search",
     "title": "Optimistic Feasible Search for Closed-Loop Fair Threshold Decision-Making",
     "authors": ["Wenzhang Du"],
-    "venue": "WCCI 2026 (IJCNN 2026)",
+    "venue": "WCCI (IJCNN)",
     "year": 2026,
+    "group": "major",
     "topics": ["evaluation"]
   },
   {
     "id": "paired-bootstrap",
     "title": "When +1% Is Not Enough: A Paired Bootstrap Protocol for Evaluating Small Improvements",
     "authors": ["Wenzhang Du"],
-    "venue": "PAKDD 2026 (Main Track; Oral)",
+    "venue": "PAKDD",
     "year": 2026,
+    "group": "major",
     "topics": ["evaluation"]
   },
   {
     "id": "contract-governed-training",
     "title": "Contract-Governed Training for Earth Observation: Observed Service Agreement Graphs and Coverage-Accuracy Trade-offs",
     "authors": ["Wenzhang Du"],
-    "venue": "IGARSS 2026",
+    "venue": "IGARSS",
     "year": 2026,
+    "group": "major",
     "topics": ["earth"]
   },
   {
     "id": "satellite-scheduling",
     "title": "A Reproducible Potential-Game Baseline for Multi-Satellite Scheduling on Hyperspectral Benchmarks",
     "authors": ["Wenzhang Du"],
-    "venue": "IGARSS 2026",
+    "venue": "IGARSS",
     "year": 2026,
+    "group": "major",
     "topics": ["earth"],
     "scholarUrl": "https://scholar.google.com/scholar?hl=en&q=%22A%20Reproducible%20Potential-Game%20Baseline%20for%20Multi-Satellite%20Scheduling%20on%20Hyperspectral%20Benchmarks%22"
   },
@@ -54,64 +72,72 @@
     "id": "autocompress",
     "title": "AutoCompress: Mixed-Precision Quantization-Aware NAS under Strict Memory Budgets",
     "authors": ["Wenzhang Du", "Suphongsa Khetkeeree"],
-    "venue": "iEECON 2026",
+    "venue": "iEECON",
     "year": 2026,
+    "group": "ei",
     "topics": ["efficient"]
   },
   {
     "id": "ibsr",
     "title": "IBSR: Variational Information Bottleneck for Efficient Multispectral Image Super-Resolution",
     "authors": ["Wenzhang Du", "Suphongsa Khetkeeree"],
-    "venue": "iEECON 2026",
+    "venue": "iEECON",
     "year": 2026,
+    "group": "ei",
     "topics": ["earth", "efficient"]
   },
   {
     "id": "structure-aware-loss",
     "title": "Structure-Aware Loss Functions for Remote-Sensing Super-Resolution",
     "authors": ["Suphongsa Khetkeeree", "Wenzhang Du"],
-    "venue": "iEECON 2026",
+    "venue": "iEECON",
     "year": 2026,
+    "group": "ei",
     "topics": ["earth"]
   },
   {
     "id": "cloud-education",
     "title": "Architecture and Application of Cloud Computing in Education with Case Study Insights",
     "authors": ["Suchada Sitjongsataporn", "Wenzhang Du", "P. Nurarak"],
-    "venue": "iSTEM-Ed 2025",
+    "venue": "iSTEM-Ed",
     "year": 2025,
+    "group": "ei",
     "topics": ["applied"]
   },
   {
     "id": "adaptive-gru",
     "title": "Adaptive Feature Optimization with Dynamic GRU for EEG Emotion Classification",
     "authors": ["Wenzhang Du", "Suchada Sitjongsataporn", "Pipat Sakarin"],
-    "venue": "ECTI-CON 2025",
+    "venue": "ECTI-CON",
     "year": 2025,
+    "group": "ei",
     "topics": ["applied", "efficient"]
   },
   {
     "id": "lightweight-gru",
     "title": "Light-Weight Gated Recurrent Unit for Electroencephalogram Emotion Classification",
     "authors": ["Suchada Sitjongsataporn", "Wenzhang Du", "Pipat Sakarin"],
-    "venue": "iEECON 2025",
+    "venue": "iEECON",
     "year": 2025,
+    "group": "ei",
     "topics": ["applied", "efficient"]
   },
   {
     "id": "edgefirenet",
     "title": "EdgeFireNet: A Lightweight Anchor-Free Fire Detection Network for Edge Devices",
     "authors": ["Wenzhang Du", "Suphongsa Khetkeeree", "Suchada Sitjongsataporn"],
-    "venue": "ICGIP 2025",
+    "venue": "ICGIP",
     "year": 2025,
+    "group": "ei",
     "topics": ["applied", "efficient"]
   },
   {
     "id": "projection-gru",
     "title": "Improving EEG Emotion Recognition with Projection Layer and Output-Gated GRU Network",
     "authors": ["Wenzhang Du", "Suchada Sitjongsataporn", "Pipat Sakarin"],
-    "venue": "ICPEI 2025",
+    "venue": "ICPEI",
     "year": 2025,
+    "group": "ei",
     "topics": ["applied", "efficient"]
   }
 ]

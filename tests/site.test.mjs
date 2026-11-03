@@ -56,7 +56,7 @@ test('publications retain one explicit Scholar URL and generate precise title se
   }
 });
 
-test('PAIRSAFE is sole-authored independent work with explicit accepted status in both languages', () => {
+test('PAIRSAFE retains its authorship and acceptance record in the bilingual news timeline', () => {
   const paper = publications.find((paper) => paper.id === 'pairsafe');
   assert.equal(
     paper.title,
@@ -64,17 +64,63 @@ test('PAIRSAFE is sole-authored independent work with explicit accepted status i
   );
   assert.deepEqual(paper.authors, [profile.name]);
   assert.equal(paper.affiliation, 'Independent Researcher');
-  assert.equal(paper.venue, 'AACL-IJCNLP 2026');
+  assert.equal(paper.venue, 'AACL-IJCNLP');
   assert.equal(paper.status, 'accepted');
   assert.ok(citation(paper).endsWith('Accepted; forthcoming.'));
-  for (const [locale, label, author] of [
-    ['en', 'Accepted · forthcoming', 'Sole author'],
-    ['zh', '已录用 · 即将发表', '唯一作者'],
+  for (const [locale, label] of [
+    ['en', 'Accepted at · AACL-IJCNLP 2026'],
+    ['zh', '录用于 · AACL-IJCNLP 2026'],
   ]) {
     const html = renderPage({ profile, publications, locale, assets });
     assert.ok(html.includes(label));
-    assert.ok(html.includes(author));
+    assert.ok(html.includes('datetime="2026-10"'));
   }
+});
+
+test('WSDM news preserves the announcement date separately from the conference year and confirmed authorship', () => {
+  const paper = publications.find(p => p.id === 'decision-sufficiency');
+  assert.equal(paper.title, 'Complex Utility, Simple Calibration: Decision Sufficiency in RAG Evidence Selection');
+  assert.equal(paper.venue, 'WSDM');
+  assert.equal(paper.year, 2027);
+  assert.equal(paper.acceptedDate, '2026-11-03');
+  assert.deepEqual(paper.authors, ['Wenzhang Du']);
+  assert.equal(paper.group, 'major');
+  const announcement = profile.news.find(n => n.publication === paper.id);
+  assert.equal(announcement.date, paper.acceptedDate);
+  assert.equal(announcement.kind, 'acceptance');
+  for (const locale of ['zh', 'en']) {
+    const html = renderPage({ profile, publications, locale, assets });
+    assert.match(html, /class="news-panel" id="news"/);
+    assert.ok(html.indexOf('id="news"') < html.indexOf('id="about-me"'));
+    assert.match(html, /datetime="2026-11-03"/);
+    assert.match(html, /href="#paper-decision-sufficiency" data-paper-jump/);
+  }
+});
+
+test('publication groups contain every paper once and presentation classifications stay out of venue records', () => {
+  const groups = Object.fromEntries(['major', 'ei'].map(g => [g, publications.filter(p => p.group === g)]));
+  assert.equal(groups.major.length, 7);
+  assert.equal(groups.ei.length, 8);
+  for (const p of publications) assert.doesNotMatch(p.venue, /\b(?:oral|poster|findings|main)\b/i);
+  for (const locale of ['zh', 'en']) {
+    const html = renderPage({ profile, publications, locale, assets });
+    const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
+    assert.equal(new Set(ids).size, ids.length);
+    for (const [group, papers] of Object.entries(groups)) {
+      const content = html.split(`id="${group}-publications"`)[1].split('class="publication-group"')[0];
+      for (const paper of papers) assert.ok(content.includes(`id="paper-${paper.id}"`));
+    }
+    assert.doesNotMatch(html, /class="paper-(?:badge|authors|topics|author-note)"/);
+  }
+});
+
+test('editorial validation rejects impossible dates, dangling news links, and unknown publication groups', () => {
+  const first = profile.news[0];
+  for (const date of ['2026-02-30', '2026-13', 'November 3']) {
+    assert.throws(() => validateContent({ ...profile, news: [{ ...first, date }] }, publications), /news date/);
+  }
+  assert.throws(() => validateContent({ ...profile, news: [{ ...first, publication: 'missing' }] }, publications), /News publication/);
+  assert.throws(() => validateContent(profile, publications.map((p, i) => i === 0 ? { ...p, group: 'unknown' } : p)), /publication group/);
 });
 
 test('visitor counting only runs on the exact published HTTPS origin', () => {
@@ -114,7 +160,7 @@ test('citations contain recorded authors, title, venue, and year without invente
   const paper = publications.find((paper) => paper.id === 'projection-gru');
   assert.equal(
     citation(paper),
-    'Wenzhang Du, Suchada Sitjongsataporn, Pipat Sakarin. Improving EEG Emotion Recognition with Projection Layer and Output-Gated GRU Network. ICPEI 2025, 2025.',
+    'Wenzhang Du, Suchada Sitjongsataporn, Pipat Sakarin. Improving EEG Emotion Recognition with Projection Layer and Output-Gated GRU Network. ICPEI 2025.',
   );
 });
 

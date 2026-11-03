@@ -1,9 +1,9 @@
-import { escapeHtml as h, paperUrl, citation } from './content.mjs';
-import { icon, monogram, trustField } from './components.mjs';
+import { escapeHtml as h, paperUrl, citation, publicationGroups } from './content.mjs';
+import { icon, monogram } from './components.mjs';
 
 export const ui = {
   en: {
-    nav: ['About', 'Research', 'Publications', 'Experience'],
+    nav: ['News', 'About', 'Research', 'Publications', 'Experience'],
     contact: 'Let’s talk',
     skip: 'Skip to content',
     home: 'Wenzhang Du — home',
@@ -30,7 +30,19 @@ export const ui = {
     education: 'Education',
     internship: 'Research experience',
     gpa: 'Cumulative GPA',
-    news: 'Latest update',
+    news: 'News',
+    newsEyebrow: 'THE RESEARCH JOURNAL',
+    newsIntro: 'Research, as it happens.',
+    newsYears: 'Filter news by year',
+    newsAll: 'All',
+    newsCount: '{count} of {total} updates',
+    newsExpand: 'View the timeline',
+    newsCollapse: 'Latest updates',
+    newsKinds: { acceptance: 'Accepted', award: 'Recognition', update: 'Milestone' },
+    acceptedAt: 'Accepted at',
+    acceptedOn: 'Accepted',
+    groups: { major: 'Major publications', ei: 'EI conference papers' },
+    groupCount: '{count} papers',
     based: 'Based in',
     focus: 'Research focus',
     focusText: 'Trustworthy AI & rigorous evaluation',
@@ -66,7 +78,6 @@ export const ui = {
     backTop: 'Back to top',
     footer: 'Independent research homepage',
     updated: 'Profile updated',
-    oral: 'Oral presentation',
     bestPaper: 'Best Paper Award',
     accepted: 'Accepted · forthcoming',
     soleAuthor: 'Sole author',
@@ -86,7 +97,7 @@ export const ui = {
     openPaper: 'Find this publication on Google Scholar',
   },
   zh: {
-    nav: ['关于', '研究方向', '论文', '经历'],
+    nav: ['动态', '关于', '研究方向', '论文', '经历'],
     contact: '联系我',
     skip: '跳至正文',
     home: 'Wenzhang Du — 首页',
@@ -113,7 +124,19 @@ export const ui = {
     education: '教育背景',
     internship: '研究经历',
     gpa: '累计 GPA',
-    news: '最近更新',
+    news: '研究动态',
+    newsEyebrow: 'NEWS / 研究手记',
+    newsIntro: '记录研究路上的每一步。',
+    newsYears: '按年份筛选动态',
+    newsAll: '全部',
+    newsCount: '{count} / {total} 条动态',
+    newsExpand: '展开时间轴',
+    newsCollapse: '收起至近期动态',
+    newsKinds: { acceptance: '论文录用', award: '荣誉', update: '近况' },
+    acceptedAt: '录用于',
+    acceptedOn: '录用',
+    groups: { major: '主要发表', ei: 'EI 会议论文' },
+    groupCount: '{count} 篇论文',
     based: '所在地',
     focus: '研究重点',
     focusText: '可信人工智能与严谨的实证评估',
@@ -149,7 +172,6 @@ export const ui = {
     backTop: '返回顶部',
     footer: '独立构建的个人学术主页',
     updated: '资料更新于',
-    oral: '口头报告',
     bestPaper: '最佳论文奖',
     accepted: '已录用 · 即将发表',
     soleAuthor: '唯一作者',
@@ -169,7 +191,7 @@ export const ui = {
   },
 };
 
-const navigationIds = ['about-me', 'research-profile', 'publications', 'experience'];
+const navigationIds = ['news', 'about-me', 'research-profile', 'publications', 'experience'];
 const external = 'target="_blank" rel="noopener noreferrer"';
 const multiline = (value) => h(value).replace(/\n/g, '<br>');
 
@@ -198,15 +220,23 @@ function header(profile, copy, t, locale, basePath, isError) {
   </header>`;
 }
 
-function paperBadge(paper, t) {
-  if (paper.status === 'accepted') return `<span class="paper-badge">${h(t.accepted)}</span>`;
-  if (paper.venue.includes('Oral')) return `<span class="paper-badge">${h(t.oral)}</span>`;
-  if (paper.venue === 'ICPEI 2025')
-    return `<span class="paper-badge">${icon('award')}${h(t.bestPaper)}</span>`;
-  return '';
+function newsPanel(profile, publications, t, locale) {
+  const items = [...profile.news].sort((a, b) => b.date.localeCompare(a.date));
+  const years = [...new Set(items.map(item => item.date.slice(0, 4)))];
+  return `<aside class="news-panel" id="news" aria-labelledby="news-title" data-news data-section>
+    <header class="news-heading"><div><p class="eyebrow">${h(t.newsEyebrow)}</p><h2 id="news-title">${h(t.news)}<span aria-hidden="true">.</span></h2><p class="news-intro">${h(t.newsIntro)}</p></div><span class="news-emblem" aria-hidden="true">${icon('chart')}</span></header>
+    <div class="news-tools" data-news-tools hidden><div class="news-years" role="group" aria-label="${h(t.newsYears)}"><button type="button" data-news-filter="all" aria-pressed="true" aria-controls="news-list">${h(t.newsAll)}</button>${years.map(year => `<button type="button" data-news-filter="${year}" aria-pressed="false" aria-controls="news-list">${year}</button>`).join('')}</div></div>
+    <ol class="news-timeline" id="news-list" role="list">${items.map((item, index) => {
+      const paper = item.publication ? publications.find(p => p.id === item.publication) : null;
+      const title = paper ? paper.title : item.title[locale];
+      const detail = paper ? `${item.kind === 'acceptance' ? t.acceptedAt : t.bestPaper} · ${paper.venue} ${paper.year}` : item.text[locale];
+      return `<li class="news-item${index === 0 ? ' is-latest' : ''}" data-news-item data-news-year="${h(item.date.slice(0, 4))}"><div class="news-date"><time datetime="${h(item.date)}">${h(dateLabel(item.date, locale))}</time><span>${h(t.newsKinds[item.kind])}</span></div><h3>${paper ? `<a href="#paper-${h(paper.id)}" data-paper-jump>${h(title)} ${icon('external')}</a>` : h(title)}</h3><p class="news-detail">${h(detail)}</p></li>`;
+    }).join('')}</ol>
+    <footer class="news-footer"><p data-news-count data-template="${h(t.newsCount)}" role="status" aria-live="polite" aria-atomic="true">${h(t.newsCount.replace('{count}', items.length).replace('{total}', items.length))}</p><button type="button" class="news-toggle" data-news-toggle data-expand-label="${h(t.newsExpand)}" data-collapse-label="${h(t.newsCollapse)}" aria-controls="news-list" aria-expanded="false" hidden><span>${h(t.newsExpand)}</span>${icon('down')}</button></footer>
+  </aside>`;
 }
 
-function paperRow(paper, index, profile, t) {
+function paperRow(paper, index, t, locale) {
   const search = [
     paper.title,
     ...paper.authors,
@@ -220,11 +250,9 @@ function paperRow(paper, index, profile, t) {
   return `<li class="publication" id="paper-${h(paper.id)}" data-publication data-year="${paper.year}" data-topics="${h(paper.topics.join(' '))}" data-search="${h(search)}">
     <span class="paper-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
     <article class="paper-content" aria-labelledby="title-${h(paper.id)}">
-      <div class="paper-meta"><span>${h(paper.venue)}</span>${paperBadge(paper, t)}</div>
+      <div class="paper-meta"><span>${h(paper.venue)}</span><time datetime="${paper.year}">${paper.year}</time>${paper.acceptedDate ? `<span class="paper-accepted-date">${h(t.acceptedOn)} <time datetime="${h(paper.acceptedDate)}">${h(dateLabel(paper.acceptedDate, locale))}</time></span>` : ''}</div>
       <h3 id="title-${h(paper.id)}"><a href="${h(paperUrl(paper))}" ${external}>${h(paper.title)} ${icon('external')}</a></h3>
-      <p class="paper-authors">${paper.authors.map((author) => (author === profile.name ? `<strong>${h(author)}</strong>` : h(author))).join(', ')}</p>
-      ${paper.affiliation ? `<p class="paper-author-note">${paper.authors.length === 1 ? `${h(t.soleAuthor)} · ` : ''}${h(paper.affiliation === 'Independent Researcher' ? t.independentResearcher : paper.affiliation)}</p>` : ''}
-      <div class="paper-bottom"><div class="paper-topics">${paper.topics.map((topic) => `<span>${h(t.topics[topic])}</span>`).join('')}</div><details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button></div></details></div>
+      <div class="paper-bottom"><details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button></div></details></div>
     </article>
   </li>`;
 }
@@ -279,21 +307,21 @@ export function renderPage({
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
         <div class="hero-copy"><p class="eyebrow hero-eyebrow"><span class="status-dot"></span>${h(copy.heroEyebrow)}</p><h1 id="hero-title">${h(profile.name)}<span class="name-period">.</span></h1><p class="hero-statement">${h(copy.heroStatement[0])}<br><em>${h(copy.heroStatement[1])}</em></p><p class="hero-intro">${h(copy.heroIntro)}</p><div class="hero-actions"><a class="button button-cream" href="#publications">${h(t.viewWork)}${icon('arrow')}</a><a class="hero-text-link" href="mailto:${h(profile.email)}">${h(t.getInTouch)}${icon('external')}</a></div></div>
-        <div class="hero-art"><div class="art-heading"><span>${h(t.fieldTop)}</span><span aria-hidden="true">FIG. 01</span></div>${trustField()}<div class="art-caption"><span class="art-cross" aria-hidden="true">+</span><span>${h(t.fieldBottom)}</span><span class="art-cross" aria-hidden="true">+</span></div></div>
+        ${newsPanel(profile, publications, t, locale)}
       </div>
       <div class="container hero-bottom"><p>${icon('pin')}${h(copy.location)}<span class="hero-divider" aria-hidden="true"></span>${h(copy.heroNote)}</p><a href="#about-me">${h(t.scroll)}${icon('down')}</a></div>
     </section>
     <div class="facts-strip"><div class="container facts-grid"><dl><dt>${h(t.stats[0])}</dt><dd>${String(publications.length).padStart(2, '0')}<span> / ${years.at(-1)}–${years[0]}</span></dd></dl><dl><dt>${h(t.stats[1])}</dt><dd>${String(copy.research.length).padStart(2, '0')}<span> / AI · ML · EO</span></dd></dl><dl><dt>${h(t.stats[2])}</dt><dd>2025<span class="fact-award">${icon('award')}</span></dd></dl><div class="facts-link"><a href="${h(profile.scholar)}" ${external}>${h(t.scholar)}${icon('external')}</a><a href="${h(profile.github)}" ${external}>GitHub${icon('external')}</a></div></div></div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><p class="eyebrow">${h(t.about)}</p><h2 id="about-title">${multiline(copy.aboutTitle)}</h2></div>
-      <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}<div class="about-links"><a class="text-link" href="${h(profile.github)}" ${external}>GitHub ${icon('external')}</a><a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)} ${icon('external')}</a><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div><aside class="news-note" id="news"><span class="eyebrow">${h(t.news)}</span>${copy.news.map((news) => `<p><time datetime="${h(news.date)}">${h(dateLabel(news.date, locale))}</time>${h(news.text)}</p>`).join('')}</aside></div>
+      <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}<div class="about-links"><a class="text-link" href="${h(profile.github)}" ${external}>GitHub ${icon('external')}</a><a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)} ${icon('external')}</a><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div></div>
     </section>
     <section class="research-section" id="research-profile" aria-labelledby="research-title" data-section><div class="container section"><div class="section-heading section-heading-row"><div><p class="eyebrow">${h(t.research)}</p><h2 id="research-title">${multiline(copy.researchTitle)}</h2></div><p class="section-description">${h(copy.researchIntro)}</p></div><div class="research-grid">${copy.research.map((item, index) => `<article class="research-card"><div class="research-card-top">${icon(item.icon)}<span>0${index + 1}</span></div><h3>${h(item.title)}</h3><p>${h(item.description)}</p><ul class="research-tags">${item.tags.map((tag) => `<li>${h(tag)}</li>`).join('')}</ul></article>`).join('')}</div>
       <div class="selected-heading"><p class="eyebrow">${h(t.selected)}</p><a class="text-link" href="#publications">${h(t.allPapers)}${icon('arrow')}</a></div>
       <div class="selected-grid">${profile.featured
         .map((id, i) => {
           const paper = publications.find((item) => item.id === id);
-          return `<a class="selected-paper" href="#paper-${h(id)}" data-featured="${h(id)}"><span class="selected-number">0${i + 1}</span><div><span class="selected-venue">${h(paper.venue)}</span><h3>${h(paper.title)}</h3></div>${icon('external')}</a>`;
+          return `<a class="selected-paper" href="#paper-${h(id)}" data-featured="${h(id)}"><span class="selected-number">0${i + 1}</span><div><span class="selected-venue">${h(paper.venue)} · <time datetime="${paper.year}">${paper.year}</time></span><h3>${h(paper.title)}</h3></div>${icon('external')}</a>`;
         })
         .join('')}</div>
     </div></section>
@@ -304,15 +332,11 @@ export function renderPage({
         .map(([key, value]) => `<option value="${key}">${h(value)}</option>`)
         .join('')}</select></div>
       <div class="publication-count"><p data-result-count data-template="${h(t.showing)}" role="status" aria-live="polite" aria-atomic="true">${h(t.showing.replace('{count}', publications.length).replace('{total}', publications.length))}</p><span>${years[0]} — ${years.at(-1)}</span></div><noscript><p class="no-js-note">${h(t.jsNote)}</p></noscript>
-      <div id="publication-list">${years
-        .map(
-          (year) =>
-            `<section class="publication-year" data-year-group="${year}" aria-labelledby="year-${year}"><div class="year-heading"><h3 id="year-${year}">${year}</h3><span data-year-count>${publications.filter((paper) => paper.year === year).length}</span><span class="year-rule" aria-hidden="true"></span></div><ol class="publication-list">${publications
-              .filter((paper) => paper.year === year)
-              .map((paper) => paperRow(paper, publications.indexOf(paper), profile, t))
-              .join('')}</ol></section>`,
-        )
-        .join('')}</div>
+      <div id="publication-list">${publicationGroups.map(group => {
+        const papers = publications.filter(paper => paper.group === group);
+        const groupYears = years.filter(year => papers.some(paper => paper.year === year));
+        return `<section class="publication-group" id="${group}-publications" data-publication-group aria-labelledby="${group}-publications-title"><header class="publication-group-heading"><h3 id="${group}-publications-title">${h(t.groups[group])}<span aria-hidden="true">.</span></h3><p data-group-count data-template="${h(t.groupCount)}">${h(t.groupCount.replace('{count}', papers.length))}</p></header>${groupYears.map(year => `<section class="publication-year" data-year-group="${year}" aria-labelledby="${group}-year-${year}"><div class="year-heading"><h4 id="${group}-year-${year}">${year}</h4><span data-year-count>${papers.filter(paper => paper.year === year).length}</span><span class="year-rule" aria-hidden="true"></span></div><ol class="publication-list">${papers.filter(paper => paper.year === year).map(paper => paperRow(paper, publications.indexOf(paper), t, locale)).join('')}</ol></section>`).join('')}</section>`;
+      }).join('')}</div>
       <div class="empty-state" data-empty-state hidden>${icon('search')}<h3>${h(t.noResults)}</h3><p>${h(t.noResultsHint)}</p><button class="button button-dark" type="button" data-reset-filters>${h(t.reset)}${icon('arrow')}</button></div>
     </section>
     <section class="experience-section" id="experience" aria-labelledby="experience-title" data-section><div class="container section"><div class="section-heading"><p class="eyebrow">${h(t.experience)}</p><h2 id="experience-title">${multiline(copy.experienceTitle)}</h2></div><div class="experience-body"><article class="timeline-item" id="internships"><div class="timeline-marker">${icon('globe')}</div><p class="eyebrow">${h(t.internship)}</p><p class="timeline-date"><time datetime="${profile.internshipStart}">${h(dateLabel(profile.internshipStart, locale))}</time> — ${h(copy.present)}</p><h3>${h(copy.internshipRole)}</h3><p class="timeline-team">${h(copy.internshipTeam)}</p><a class="text-link" href="${h(profile.universityUrl)}" ${external}>${h(copy.university)}${icon('external')}</a></article><article class="timeline-item" id="education"><div class="timeline-marker">${icon('book')}</div><p class="eyebrow">${h(t.education)}</p><p class="timeline-date"><time datetime="${profile.education.start}">${h(dateLabel(profile.education.start, locale))}</time> — <time datetime="${profile.education.end}">${profile.education.end}</time><span class="graduated-label">${h(copy.graduate)}</span></p><h3>${h(copy.degree)}</h3><p class="timeline-team">${h(copy.college)} · ${h(copy.university)}</p><p class="gpa-line">${h(t.gpa)}<strong>${h(profile.education.gpa)}<span> / ${h(profile.education.gpaScale)}</span></strong></p></article></div></div></section>

@@ -98,7 +98,7 @@ export function initExperience() {
         ], { duration: 650, delay: Number(target.dataset.enterDelay || 0), easing: 'cubic-bezier(.2,.65,.2,1)' });
       }
     }, { threshold: .08 });
-    document.querySelectorAll('.hero-copy, .m-page-heading, .h-full-hero > div:first-child, .section-heading, .h-index-section > header, .research-card, .m-hub-card, .h-essay-card, .h-person-card, .h-stats > div').forEach((element, index) => {
+    document.querySelectorAll('.hero-copy, .news-panel, .m-page-heading, .h-full-hero > div:first-child, .section-heading, .h-index-section > header, .research-card, .m-hub-card, .h-essay-card, .h-person-card, .h-stats > div').forEach((element, index) => {
       element.dataset.enterDelay = String((index % 3) * 55);
       reveal.observe(element);
     });

@@ -31,12 +31,12 @@ npm run dev -- --port 4174
 
 | 文件                        | 用途                                                       |
 | --------------------------- | ---------------------------------------------------------- |
-| `content/profile.json`      | 姓名、网址、联系方式、教育信息、研究兴趣、荣誉与中英文文案 |
-| `content/publications.json` | 两种语言共享的完整论文记录                                 |
+| `content/profile.json`      | 个人资料、中英文文案与 News 时间轴                          |
+| `content/publications.json` | 论文标题、作者、会议、年份及主要发表／EI 分组               |
 | `src/render.mjs`            | 页面与组件组合、双语界面文字、SEO 与结构化数据             |
 | `src/components.mjs`        | 原创图标、WD 标识、数学球面图形                            |
 | `src/styles.css`            | 响应式设计、无障碍状态与打印样式                           |
-| `src/client.js`             | 导航、筛选、语言切换、引用与邮箱复制                       |
+| `src/client.js`             | 导航、论文筛选、News 年份切换、语言切换与复制功能          |
 | `src/filter.mjs`            | 搜索匹配与可分享的筛选状态                                 |
 | `src/visitors.mjs`          | 真实访客统计、线上域名判断与失败回退                       |
 | `src/experience.mjs`       | 共用动效开关、进入反馈、图形景深、阅读进度线与返回顶部     |
@@ -44,7 +44,9 @@ npm run dev -- --port 4174
 | `scripts/`                  | 构建、开发服务器、输出校验和品牌素材工具                   |
 | `public/`                   | 原样复制到发布目录的静态资源                               |
 
-修改个人资料时，同时维护 `locales.en` 与 `locales.zh`，并更新 `updated`。当前资料更新于 **2026-10**，包括独立研究者身份和 PAIRSAFE 录用信息；原始 2026-06 新闻仍保留。GPA 按本人要求简写为 **3.5/4**。
+修改个人资料时，同时维护 `locales.en` 与 `locales.zh`，并更新 `updated`。当前资料更新于 **2026-11**，包括 WSDM 2027 和 PAIRSAFE 的录用信息。GPA 按本人要求简写为 **3.5/4**。
+
+首屏右侧的 News 默认展示两条最新消息，可按年份切换、展开完整时间轴并跳转到对应论文。共享的 `news` 数组用 `publication` 引用论文 ID；普通近况用 `title`、`text` 保存中英文。日期支持 `YYYY`、`YYYY-MM`、`YYYY-MM-DD`，保留已知精度。`date` 表示消息发生时间，论文的 `year` 表示会议届次，两者分别记录。
 
 视觉和交互增强共用原生浏览器模块，没有新增运行时依赖。右下角可以暂停动效；系统设置为减少动态效果时自动采用静态模式。装饰动画只在图形可见且页面处于前台时运行。正文始终可见，不以等待动画为阅读条件。动效偏好保存在本机浏览器，未开放本地存储时仍能使用当页功能。模块与样式参与内容哈希，根路径和项目子目录使用同一构建逻辑。
 
@@ -55,15 +57,16 @@ npm run dev -- --port 4174
   "id": "stable-paper-id",
   "title": "The exact publication title",
   "authors": ["Wenzhang Du", "Another Author"],
-  "venue": "Conference 2027",
+  "venue": "Conference",
   "year": 2027,
+  "group": "major",
   "topics": ["evaluation"]
 }
 ```
 
-`id` 必须唯一且稳定，它同时用于论文深链接。`topics` 支持 `evaluation`、`earth`、`efficient`、`applied`，可以填写多个。`profile.json` 中的 `featured` 指向需要展示的论文 ID。
+`id` 必须唯一且稳定，它同时用于论文深链接。`venue` 仅填会议名称，年份单独存入 `year`。`group` 使用 `major`（主要发表）或 `ei`（EI 会议论文），按本人指定的 CCF／CORE 会议排名标准维护；WCCI 下的 CEC、IJCNN 与 IGARSS 归入主要发表。`topics` 支持 `evaluation`、`earth`、`efficient`、`applied`。`profile.json` 中的 `featured` 指向需要展示的论文 ID。
 
-已录用、尚未正式发表的论文使用 `"status": "accepted"`，页面与引用都会明确标注。正式发表后改为 `"status": "published"`。`affiliation` 可填写论文对应身份；PAIRSAFE 当前记录为 AACL-IJCNLP 2026 已录用、唯一作者、Independent Researcher。该录用信息由本人提供；[会议官网](https://2026.aaclnet.org/)确认会议于 2026 年 11 月举行。
+已录用、尚未正式发表的论文使用 `"status": "accepted"`，已知接收时间填入 `acceptedDate`，正式发表后改为 `"status": "published"`。列表展示标题、会议与时间，完整作者和发表状态保留在可展开引用中。`affiliation` 可保存论文对应身份。PAIRSAFE 和 WSDM 论文的独作与录用信息均由本人提供，WSDM 接收日期为 **2026-11-03**，会议届次为 [WSDM 2027](https://www.wsdm-conference.org/2027/)。
 
 如有已经核实的 Google Scholar 链接，可增加 `scholarUrl`；否则自动生成按完整标题检索的 Scholar 入口。引用复制使用记录中的作者、标题、会议与年份。当前资料没有 DOI、论文 PDF 或可下载 CV，页面不生成这些信息或空链接。最初若只记录了一名作者，请核实完整作者列表后直接补充数据。
 

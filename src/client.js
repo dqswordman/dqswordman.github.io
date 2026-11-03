@@ -43,7 +43,7 @@ mobile.addEventListener('change', () => {
 header.setAttribute('data-enhanced', '');
 menuButton.hidden = false;
 
-// Scroll work is bounded to four section positions and a single animation frame.
+// Scroll work is bounded to the navigation targets and one animation frame.
 const navLinks = [...document.querySelectorAll('[data-nav]')];
 const navSections = navLinks
   .map((link) => document.getElementById(link.dataset.nav))
@@ -85,12 +85,75 @@ function updateLanguageLink() {
 window.addEventListener('hashchange', updateLanguageLink);
 updateLanguageLink();
 
+const news = document.querySelector('[data-news]');
+if (news) {
+  const entries = [...news.querySelectorAll('[data-news-item]')];
+  const buttons = [...news.querySelectorAll('[data-news-filter]')];
+  const toggle = news.querySelector('[data-news-toggle]');
+  const count = news.querySelector('[data-news-count]');
+  const list = news.querySelector('.news-timeline');
+  const years = buttons.map(button => button.dataset.newsFilter);
+  const previewCount = 2;
+  let year = 'all', expanded = false;
+
+  function showNews({ updateUrl = true, animate = true } = {}) {
+    const matches = entries.filter(item => year === 'all' || item.dataset.newsYear === year);
+    const visible = new Set(expanded ? matches : matches.slice(0, previewCount));
+    for (const item of entries) item.hidden = !visible.has(item);
+    for (const button of buttons)
+      button.setAttribute('aria-pressed', String(button.dataset.newsFilter === year));
+    toggle.hidden = matches.length <= previewCount;
+    toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.querySelector('span').textContent = expanded ? toggle.dataset.collapseLabel : toggle.dataset.expandLabel;
+    count.textContent = count.dataset.template.replace('{count}', visible.size).replace('{total}', matches.length);
+    list.scrollTop = 0;
+    if (animate && document.documentElement.dataset.motion === 'on') {
+      [...visible].forEach((item, index) => {
+        item.getAnimations().forEach(animation => animation.cancel());
+        item.animate?.([
+          { opacity: .35, transform: 'translateY(8px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ], { duration: 360, delay: index * 40, easing: 'cubic-bezier(.2,.65,.2,1)' });
+      });
+    }
+    if (updateUrl) {
+      try {
+        const url = new URL(location.href);
+        if (year === 'all') url.searchParams.delete('newsYear');
+        else url.searchParams.set('newsYear', year);
+        history.replaceState(null, '', url);
+      } catch { /* Local previews remain interactive. */ }
+      updateLanguageLink();
+    }
+  }
+
+  function restoreNews() {
+    const requested = new URL(location.href).searchParams.get('newsYear');
+    year = years.includes(requested) ? requested : 'all';
+    expanded = false;
+    showNews({ updateUrl: false, animate: false });
+  }
+  for (const button of buttons) button.addEventListener('click', () => {
+    year = button.dataset.newsFilter;
+    expanded = false;
+    showNews();
+  });
+  toggle.addEventListener('click', () => {
+    expanded = !expanded;
+    showNews();
+  });
+  window.addEventListener('popstate', restoreNews);
+  restoreNews();
+  news.querySelector('[data-news-tools]').hidden = false;
+}
+
 const searchInput = document.querySelector('#publication-search');
 if (searchInput) {
   const topicInput = document.querySelector('#publication-topic');
   const clearButton = document.querySelector('[data-clear-search]');
   const yearButtons = [...document.querySelectorAll('[data-year-filter]')];
   const yearGroups = [...document.querySelectorAll('[data-year-group]')];
+  const publicationGroups = [...document.querySelectorAll('[data-publication-group]')];
   const resultCount = document.querySelector('[data-result-count]');
   const emptyState = document.querySelector('[data-empty-state]');
   const records = [...document.querySelectorAll('[data-publication]')].map((element) => ({
@@ -116,11 +179,15 @@ if (searchInput) {
       if (visible) count++;
     }
     for (const group of yearGroups) {
-      const count = records.filter(
-        (paper) => paper.year === group.dataset.yearGroup && !paper.element.hidden,
-      ).length;
+      const count = [...group.querySelectorAll('[data-publication]')].filter(element => !element.hidden).length;
       group.hidden = count === 0;
       group.querySelector('[data-year-count]').textContent = count;
+    }
+    for (const group of publicationGroups) {
+      const count = [...group.querySelectorAll('[data-publication]')].filter(element => !element.hidden).length;
+      group.hidden = count === 0;
+      const label = group.querySelector('[data-group-count]');
+      label.textContent = label.dataset.template.replace('{count}', count);
     }
     resultCount.textContent = resultCount.dataset.template
       .replace('{count}', count)
@@ -162,7 +229,7 @@ if (searchInput) {
     reset();
     searchInput.focus();
   });
-  for (const featured of document.querySelectorAll('[data-featured]'))
+  for (const featured of document.querySelectorAll('[data-featured], [data-paper-jump]'))
     featured.addEventListener('click', reset);
   window.addEventListener('popstate', () => {
     state = readFilterState(location.search, years, topics);

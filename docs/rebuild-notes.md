@@ -16,8 +16,8 @@
 - 工学学士学历、2022-06 至 2026 的就读记录和 GPA；原始记录为 3.4958/4.00，页面按本人要求简写为 3.5/4。
 - 2025-07 开始的地球与空间中心研究实习。
 - 13 篇论文：2026 年 8 篇、2025 年 5 篇；原始标题、作者顺序、会议、年份和显式 Scholar URL 保留。
-- 后续按本人提供的信息新增 PAIRSAFE：AACL-IJCNLP 2026 已录用、即将发表，唯一作者 Wenzhang Du，身份 Independent Researcher。当前共 14 篇，2026 年 9 篇、2025 年 5 篇；不填造尚未提供的 PDF、DOI 或预印本链接。
-- 最佳论文奖、荣誉海报奖与三项差旅资助。
+- 按本人提供的信息收录 PAIRSAFE（AACL-IJCNLP 2026，独立研究者独作）与 Complex Utility, Simple Calibration: Decision Sufficiency in RAG Evidence Selection（WSDM 2027，Wenzhang Du 独作，2026-11-03 录用）。当前共 15 篇，按会议年份为 2027 年 1 篇、2026 年 9 篇、2025 年 5 篇；主要发表 7 篇、EI 会议论文 8 篇。不填造未提供的 PDF、DOI 或预印本链接。
+- 最佳论文奖、Project Day 荣誉与三项差旅资助。
 - 研究方向、技能与原有 2026-06 资料更新记录。
 - 当前资料更新到 2026-10，补充独立研究者身份及 PAIRSAFE 录用新闻；原新闻保留。
 - 原个人头像保留为静态资源，当前页面采用 WD 标识。

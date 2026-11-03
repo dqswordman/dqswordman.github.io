@@ -6,7 +6,7 @@
   "github": "https://github.com/dqswordman",
   "scholar": "https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en",
   "universityUrl": "https://www.mut.ac.th",
-  "updated": "2026-10",
+  "updated": "2026-11",
   "visitorStats": { "enabled": true },
   "copyrightStart": 2025,
   "education": {
@@ -16,7 +16,27 @@
     "gpaScale": "4"
   },
   "internshipStart": "2025-07",
-  "featured": ["pairsafe", "paired-bootstrap", "arc-ctrl", "contract-governed-training"],
+  "featured": ["decision-sufficiency", "pairsafe", "paired-bootstrap", "arc-ctrl"],
+  "news": [
+    { "id": "wsdm-acceptance", "date": "2026-11-03", "kind": "acceptance", "publication": "decision-sufficiency" },
+    { "id": "aacl-acceptance", "date": "2026-10", "kind": "acceptance", "publication": "pairsafe" },
+    {
+      "id": "profile-update", "date": "2026-06", "kind": "update",
+      "title": { "en": "Research profile updated", "zh": "研究近况更新" },
+      "text": { "en": "Graduation, publications, research experience, and travel support.", "zh": "更新毕业情况、学术论文、研究经历与会议差旅资助。" }
+    },
+    {
+      "id": "project-day", "date": "2025-11-28", "kind": "award",
+      "title": { "en": "Project Day recognition", "zh": "Project Day 荣誉" },
+      "text": { "en": "Received an honorary award at Mahanakorn University of Technology.", "zh": "获马汉科理工大学 Project Day 荣誉奖。" }
+    },
+    {
+      "id": "research-internship", "date": "2025-07", "kind": "update",
+      "title": { "en": "Research internship begins", "zh": "开始研究实习" },
+      "text": { "en": "Joined the Earth and Space Center at Mahanakorn University of Technology.", "zh": "加入马汉科理工大学地球与空间研究中心。" }
+    },
+    { "id": "icpei-award", "date": "2025", "kind": "award", "publication": "projection-gru" }
+  ],
   "locales": {
     "en": {
       "description": "Wenzhang Du — Independent researcher exploring LLM safety, trustworthy AI, AI agent evaluation, model auditing, and robust empirical machine learning.",
@@ -74,7 +94,7 @@
         { "date": "2025", "title": "Best Paper Award", "detail": "ICPEI 2025", "kind": "award" },
         {
           "date": "2025-11-28",
-          "title": "Honorary Poster Award",
+          "title": "Project Day Recognition",
           "detail": "Mahanakorn University of Technology · Project Day",
           "kind": "award"
         },
@@ -102,16 +122,6 @@
         {
           "title": "Applied machine learning",
           "text": "Computer vision, remote sensing, model compression, quantization-aware learning, edge-aware ML"
-        }
-      ],
-      "news": [
-        {
-          "date": "2026-10",
-          "text": "PAIRSAFE: Proxy-Resistant Paired Safety Evaluation for Refusal Boundaries has been accepted at AACL-IJCNLP 2026. Sole author; Independent Researcher."
-        },
-        {
-          "date": "2026-06",
-          "text": "Updated research profile with graduation, publications, travel grants, and internship details."
         }
       ],
       "contactTitle": "Good research starts\nwith a conversation.",
@@ -174,7 +184,7 @@
         { "date": "2025", "title": "最佳论文奖", "detail": "ICPEI 2025", "kind": "award" },
         {
           "date": "2025-11-28",
-          "title": "荣誉海报奖",
+          "title": "Project Day 荣誉奖",
           "detail": "马汉科理工大学 · Project Day",
           "kind": "award"
         },
@@ -203,13 +213,6 @@
           "title": "应用机器学习",
           "text": "计算机视觉、遥感、模型压缩、量化感知学习、边缘设备机器学习"
         }
-      ],
-      "news": [
-        {
-          "date": "2026-10",
-          "text": "PAIRSAFE: Proxy-Resistant Paired Safety Evaluation for Refusal Boundaries 已被 AACL-IJCNLP 2026 录用，即将发表；本人为唯一作者，以独立研究者身份完成。"
-        },
-        { "date": "2026-06", "text": "更新研究资料，包括毕业情况、论文、差旅资助及研究实习经历。" }
       ],
       "contactTitle": "好的研究，\n从交流开始。",
       "contactIntro": "如果你对可信人工智能、实证评估或研究生阶段的研究有兴趣，欢迎交流想法。",
