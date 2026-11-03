@@ -12,6 +12,8 @@ import {
   paperUrl,
   citation,
   legacyAnchors,
+  acceptanceYear,
+  newsItems,
 } from '../src/content.mjs';
 import {
   normalizeSearch,
@@ -27,7 +29,7 @@ import { parseVisitCounts, shouldCountVisit } from '../src/visitors.mjs';
 const { profile, publications } = await loadContent(projectRoot);
 const assets = { css: 'site.css', js: 'site.js' };
 const paperRecord = (paper) => ({
-  year: paper.year,
+  year: acceptanceYear(paper),
   topics: paper.topics,
   search: [paper.title, ...paper.authors, paper.venue, paper.year].join(' '),
 });
@@ -73,7 +75,7 @@ test('PAIRSAFE retains its authorship and acceptance record in the bilingual new
   ]) {
     const html = renderPage({ profile, publications, locale, assets });
     assert.ok(html.includes(label));
-    assert.ok(html.includes('datetime="2026-10"'));
+    assert.ok(html.includes('datetime="2026-09-08"'));
   }
 });
 
@@ -85,7 +87,7 @@ test('WSDM news preserves the announcement date separately from the conference y
   assert.equal(paper.acceptedDate, '2026-11-03');
   assert.deepEqual(paper.authors, ['Wenzhang Du']);
   assert.equal(paper.group, 'major');
-  const announcement = profile.news.find(n => n.publication === paper.id);
+  const announcement = newsItems(profile, publications).find(n => n.publication === paper.id);
   assert.equal(announcement.date, paper.acceptedDate);
   assert.equal(announcement.kind, 'acceptance');
   for (const locale of ['zh', 'en']) {
@@ -114,13 +116,37 @@ test('publication groups contain every paper once and presentation classificatio
   }
 });
 
-test('editorial validation rejects impossible dates, dangling news links, and unknown publication groups', () => {
-  const first = profile.news[0];
-  for (const date of ['2026-02-30', '2026-13', 'November 3']) {
+test('editorial validation rejects incomplete or impossible dates, dangling news links, and unknown publication groups', () => {
+  const first = { id: 'fixture-news', date: '2026-11-03', kind: 'update', title: { en: 'Update', zh: '动态' }, text: { en: 'Research update.', zh: '研究近况。' } };
+  for (const date of ['2026', '2026-11', '2026-02-30', '2026-13', 'November 3']) {
     assert.throws(() => validateContent({ ...profile, news: [{ ...first, date }] }, publications), /news date/);
+    assert.throws(() => validateContent(profile, publications.map((p, i) => i === 0 ? { ...p, acceptedDate: date } : p)), /acceptance date/);
   }
   assert.throws(() => validateContent({ ...profile, news: [{ ...first, publication: 'missing' }] }, publications), /News publication/);
   assert.throws(() => validateContent(profile, publications.map((p, i) => i === 0 ? { ...p, group: 'unknown' } : p)), /publication group/);
+});
+
+test('acceptance dates determine news and publication years without using the conference year as a substitute', () => {
+  const news = newsItems(profile, publications);
+  const dated = publications.filter(p => p.acceptedDate);
+  assert.equal(news.filter(n => n.kind === 'acceptance').length, dated.length);
+  for (const paper of dated) {
+    const item = news.find(n => n.publication === paper.id);
+    assert.equal(item.date, paper.acceptedDate);
+    assert.match(item.date, /^\d{4}-\d{2}-\d{2}$/);
+  }
+  assert.deepEqual(news.map(n => n.date), [...news.map(n => n.date)].sort().reverse());
+  assert.equal(acceptanceYear(publications.find(p => p.id === 'decision-sufficiency')), 2026);
+  assert.equal(acceptanceYear(publications.find(p => p.id === 'lightweight-gru')), 2024);
+  assert.equal(acceptanceYear({ year: 2027 }), 'undated');
+  for (const locale of ['en', 'zh']) {
+    const html = renderPage({ profile, publications, locale, assets });
+    assert.match(html, /id="paper-decision-sufficiency" data-publication data-year="2026"/);
+    assert.match(html, /id="paper-lightweight-gru" data-publication data-year="2024"/);
+    assert.doesNotMatch(html, /data-year-filter="2027"/);
+    const displayed = [...html.matchAll(/class="news-date"><time datetime="([^"]+)">([^<]+)<\/time>/g)];
+    for (const [, date, label] of displayed) assert.equal(date, label);
+  }
 });
 
 test('visitor counting only runs on the exact published HTTPS origin', () => {
@@ -247,10 +273,10 @@ test('both language pages index both languages for stable search during language
 
 test('year and topic constraints combine with text search', () => {
   const records = publications.map(paperRecord);
-  assert.equal(records.filter((paper) => matchesPaper(paper, { year: '2025' })).length, 5);
+  assert.equal(records.filter((paper) => matchesPaper(paper, { year: '2025' })).length, 4);
   assert.equal(
     records.filter((paper) => matchesPaper(paper, { year: '2026', topic: 'earth' })).length,
-    4,
+    2,
   );
   assert.equal(
     records.filter((paper) =>
@@ -260,7 +286,7 @@ test('year and topic constraints combine with text search', () => {
   );
   assert.equal(
     records.filter((paper) =>
-      matchesPaper(paper, { query: 'light-weight', year: '2025', topic: 'efficient' }),
+      matchesPaper(paper, { query: 'light-weight', year: '2024', topic: 'efficient' }),
     ).length,
     1,
   );

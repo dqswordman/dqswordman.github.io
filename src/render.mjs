@@ -1,4 +1,4 @@
-import { escapeHtml as h, paperUrl, citation, publicationGroups } from './content.mjs';
+import { escapeHtml as h, paperUrl, citation, publicationGroups, acceptanceYear, newsItems } from './content.mjs';
 import { icon, monogram } from './components.mjs';
 
 export const ui = {
@@ -52,8 +52,9 @@ export const ui = {
     search: 'Search publications',
     searchPlaceholder: 'Search title, author, venue…',
     clearSearch: 'Clear search',
-    years: 'Filter by year',
+    years: 'Filter by acceptance year',
     allYears: 'All years',
+    datePending: 'Date pending',
     topic: 'Research area',
     allTopics: 'All research areas',
     topics: {
@@ -146,8 +147,9 @@ export const ui = {
     search: '搜索论文',
     searchPlaceholder: '搜索标题、作者、会议…',
     clearSearch: '清空搜索',
-    years: '按年份筛选',
+    years: '按录用年份筛选',
     allYears: '全部年份',
+    datePending: '日期待补',
     topic: '研究方向',
     allTopics: '全部研究方向',
     topics: {
@@ -221,7 +223,7 @@ function header(profile, copy, t, locale, basePath, isError) {
 }
 
 function newsPanel(profile, publications, t, locale) {
-  const items = [...profile.news].sort((a, b) => b.date.localeCompare(a.date));
+  const items = newsItems(profile, publications);
   const years = [...new Set(items.map(item => item.date.slice(0, 4)))];
   return `<aside class="news-panel" id="news" aria-labelledby="news-title" data-news data-section>
     <header class="news-heading"><div><p class="eyebrow">${h(t.newsEyebrow)}</p><h2 id="news-title">${h(t.news)}<span aria-hidden="true">.</span></h2><p class="news-intro">${h(t.newsIntro)}</p></div><span class="news-emblem" aria-hidden="true">${icon('chart')}</span></header>
@@ -230,7 +232,7 @@ function newsPanel(profile, publications, t, locale) {
       const paper = item.publication ? publications.find(p => p.id === item.publication) : null;
       const title = paper ? paper.title : item.title[locale];
       const detail = paper ? `${item.kind === 'acceptance' ? t.acceptedAt : t.bestPaper} · ${paper.venue} ${paper.year}` : item.text[locale];
-      return `<li class="news-item${index === 0 ? ' is-latest' : ''}" data-news-item data-news-year="${h(item.date.slice(0, 4))}"><div class="news-date"><time datetime="${h(item.date)}">${h(dateLabel(item.date, locale))}</time><span>${h(t.newsKinds[item.kind])}</span></div><h3>${paper ? `<a href="#paper-${h(paper.id)}" data-paper-jump>${h(title)} ${icon('external')}</a>` : h(title)}</h3><p class="news-detail">${h(detail)}</p></li>`;
+      return `<li class="news-item${index === 0 ? ' is-latest' : ''}" data-news-item data-news-year="${h(item.date.slice(0, 4))}"><div class="news-date"><time datetime="${h(item.date)}">${h(item.date)}</time><span>${h(t.newsKinds[item.kind])}</span></div><h3>${paper ? `<a href="#paper-${h(paper.id)}" data-paper-jump>${h(title)} ${icon('external')}</a>` : h(title)}</h3><p class="news-detail">${h(detail)}</p></li>`;
     }).join('')}</ol>
     <footer class="news-footer"><p data-news-count data-template="${h(t.newsCount)}" role="status" aria-live="polite" aria-atomic="true">${h(t.newsCount.replace('{count}', items.length).replace('{total}', items.length))}</p><button type="button" class="news-toggle" data-news-toggle data-expand-label="${h(t.newsExpand)}" data-collapse-label="${h(t.newsCollapse)}" aria-controls="news-list" aria-expanded="false" hidden><span>${h(t.newsExpand)}</span>${icon('down')}</button></footer>
   </aside>`;
@@ -242,15 +244,16 @@ function paperRow(paper, index, t, locale) {
     ...paper.authors,
     paper.venue,
     paper.year,
+    paper.acceptedDate || '',
     paper.affiliation || '',
     paper.status === 'accepted' ? `${ui.en.accepted} ${ui.zh.accepted}` : '',
     ...paper.topics,
     ...paper.topics.flatMap((topic) => [ui.en.topics[topic], ui.zh.topics[topic]]),
   ].join(' ');
-  return `<li class="publication" id="paper-${h(paper.id)}" data-publication data-year="${paper.year}" data-topics="${h(paper.topics.join(' '))}" data-search="${h(search)}">
+  return `<li class="publication" id="paper-${h(paper.id)}" data-publication data-year="${h(acceptanceYear(paper))}" data-topics="${h(paper.topics.join(' '))}" data-search="${h(search)}">
     <span class="paper-index" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span>
     <article class="paper-content" aria-labelledby="title-${h(paper.id)}">
-      <div class="paper-meta"><span>${h(paper.venue)}</span><time datetime="${paper.year}">${paper.year}</time>${paper.acceptedDate ? `<span class="paper-accepted-date">${h(t.acceptedOn)} <time datetime="${h(paper.acceptedDate)}">${h(dateLabel(paper.acceptedDate, locale))}</time></span>` : ''}</div>
+      <div class="paper-meta"><span>${h(paper.venue)} ${paper.year}</span>${paper.acceptedDate ? `<time datetime="${h(paper.acceptedDate)}" aria-label="${h(t.acceptedOn)} ${h(paper.acceptedDate)}">${h(paper.acceptedDate)}</time>` : `<span class="paper-date-pending">${h(t.datePending)}</span>`}</div>
       <h3 id="title-${h(paper.id)}"><a href="${h(paperUrl(paper))}" ${external}>${h(paper.title)} ${icon('external')}</a></h3>
       <div class="paper-bottom"><details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button></div></details></div>
     </article>
@@ -277,7 +280,10 @@ export function renderPage({
   const t = ui[locale];
   const home = `${basePath}/${locale === 'zh' ? 'zh/' : ''}`;
   const canonical = `${profile.url}${home}`;
-  const years = [...new Set(publications.map((paper) => paper.year))].sort((a, b) => b - a);
+  const orderedPapers = publicationGroups.flatMap(group => publications.filter(paper => paper.group === group).sort((a, b) => (b.acceptedDate || '').localeCompare(a.acceptedDate || '')));
+  const years = [...new Set(publications.map(acceptanceYear).filter(year => year !== 'undated'))].sort((a, b) => b - a);
+  const yearGroups = [...years, ...(publications.some(paper => !paper.acceptedDate) ? ['undated'] : [])];
+  const yearLabel = year => year === 'undated' ? t.datePending : year;
   const localeCode = locale === 'zh' ? 'zh-CN' : 'en';
   const person = {
     '@context': 'https://schema.org',
@@ -321,21 +327,21 @@ export function renderPage({
       <div class="selected-grid">${profile.featured
         .map((id, i) => {
           const paper = publications.find((item) => item.id === id);
-          return `<a class="selected-paper" href="#paper-${h(id)}" data-featured="${h(id)}"><span class="selected-number">0${i + 1}</span><div><span class="selected-venue">${h(paper.venue)} · <time datetime="${paper.year}">${paper.year}</time></span><h3>${h(paper.title)}</h3></div>${icon('external')}</a>`;
+          return `<a class="selected-paper" href="#paper-${h(id)}" data-featured="${h(id)}"><span class="selected-number">0${i + 1}</span><div><span class="selected-venue">${h(paper.venue)} ${paper.year}${paper.acceptedDate ? ` · <time datetime="${h(paper.acceptedDate)}">${h(paper.acceptedDate)}</time>` : ''}</span><h3>${h(paper.title)}</h3></div>${icon('external')}</a>`;
         })
         .join('')}</div>
     </div></section>
     <section class="section publications-section container" id="publications" aria-labelledby="publications-title" data-section><div class="section-heading section-heading-row"><div><p class="eyebrow">${h(t.publications)}</p><h2 id="publications-title">${h(t.paperHeading)}</h2></div><div class="publication-heading-note"><p>${h(copy.publicationIntro)}</p><a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)}${icon('external')}</a></div></div>
-      <div class="publication-tools" data-filter-tools hidden><div class="search-wrap">${icon('search')}<label class="sr-only" for="publication-search">${h(t.search)}</label><input id="publication-search" type="search" placeholder="${h(t.searchPlaceholder)}" autocomplete="off" maxlength="200" aria-controls="publication-list"><button class="search-clear" type="button" data-clear-search aria-label="${h(t.clearSearch)}" hidden>${icon('close')}</button></div><div class="year-filters" role="group" aria-label="${h(t.years)}"><button type="button" data-year-filter="all" aria-pressed="true">${h(t.allYears)}</button>${years.map((year) => `<button type="button" data-year-filter="${year}" aria-pressed="false">${year}</button>`).join('')}</div><label class="sr-only" for="publication-topic">${h(t.topic)}</label><select id="publication-topic" aria-controls="publication-list"><option value="all">${h(t.allTopics)}</option>${Object.entries(
+      <div class="publication-tools" data-filter-tools hidden><div class="search-wrap">${icon('search')}<label class="sr-only" for="publication-search">${h(t.search)}</label><input id="publication-search" type="search" placeholder="${h(t.searchPlaceholder)}" autocomplete="off" maxlength="200" aria-controls="publication-list"><button class="search-clear" type="button" data-clear-search aria-label="${h(t.clearSearch)}" hidden>${icon('close')}</button></div><div class="year-filters" role="group" aria-label="${h(t.years)}"><button type="button" data-year-filter="all" aria-pressed="true">${h(t.allYears)}</button>${yearGroups.map((year) => `<button type="button" data-year-filter="${year}" aria-pressed="false">${h(yearLabel(year))}</button>`).join('')}</div><label class="sr-only" for="publication-topic">${h(t.topic)}</label><select id="publication-topic" aria-controls="publication-list"><option value="all">${h(t.allTopics)}</option>${Object.entries(
         t.topics,
       )
         .map(([key, value]) => `<option value="${key}">${h(value)}</option>`)
         .join('')}</select></div>
       <div class="publication-count"><p data-result-count data-template="${h(t.showing)}" role="status" aria-live="polite" aria-atomic="true">${h(t.showing.replace('{count}', publications.length).replace('{total}', publications.length))}</p><span>${years[0]} — ${years.at(-1)}</span></div><noscript><p class="no-js-note">${h(t.jsNote)}</p></noscript>
       <div id="publication-list">${publicationGroups.map(group => {
-        const papers = publications.filter(paper => paper.group === group);
-        const groupYears = years.filter(year => papers.some(paper => paper.year === year));
-        return `<section class="publication-group" id="${group}-publications" data-publication-group aria-labelledby="${group}-publications-title"><header class="publication-group-heading"><h3 id="${group}-publications-title">${h(t.groups[group])}<span aria-hidden="true">.</span></h3><p data-group-count data-template="${h(t.groupCount)}">${h(t.groupCount.replace('{count}', papers.length))}</p></header>${groupYears.map(year => `<section class="publication-year" data-year-group="${year}" aria-labelledby="${group}-year-${year}"><div class="year-heading"><h4 id="${group}-year-${year}">${year}</h4><span data-year-count>${papers.filter(paper => paper.year === year).length}</span><span class="year-rule" aria-hidden="true"></span></div><ol class="publication-list">${papers.filter(paper => paper.year === year).map(paper => paperRow(paper, publications.indexOf(paper), t, locale)).join('')}</ol></section>`).join('')}</section>`;
+        const papers = orderedPapers.filter(paper => paper.group === group);
+        const groupYears = yearGroups.filter(year => papers.some(paper => acceptanceYear(paper) === year));
+        return `<section class="publication-group" id="${group}-publications" data-publication-group aria-labelledby="${group}-publications-title"><header class="publication-group-heading"><h3 id="${group}-publications-title">${h(t.groups[group])}<span aria-hidden="true">.</span></h3><p data-group-count data-template="${h(t.groupCount)}">${h(t.groupCount.replace('{count}', papers.length))}</p></header>${groupYears.map(year => `<section class="publication-year" data-year-group="${year}" aria-labelledby="${group}-year-${year}"><div class="year-heading"><h4 id="${group}-year-${year}">${h(yearLabel(year))}</h4><span data-year-count>${papers.filter(paper => acceptanceYear(paper) === year).length}</span><span class="year-rule" aria-hidden="true"></span></div><ol class="publication-list">${papers.filter(paper => acceptanceYear(paper) === year).map(paper => paperRow(paper, orderedPapers.indexOf(paper), t, locale)).join('')}</ol></section>`).join('')}</section>`;
       }).join('')}</div>
       <div class="empty-state" data-empty-state hidden>${icon('search')}<h3>${h(t.noResults)}</h3><p>${h(t.noResultsHint)}</p><button class="button button-dark" type="button" data-reset-filters>${h(t.reset)}${icon('arrow')}</button></div>
     </section>

@@ -5,9 +5,9 @@
     "authors": ["Wenzhang Du"],
     "venue": "WSDM",
     "year": 2027,
+    "acceptedDate": "2026-11-03",
     "group": "major",
     "status": "accepted",
-    "acceptedDate": "2026-11-03",
     "topics": ["evaluation"]
   },
   {
@@ -17,9 +17,9 @@
     "affiliation": "Independent Researcher",
     "venue": "AACL-IJCNLP",
     "year": 2026,
+    "acceptedDate": "2026-09-08",
     "group": "major",
     "status": "accepted",
-    "acceptedDate": "2026-10",
     "topics": ["evaluation"]
   },
   {
@@ -28,6 +28,7 @@
     "authors": ["Wenzhang Du"],
     "venue": "WCCI (CEC)",
     "year": 2026,
+    "acceptedDate": "2026-03-16",
     "group": "major",
     "topics": ["evaluation"]
   },
@@ -37,6 +38,7 @@
     "authors": ["Wenzhang Du"],
     "venue": "WCCI (IJCNN)",
     "year": 2026,
+    "acceptedDate": "2026-03-20",
     "group": "major",
     "topics": ["evaluation"]
   },
@@ -46,6 +48,7 @@
     "authors": ["Wenzhang Du"],
     "venue": "PAKDD",
     "year": 2026,
+    "acceptedDate": "2026-02-07",
     "group": "major",
     "topics": ["evaluation"]
   },
@@ -55,6 +58,7 @@
     "authors": ["Wenzhang Du"],
     "venue": "IGARSS",
     "year": 2026,
+    "acceptedDate": "2026-03-19",
     "group": "major",
     "topics": ["earth"]
   },
@@ -64,6 +68,7 @@
     "authors": ["Wenzhang Du"],
     "venue": "IGARSS",
     "year": 2026,
+    "acceptedDate": "2026-03-19",
     "group": "major",
     "topics": ["earth"],
     "scholarUrl": "https://scholar.google.com/scholar?hl=en&q=%22A%20Reproducible%20Potential-Game%20Baseline%20for%20Multi-Satellite%20Scheduling%20on%20Hyperspectral%20Benchmarks%22"
@@ -74,6 +79,7 @@
     "authors": ["Wenzhang Du", "Suphongsa Khetkeeree"],
     "venue": "iEECON",
     "year": 2026,
+    "acceptedDate": "2026-01-09",
     "group": "ei",
     "topics": ["efficient"]
   },
@@ -101,6 +107,7 @@
     "authors": ["Suchada Sitjongsataporn", "Wenzhang Du", "P. Nurarak"],
     "venue": "iSTEM-Ed",
     "year": 2025,
+    "acceptedDate": "2025-05-23",
     "group": "ei",
     "topics": ["applied"]
   },
@@ -110,6 +117,7 @@
     "authors": ["Wenzhang Du", "Suchada Sitjongsataporn", "Pipat Sakarin"],
     "venue": "ECTI-CON",
     "year": 2025,
+    "acceptedDate": "2025-04-10",
     "group": "ei",
     "topics": ["applied", "efficient"]
   },
@@ -119,6 +127,7 @@
     "authors": ["Suchada Sitjongsataporn", "Wenzhang Du", "Pipat Sakarin"],
     "venue": "iEECON",
     "year": 2025,
+    "acceptedDate": "2024-12-22",
     "group": "ei",
     "topics": ["applied", "efficient"]
   },
@@ -128,6 +137,7 @@
     "authors": ["Wenzhang Du", "Suphongsa Khetkeeree", "Suchada Sitjongsataporn"],
     "venue": "ICGIP",
     "year": 2025,
+    "acceptedDate": "2025-08-26",
     "group": "ei",
     "topics": ["applied", "efficient"]
   },
@@ -137,6 +147,7 @@
     "authors": ["Wenzhang Du", "Suchada Sitjongsataporn", "Pipat Sakarin"],
     "venue": "ICPEI",
     "year": 2025,
+    "acceptedDate": "2025-08-08",
     "group": "ei",
     "topics": ["applied", "efficient"]
   }

@@ -2329,7 +2329,7 @@ html[lang='zh-CN'] .research-card h3 {
 .year-heading h4 { margin:0; font:400 29px/1.2 var(--serif); letter-spacing:-.04em }
 .paper-meta { gap:9px }
 .paper-meta > time { padding-left:10px; border-left:1px solid #c8cbbf }
-.paper-accepted-date { color:var(--muted); margin-left:auto; font-size:9px }
+.paper-date-pending { color:var(--muted) }
 .paper-bottom { justify-content:flex-end; margin-top:6px }
 @media (max-width:1150px) {
   .news-panel { padding:23px 23px 0 }
@@ -2355,7 +2355,6 @@ html[lang='zh-CN'] .research-card h3 {
   .publication-group-heading h3 { font-size:27px }
   .publication-group + .publication-group { margin-top:46px }
   .year-heading h4 { font-size:25px }
-  .paper-accepted-date { flex-basis:100%; margin-left:0 }
 }
 
 @media (prefers-reduced-motion: reduce) {

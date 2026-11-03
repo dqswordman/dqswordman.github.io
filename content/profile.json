@@ -7,6 +7,7 @@
   "scholar": "https://scholar.google.com/citations?user=8nLydvUAAAAJ&hl=en",
   "universityUrl": "https://www.mut.ac.th",
   "updated": "2026-11",
+  "acceptanceTimeZone": "America/Tijuana",
   "visitorStats": { "enabled": true },
   "copyrightStart": 2025,
   "education": {
@@ -17,26 +18,7 @@
   },
   "internshipStart": "2025-07",
   "featured": ["decision-sufficiency", "pairsafe", "paired-bootstrap", "arc-ctrl"],
-  "news": [
-    { "id": "wsdm-acceptance", "date": "2026-11-03", "kind": "acceptance", "publication": "decision-sufficiency" },
-    { "id": "aacl-acceptance", "date": "2026-10", "kind": "acceptance", "publication": "pairsafe" },
-    {
-      "id": "profile-update", "date": "2026-06", "kind": "update",
-      "title": { "en": "Research profile updated", "zh": "研究近况更新" },
-      "text": { "en": "Graduation, publications, research experience, and travel support.", "zh": "更新毕业情况、学术论文、研究经历与会议差旅资助。" }
-    },
-    {
-      "id": "project-day", "date": "2025-11-28", "kind": "award",
-      "title": { "en": "Project Day recognition", "zh": "Project Day 荣誉" },
-      "text": { "en": "Received an honorary award at Mahanakorn University of Technology.", "zh": "获马汉科理工大学 Project Day 荣誉奖。" }
-    },
-    {
-      "id": "research-internship", "date": "2025-07", "kind": "update",
-      "title": { "en": "Research internship begins", "zh": "开始研究实习" },
-      "text": { "en": "Joined the Earth and Space Center at Mahanakorn University of Technology.", "zh": "加入马汉科理工大学地球与空间研究中心。" }
-    },
-    { "id": "icpei-award", "date": "2025", "kind": "award", "publication": "projection-gru" }
-  ],
+  "news": [],
   "locales": {
     "en": {
       "description": "Wenzhang Du — Independent researcher exploring LLM safety, trustworthy AI, AI agent evaluation, model auditing, and robust empirical machine learning.",

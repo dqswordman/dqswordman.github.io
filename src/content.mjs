@@ -36,6 +36,20 @@ export function validDate(value) {
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === normalized;
 }
 
+export function acceptanceYear(paper) {
+  return paper.acceptedDate ? Number(paper.acceptedDate.slice(0, 4)) : 'undated';
+}
+
+export function newsItems(profile, publications) {
+  const acceptances = publications.filter(paper => paper.acceptedDate).map(paper => ({
+    id: `accepted-${paper.id}`,
+    date: paper.acceptedDate,
+    kind: 'acceptance',
+    publication: paper.id,
+  }));
+  return [...acceptances, ...profile.news].sort((a, b) => b.date.localeCompare(a.date));
+}
+
 export function validateContent(profile, publications) {
   for (const key of ['url', 'github', 'scholar', 'universityUrl']) safeHttps(profile[key]);
   if (profile.url !== new URL(profile.url).origin)
@@ -72,7 +86,7 @@ export function validateContent(profile, publications) {
       throw new Error(`Invalid publication status: ${paper.id}`);
     if (paper.affiliation && typeof paper.affiliation !== 'string')
       throw new Error(`Invalid affiliation: ${paper.id}`);
-    if (paper.acceptedDate && !validDate(paper.acceptedDate))
+    if (paper.acceptedDate && (!/^\d{4}-\d{2}-\d{2}$/.test(paper.acceptedDate) || !validDate(paper.acceptedDate)))
       throw new Error(`Invalid acceptance date: ${paper.id}`);
   }
   for (const id of profile.featured)
@@ -83,13 +97,11 @@ export function validateContent(profile, publications) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.id) || newsIds.has(item.id))
       throw new Error(`Invalid or duplicate news ID: ${item.id}`);
     newsIds.add(item.id);
-    if (!validDate(item.date)) throw new Error(`Invalid news date: ${item.id}`);
-    if (!['acceptance', 'award', 'update'].includes(item.kind))
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || !validDate(item.date)) throw new Error(`Invalid news date: ${item.id}`);
+    if (!['award', 'update'].includes(item.kind))
       throw new Error(`Invalid news kind: ${item.id}`);
     if (item.publication && !ids.has(item.publication))
       throw new Error(`News publication does not exist: ${item.id}`);
-    if (item.kind === 'acceptance' && !item.publication)
-      throw new Error(`Acceptance news requires a publication: ${item.id}`);
     if (!item.publication && supportedLocales.some(locale => !item.title?.[locale] || !item.text?.[locale]))
       throw new Error(`Incomplete bilingual news: ${item.id}`);
   }

@@ -46,7 +46,9 @@ npm run dev -- --port 4174
 
 修改个人资料时，同时维护 `locales.en` 与 `locales.zh`，并更新 `updated`。当前资料更新于 **2026-11**，包括 WSDM 2027 和 PAIRSAFE 的录用信息。GPA 按本人要求简写为 **3.5/4**。
 
-首屏右侧的 News 默认展示两条最新消息，可按年份切换、展开完整时间轴并跳转到对应论文。共享的 `news` 数组用 `publication` 引用论文 ID；普通近况用 `title`、`text` 保存中英文。日期支持 `YYYY`、`YYYY-MM`、`YYYY-MM-DD`，保留已知精度。`date` 表示消息发生时间，论文的 `year` 表示会议届次，两者分别记录。
+首屏右侧的 News 默认展示两条最新消息，可按年份切换、展开完整时间轴并跳转到对应论文。论文录用消息由 `acceptedDate` 自动生成，日期统一显示为 `YYYY-MM-DD`。其他有确切日期的近况可放入 `profile.json` 的 `news` 数组，使用 `title`、`text` 保存中英文。
+
+时间轴、论文排序与年份筛选均以首次收到录用通知的日期为准；会议届次仍保存在 `year`，用于会议名称和学术引用。例如 WSDM 2027 的录用消息归入 2026 年。接收日期的换算时区保存在 `acceptanceTimeZone`。尚未核实的日期留空，在论文列表中显示“日期待补”，取得日期后自动进入时间轴。
 
 视觉和交互增强共用原生浏览器模块，没有新增运行时依赖。右下角可以暂停动效；系统设置为减少动态效果时自动采用静态模式。装饰动画只在图形可见且页面处于前台时运行。正文始终可见，不以等待动画为阅读条件。动效偏好保存在本机浏览器，未开放本地存储时仍能使用当页功能。模块与样式参与内容哈希，根路径和项目子目录使用同一构建逻辑。
 
@@ -66,7 +68,7 @@ npm run dev -- --port 4174
 
 `id` 必须唯一且稳定，它同时用于论文深链接。`venue` 仅填会议名称，年份单独存入 `year`。`group` 使用 `major`（主要发表）或 `ei`（EI 会议论文），按本人指定的 CCF／CORE 会议排名标准维护；WCCI 下的 CEC、IJCNN 与 IGARSS 归入主要发表。`topics` 支持 `evaluation`、`earth`、`efficient`、`applied`。`profile.json` 中的 `featured` 指向需要展示的论文 ID。
 
-已录用、尚未正式发表的论文使用 `"status": "accepted"`，已知接收时间填入 `acceptedDate`，正式发表后改为 `"status": "published"`。列表展示标题、会议与时间，完整作者和发表状态保留在可展开引用中。`affiliation` 可保存论文对应身份。PAIRSAFE 和 WSDM 论文的独作与录用信息均由本人提供，WSDM 接收日期为 **2026-11-03**，会议届次为 [WSDM 2027](https://www.wsdm-conference.org/2027/)。
+已录用、尚未正式发表的论文使用 `"status": "accepted"`，已核实的首次通知接收日期填入 `acceptedDate`（必须为完整日期），正式发表后改为 `"status": "published"`。列表展示标题、会议与接收日期，完整作者和发表状态保留在可展开引用中。`affiliation` 可保存论文对应身份。PAIRSAFE 的录用日期为 **2026-09-08**，WSDM 的录用日期为 **2026-11-03**，会议届次为 [WSDM 2027](https://www.wsdm-conference.org/2027/)。
 
 如有已经核实的 Google Scholar 链接，可增加 `scholarUrl`；否则自动生成按完整标题检索的 Scholar 入口。引用复制使用记录中的作者、标题、会议与年份。当前资料没有 DOI、论文 PDF 或可下载 CV，页面不生成这些信息或空链接。最初若只记录了一名作者，请核实完整作者列表后直接补充数据。
 
