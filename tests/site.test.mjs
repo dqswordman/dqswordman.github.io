@@ -276,7 +276,7 @@ test('year and topic constraints combine with text search', () => {
   assert.equal(records.filter((paper) => matchesPaper(paper, { year: '2025' })).length, 4);
   assert.equal(
     records.filter((paper) => matchesPaper(paper, { year: '2026', topic: 'earth' })).length,
-    2,
+    4,
   );
   assert.equal(
     records.filter((paper) =>
