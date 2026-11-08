@@ -4,6 +4,13 @@ import { escapeHtml as h, loadContent } from '../src/content.mjs';
 
 const { profile } = await loadContent(new URL('../', import.meta.url));
 const copy = profile.locales.en;
+const premiseLines = [];
+for (const word of copy.heroStatement[0].split(/\s+/)) {
+  const last = premiseLines.length - 1;
+  if (last >= 0 && `${premiseLines[last]} ${word}`.length <= 38) premiseLines[last] += ` ${word}`;
+  else premiseLines.push(word);
+}
+const closingY = 324 + (premiseLines.length - 1) * 42 + 64;
 
 const destination = new URL('../public/assets/', import.meta.url);
 await mkdir(destination, { recursive: true });
@@ -17,9 +24,9 @@ const source = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630
 <circle cx="71" cy="140" r="4" fill="#d4b98c"/>
 <g font-family="Arial, sans-serif" fill="#bfccbf"><text x="89" y="144" font-size="12" letter-spacing="3">${h(copy.heroEyebrow)}</text></g>
 <text x="64" y="257" font-family="Georgia, serif" font-size="82" letter-spacing="-4" fill="#f4f0e5">${h(profile.name)}<tspan fill="#d4b98c">.</tspan></text>
-<text x="64" y="348" font-family="Georgia, serif" font-size="48" fill="#f4f0e5">${h(copy.heroStatement[0])}</text>
-<text x="64" y="406" font-family="Georgia, serif" font-size="48" font-style="italic" fill="#d4b98c">${h(copy.heroStatement[1])}</text>
-<text x="64" y="478" font-family="Arial, sans-serif" font-size="17" fill="#b7c9b8">AI safety · Rigorous evaluation · Empirical machine learning</text>
+<text x="64" y="324" font-family="Georgia, serif" font-size="30" fill="#f4f0e5">${premiseLines.map((line, i) => `<tspan x="64" dy="${i ? 42 : 0}">${h(line)}</tspan>`).join('')}</text>
+<text x="64" y="${closingY}" font-family="Georgia, serif" font-size="44" font-style="italic" fill="#d4b98c">${h(copy.heroStatement[1])}</text>
+<text x="64" y="${closingY + 66}" font-family="Arial, sans-serif" font-size="17" fill="#b7c9b8">AI safety · Rigorous evaluation · Empirical machine learning</text>
 <text x="64" y="596" font-family="Arial, sans-serif" font-size="13" letter-spacing="1" fill="#b7c9b8">${h(new URL(profile.url).hostname)}</text>
 ${field}
 </svg>\n`;

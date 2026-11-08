@@ -312,7 +312,7 @@ export function renderPage({
   <main id="main" tabindex="-1">
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
-        <div class="hero-copy"><p class="eyebrow hero-eyebrow"><span class="status-dot"></span>${h(copy.heroEyebrow)}</p><h1 id="hero-title">${h(profile.name)}<span class="name-period">.</span></h1><p class="hero-statement">${h(copy.heroStatement[0])}<br><em>${h(copy.heroStatement[1])}</em></p><p class="hero-intro">${h(copy.heroIntro)}</p><div class="hero-actions"><a class="button button-cream" href="#publications">${h(t.viewWork)}${icon('arrow')}</a><a class="hero-text-link" href="mailto:${h(profile.email)}">${h(t.getInTouch)}${icon('external')}</a></div></div>
+        <div class="hero-copy"><p class="eyebrow hero-eyebrow"><span class="status-dot"></span>${h(copy.heroEyebrow)}</p><h1 id="hero-title">${h(profile.name)}<span class="name-period">.</span></h1><p class="hero-statement"><span class="hero-premise">${h(copy.heroStatement[0])}</span> <em>${h(copy.heroStatement[1])}</em></p><p class="hero-intro">${h(copy.heroIntro)}</p><div class="hero-actions"><a class="button button-cream" href="#publications">${h(t.viewWork)}${icon('arrow')}</a><a class="hero-text-link" href="mailto:${h(profile.email)}">${h(t.getInTouch)}${icon('external')}</a></div></div>
         ${newsPanel(profile, publications, t, locale)}
       </div>
       <div class="container hero-bottom"><p>${icon('pin')}${h(copy.location)}<span class="hero-divider" aria-hidden="true"></span>${h(copy.heroNote)}</p><a href="#about-me">${h(t.scroll)}${icon('down')}</a></div>

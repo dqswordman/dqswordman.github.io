@@ -365,7 +365,16 @@ svg {
   line-height: 1.2;
   margin-top: 24px;
 }
+.hero-premise {
+  display: block;
+  max-width: 540px;
+  margin-bottom: 14px;
+  font-size: clamp(24px, 2.3vw, 33px);
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
 .hero-statement em {
+  display: block;
   color: var(--gold);
   font-weight: 400;
 }
@@ -2435,8 +2444,10 @@ html[lang='zh-CN'] .research-card h3 {
     font-size: 18pt;
     margin-top: 10px;
   }
-  .hero-statement br {
-    display: none;
+  .hero-premise {
+    max-width: none;
+    margin-bottom: 6pt;
+    font-size: 12pt;
   }
   .hero-intro {
     color: #444;
