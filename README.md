@@ -71,11 +71,11 @@ npm run dev -- --port 4174
 
 已录用、尚未正式发表的论文使用 `"status": "accepted"`，已核实的首次通知接收日期填入 `acceptedDate`（必须为完整日期），正式发表后改为 `"status": "published"`。列表展示标题、会议与接收日期，完整作者和发表状态保留在可展开引用中。`affiliation` 可保存论文对应身份。PAIRSAFE 的录用日期为 **2026-09-08**，WSDM 的录用日期为 **2026-11-03**，会议届次为 [WSDM 2027](https://www.wsdm-conference.org/2027/)。
 
-从 WSDM 2027 Findings 起（录用日期 **2026-11-03** 及以后），在 `content/publications.json` 的论文条目填写指向公开 GitHub 仓库的 `codeUrl`，并设置 `"technicalReport": true`。将报告保存为 `content/technical-reports/<id>.json`。各语言的 `locales.*.summary` 用于报告摘要和目录卡片，`sections` 保存双语正文与稳定锚点。可在分节的 `blocks` 中加入 `figure`、`table`、`steps` 和 `code`，并通过 `artifact`、`metrics` 和 `sources` 补充复现版本、关键指标和来源。沿用 [WSDM 报告数据](content/technical-reports/decision-sufficiency.json) 的字段即可。
+从 WSDM 2027 Findings 起（录用日期 **2026-11-03** 及以后），在 `content/publications.json` 的论文条目填写指向公开 GitHub 仓库的 `codeUrl`，并设置 `"technicalReport": true`。将报告保存为 `content/technical-reports/<id>.json`。各语言的 `locales.*.title` 和 `summary` 用于报告和目录卡片，`article` 记录网页版本、发布日期、更新日期和对应稿件日期。`sections` 保存双语正文与稳定锚点，分节中的 `figure`、`table`、`steps`、`code` 和 `links` 可以通过 `afterParagraph` 放在相关段落后。`artifact` 可链接固定复现版本与指南，`metrics` 和 `sources` 保存关键指标与证据来源。沿用 [WSDM 报告数据](content/technical-reports/decision-sufficiency.json) 的字段即可。
 
 构建为两个语言版本分别生成技术报告目录 `/technical-reports/`、开源论文目录 `/open-source/` 和论文的 `/technical-reports/<id>/`。导航直达独立目录，论文条目直达对应报告和代码仓库。旧首页锚点 `#technical-reports` 与 `#open-source` 会转到相应目录。
 
-WSDM 两张网页图和三张数据表来自公开的 `v1.0.0` 复现归档。使用有 NumPy 和 Matplotlib 的 Python 环境，在站点仓库运行 `python scripts/render-wsdm-figures.py --artifact ../rag-decision-sufficiency` 可重新生成。脚本固定读取该版本的 Git 对象，核对归档 P1 掩码及主要策略平均遗憾值。站点构建直接使用提交的图片和表格数据。
+WSDM 的三张网页图和六张数据表来自公开的 `v1.0.0` 复现归档。使用有 NumPy 和 Matplotlib 的 Python 3.9 或更新环境，在站点仓库运行 `python scripts/render-wsdm-figures.py --artifact ../rag-decision-sufficiency` 可重新生成。脚本固定读取该版本的 Git 对象，核对归档 P1 掩码、策略对比与选例。站点构建直接使用提交的图片和表格数据。论文各表的原始设置与输出对应关系见 [复现指南](https://github.com/dqswordman/rag-decision-sufficiency/blob/main/docs/reproduction.md)。
 
 如有已经核实的 Google Scholar 链接，可增加 `scholarUrl`；否则自动生成按完整标题检索的 Scholar 入口。引用复制使用记录中的作者、标题、会议与年份。当前资料没有 DOI、论文 PDF 或可下载 CV，页面不生成这些信息或空链接。最初若只记录了一名作者，请核实完整作者列表后直接补充数据。
 

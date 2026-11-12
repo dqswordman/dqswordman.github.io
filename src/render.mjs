@@ -3,7 +3,7 @@ import {
   researchIndexes, researchIndexPath, technicalReportPath, venueLabel,
 } from './content.mjs';
 import { icon, monogram } from './components.mjs';
-import { renderResearchIndex, renderReport } from './research.mjs';
+import { renderResearchIndex, renderReport, reportPreview } from './research.mjs';
 
 export const ui = {
   en: {
@@ -30,9 +30,16 @@ export const ui = {
     codeDescription: 'Public code and versioned reproducibility releases for the publications.',
     emptyResearch: 'No entries are available yet.',
     readReport: 'Read the report',
+    resultsPreview: 'Read the results',
     githubRepository: 'GitHub repository',
+    reproductionGuide: 'Reproduction guide',
     release: 'Release',
     publicationEntry: 'Publication entry',
+    paperCompanion: 'Paper companion',
+    firstPublished: 'First published',
+    lastUpdated: 'Updated',
+    authorFinal: 'Author-final manuscript',
+    updateNote: 'Version',
     reportSources: 'Sources & data',
     reportContents: 'On this page',
     viewFigure: 'View full size',
@@ -130,9 +137,16 @@ export const ui = {
     codeDescription: '查看已公开的论文代码、实验归档与复现版本。',
     emptyResearch: '暂无条目。',
     readReport: '阅读技术报告',
+    resultsPreview: '阅读实验结果',
     githubRepository: 'GitHub 仓库',
+    reproductionGuide: '复现指南',
     release: '复现版本',
     publicationEntry: '论文条目',
+    paperCompanion: '论文伴读',
+    firstPublished: '首次发布',
+    lastUpdated: '更新',
+    authorFinal: '作者最终稿',
+    updateNote: '版本',
     reportSources: '资料与数据',
     reportContents: '报告目录',
     viewFigure: '查看原图',
@@ -315,10 +329,15 @@ export function renderPage({
   const canonical = profile.url + routes[locale];
   const indexTitle = index === 'technical-reports' ? t.reports : t.openSource;
   const indexDescription = index === 'technical-reports' ? t.reportsDescription : t.codeDescription;
-  const title = report ? `${report.title} · ${t.report}`
+  const reportCopy = report?.technicalReport.locales[locale];
+  const title = report ? `${reportCopy.title ?? report.title} · ${t.report}`
     : index ? `${indexTitle} · ${profile.name}` : `${profile.name} · ${copy.role}`;
-  const description = report ? report.technicalReport.locales[locale].summary
+  const description = report ? reportCopy.summary
     : index ? indexDescription : copy.description;
+  const article = report?.technicalReport.article;
+  const figure = reportPreview(report?.technicalReport)?.figure;
+  const shareImage = figure ?? { file: 'assets/social-card.png', width: 1200, height: 630 };
+  const shareAlt = figure?.alt[locale] ?? `${profile.name} · ${profile.locales.en.heroStatement.join(' ')}`;
   const orderedPapers = [...publications].sort((a, b) => (b.acceptedDate || '').localeCompare(a.acceptedDate || ''));
   const years = [...new Set(publications.map(acceptanceYear).filter(year => year !== 'undated'))].sort((a, b) => b - a);
   const yearGroups = [...years, ...(publications.some(paper => !paper.acceptedDate) ? ['undated'] : [])];
@@ -407,6 +426,7 @@ export function renderPage({
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${notFound ? '404 · ' : ''}${h(title)}</title>
   <meta name="description" content="${h(description)}">
+  ${report ? `<meta name="author" content="${h(report.authors.join(', '))}">` : ''}
   <meta name="theme-color" content="#f7f8f3">
   <meta name="color-scheme" content="light">
   ${notFound ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${h(canonical)}">\n  <link rel="alternate" hreflang="en" href="${h(profile.url + routes.en)}">\n  <link rel="alternate" hreflang="zh-CN" href="${h(profile.url + routes.zh)}">\n  <link rel="alternate" hreflang="x-default" href="${h(profile.url + routes.en)}">`}
@@ -416,10 +436,12 @@ export function renderPage({
   <meta property="og:description" content="${h(description)}">
   <meta property="og:locale" content="${locale === 'zh' ? 'zh_CN' : 'en_US'}">
   <meta property="og:url" content="${h(canonical)}">
-  <meta property="og:image" content="${h(`${profile.url}${basePath}/assets/social-card.png`)}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${h(`${profile.name} · ${profile.locales.en.heroStatement.join(' ')}`)}">
+  <meta property="og:image" content="${h(`${profile.url}${basePath}/${shareImage.file}`)}">
+  <meta property="og:image:width" content="${shareImage.width}">
+  <meta property="og:image:height" content="${shareImage.height}">
+  <meta property="og:image:alt" content="${h(shareAlt)}">
+  ${article ? `<meta property="article:published_time" content="${h(article.published)}">
+  <meta property="article:modified_time" content="${h(article.updated)}">` : ''}
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="${basePath}/assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="${basePath}/favicon.ico" sizes="any">

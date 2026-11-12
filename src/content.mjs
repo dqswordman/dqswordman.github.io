@@ -57,6 +57,7 @@ function validReportBlock(block) {
         Number.isSafeInteger(block.height) && block.height > 0 &&
         isBilingual(block.alt) && isBilingual(block.caption);
     case 'table':
+      if (block.source) safeHttps(block.source);
       return isBilingual(block.caption) && Array.isArray(block.columns) &&
         block.columns.length > 0 && block.columns.every(isBilingual) &&
         Array.isArray(block.rows) && block.rows.length > 0 &&
@@ -68,6 +69,9 @@ function validReportBlock(block) {
           (step.formula === undefined || hasText(step.formula)));
     case 'code':
       return hasText(block.code);
+    case 'links':
+      return Array.isArray(block.items) && block.items.length > 0 &&
+        block.items.every((item) => isBilingual(item?.label) && safeHttps(item.url));
     default:
       return false;
   }
@@ -78,7 +82,8 @@ function validateReport(report, id) {
     const copy = report.locales?.[locale];
     const legacySectionsValid = Array.isArray(copy?.sections) && copy.sections.length > 0 &&
       copy.sections.every((section) => hasText(section?.title) && textList(section.paragraphs));
-    if (!hasText(copy?.summary) || (report.sections === undefined && !legacySectionsValid))
+    if (!hasText(copy?.summary) || (copy.title !== undefined && !hasText(copy.title)) ||
+        (report.sections === undefined && !legacySectionsValid))
       throw new Error(`Incomplete ${locale} technical report: ${id}`);
   }
   if (report.sections !== undefined) {
@@ -86,12 +91,16 @@ function validateReport(report, id) {
       throw new Error(`Missing technical report sections: ${id}`);
     const sections = new Set(['sources']);
     for (const section of report.sections) {
-      if (!validId(section?.id) || sections.has(section.id) ||
-          !isBilingual(section.title) ||
-          !supportedLocales.every((locale) => textList(section.paragraphs?.[locale])) ||
-          (section.blocks !== undefined &&
-            (!Array.isArray(section.blocks) || !section.blocks.every(validReportBlock))))
+      if (!validId(section?.id) || sections.has(section.id) || !isBilingual(section.title) ||
+          !supportedLocales.every((locale) => textList(section.paragraphs?.[locale])))
         throw new Error(`Invalid technical report section: ${id}/${section?.id}`);
+      const minParagraphs = Math.min(...supportedLocales.map((locale) => section.paragraphs[locale].length));
+      if (section.blocks !== undefined &&
+          (!Array.isArray(section.blocks) || !section.blocks.every((block) =>
+            validReportBlock(block) && (block.afterParagraph === undefined ||
+              (Number.isSafeInteger(block.afterParagraph) &&
+                block.afterParagraph >= 1 && block.afterParagraph <= minParagraphs)))))
+        throw new Error(`Invalid technical report block: ${id}/${section.id}`);
       sections.add(section.id);
     }
   }
@@ -99,6 +108,14 @@ function validateReport(report, id) {
     if (!hasText(report.artifact?.version) || !isBilingual(report.artifact.description))
       throw new Error(`Invalid technical report artifact: ${id}`);
     safeHttps(report.artifact.url);
+    if (report.artifact.guide !== undefined) safeHttps(report.artifact.guide);
+  }
+  if (report.article !== undefined) {
+    const { version, published, updated, manuscriptDate, updateNote } = report.article ?? {};
+    if (!hasText(version) || ![published, updated, manuscriptDate].every((date) =>
+      validDate(date) && date.length === 10) || updated < published || updated < manuscriptDate ||
+      (updateNote !== undefined && !isBilingual(updateNote)))
+      throw new Error(`Invalid technical report article metadata: ${id}`);
   }
   if (
     report.metrics !== undefined &&

@@ -122,20 +122,30 @@ test('WSDM resources link both homepages, their localized reports, and the code 
       assert.ok(indexHtml.includes(`data-language href="${alt}"`));
       assert.ok(indexHtml.includes(`href="${basePath + route}"`));
       assert.doesNotMatch(indexHtml, /OSAG EO Governance|osag-eo-governance/);
+      if (index === 'open-source') assert.ok(indexHtml.includes(paper.technicalReport.artifact.guide));
     }
     assert.doesNotMatch(html, /class="research-resources"|马汉科理工大学|Mahanakorn University/);
 
     const report = await readFile(new URL(`dist${route}index.html`, projectRoot), 'utf8');
-    assert.ok(report.includes(escapeHtml(paper.technicalReport.locales[locale].summary)));
+    const { article, locales, artifact } = paper.technicalReport;
+    assert.ok(report.includes(`<h1 id="report-title">${escapeHtml(locales[locale].title)}</h1>`));
+    assert.ok(report.includes(escapeHtml(locales[locale].summary)));
+    assert.ok(report.includes(`<cite lang="en">${escapeHtml(paper.title)}</cite>`));
+    assert.match(report, /name="author" content="Wenzhang Du"/);
+    assert.ok(report.includes(`property="article:modified_time" content="${article.updated}"`));
+    assert.ok(report.includes(`property="og:image" content="${profile.url + basePath}/assets/reports/decision-sufficiency/mean-regret.png"`));
     assert.ok(report.includes(`rel="canonical" href="${profile.url + basePath + route}"`));
     assert.ok(report.includes(`data-language href="${counterpart}"`));
     assert.ok(report.includes(`href="${basePath + home}#paper-${paper.id}"`));
     assert.ok(report.includes(`href="${paper.codeUrl}"`));
-    for (const section of ['overview', 'results', 'method', 'worked-examples', 'evaluation', 'reproduce', 'sources'])
+    assert.ok(report.includes(`href="${artifact.guide}"`));
+    for (const section of ['overview', 'method', 'results', 'worked-examples', 'pair-budget',
+      'geometry', 'pool-width', 'evaluation', 'reproduce', 'sources'])
       assert.ok(report.includes(`href="#${section}"`) && report.includes(`id="${section}"`));
-    assert.equal((report.match(/<figure class="report-figure">/g) ?? []).length, 2);
-    assert.equal((report.match(/<table>/g) ?? []).length, 3);
-    assert.ok(report.includes('0.272') && report.includes('0.162') && report.includes('2hop__10620_49084'));
+    assert.equal((report.match(/<figure class="report-figure">/g) ?? []).length, 3);
+    assert.equal((report.match(/<table>/g) ?? []).length, 6);
+    for (const evidence of ['0.272', '0.162', '0.122', '2hop__10620_49084', 'code/inspect_case.py'])
+      assert.ok(report.includes(evidence));
   }
 });
 
