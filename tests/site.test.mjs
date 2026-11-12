@@ -14,6 +14,7 @@ import {
   legacyAnchors,
   acceptanceYear,
   newsItems,
+  technicalReportPath,
 } from '../src/content.mjs';
 import {
   normalizeSearch,
@@ -97,6 +98,43 @@ test('WSDM news preserves the announcement date separately from the conference y
     assert.match(html, /datetime="2026-11-03"/);
     assert.match(html, /href="#paper-decision-sufficiency" data-paper-jump/);
   }
+});
+
+test('WSDM resources link both homepages, their localized reports, and the code repository', async () => {
+  const paper = publications.find((item) => item.id === 'decision-sufficiency');
+  const basePath = normalizeBasePath(process.env.BASE_PATH || '');
+  for (const [locale, home] of [['en', '/'], ['zh', '/zh/']]) {
+    const route = technicalReportPath(paper.id, locale);
+    const counterpart = technicalReportPath(paper.id, locale === 'en' ? 'zh' : 'en', basePath);
+    const html = renderPage({ profile, publications, locale, assets, basePath });
+    const row = html.split(`id="paper-${paper.id}"`)[1].split('</article>')[0];
+    assert.ok(row.includes(`href="${basePath + route}"`));
+    assert.ok(row.includes(`href="${paper.codeUrl}"`));
+    assert.ok(html.includes('id="technical-reports"'));
+    assert.ok(html.includes('id="open-source"'));
+
+    const report = await readFile(new URL(`dist${route}index.html`, projectRoot), 'utf8');
+    assert.ok(report.includes(escapeHtml(paper.technicalReport.locales[locale].summary)));
+    assert.ok(report.includes(`rel="canonical" href="${profile.url + basePath + route}"`));
+    assert.ok(report.includes(`data-language href="${counterpart}"`));
+    assert.ok(report.includes(`href="${basePath + home}#paper-${paper.id}"`));
+    assert.ok(report.includes(`href="${paper.codeUrl}"`));
+  }
+});
+
+test('new dated papers require a bilingual technical report and a GitHub repository', () => {
+  const wsdm = publications.find((paper) => paper.id === 'decision-sufficiency');
+  const future = { ...wsdm, id: 'next-paper', acceptedDate: '2026-11-04' };
+  assert.doesNotThrow(() => validateContent(profile, [...publications, future]));
+  for (const key of ['codeUrl', 'technicalReport'])
+    assert.throws(
+      () => validateContent(profile, [...publications, { ...future, [key]: undefined }]),
+      /Technical report and GitHub repository required/,
+    );
+  assert.throws(
+    () => validateContent(profile, [...publications, { ...future, codeUrl: 'https://github.com.example.org/owner/repo' }]),
+    /GitHub repository URL/,
+  );
 });
 
 test('publication groups contain every paper once and presentation classifications stay out of venue records', () => {

@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 export const supportedLocales = ['en', 'zh'];
 export const topicKeys = ['evaluation', 'earth', 'efficient', 'applied'];
 export const publicationGroups = ['major', 'ei'];
+// WSDM Findings acceptance date, in the site's acceptance time zone.
+const researchResourcesFrom = '2026-11-03';
 export const legacyAnchors = [
   'about-me',
   'news',
@@ -28,6 +30,49 @@ export function safeHttps(value) {
   return url.href;
 }
 
+function validateGitHubRepository(value) {
+  const url = new URL(safeHttps(value));
+  if (
+    url.host !== 'github.com' ||
+    !/^\/[\w.-]+\/[\w.-]+\/?$/.test(url.pathname) ||
+    url.search ||
+    url.hash
+  )
+    throw new Error(`Expected a GitHub repository URL: ${value}`);
+}
+
+const hasText = (value) => typeof value === 'string' && Boolean(value.trim());
+const isBilingual = (value) => supportedLocales.every((locale) => hasText(value?.[locale]));
+
+function validateReport(report, id) {
+  for (const locale of supportedLocales) {
+    const copy = report.locales?.[locale];
+    if (
+      !hasText(copy?.summary) ||
+      !Array.isArray(copy.sections) ||
+      !copy.sections.length ||
+      !copy.sections.every((section) =>
+        hasText(section?.title) &&
+        Array.isArray(section.paragraphs) &&
+        section.paragraphs.length &&
+        section.paragraphs.every(hasText),
+      )
+    )
+      throw new Error(`Incomplete ${locale} technical report: ${id}`);
+  }
+  if (
+    report.metrics !== undefined &&
+    (!Array.isArray(report.metrics) ||
+      !report.metrics.every((metric) => hasText(metric?.value) && isBilingual(metric.label)))
+  )
+    throw new Error(`Invalid technical report metrics: ${id}`);
+  if (report.sources !== undefined) {
+    if (!Array.isArray(report.sources) || !report.sources.every((source) => isBilingual(source?.label)))
+      throw new Error(`Invalid technical report sources: ${id}`);
+    for (const source of report.sources) safeHttps(source.url);
+  }
+}
+
 // A news date can have year, month, or day precision; retain the precision supplied.
 export function validDate(value) {
   if (typeof value !== 'string' || !/^\d{4}(?:-\d{2}(?:-\d{2})?)?$/.test(value)) return false;
@@ -51,7 +96,7 @@ export function newsItems(profile, publications) {
 }
 
 export function validateContent(profile, publications) {
-  for (const key of ['url', 'github', 'scholar', 'universityUrl']) safeHttps(profile[key]);
+  for (const key of ['url', 'github', 'scholar']) safeHttps(profile[key]);
   if (profile.url !== new URL(profile.url).origin)
     throw new Error('profile.url must be the site origin; use BASE_PATH for a subdirectory.');
   if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(profile.email))
@@ -88,9 +133,23 @@ export function validateContent(profile, publications) {
       throw new Error(`Invalid affiliation: ${paper.id}`);
     if (paper.acceptedDate && (!/^\d{4}-\d{2}-\d{2}$/.test(paper.acceptedDate) || !validDate(paper.acceptedDate)))
       throw new Error(`Invalid acceptance date: ${paper.id}`);
+    if (paper.track !== undefined && !hasText(paper.track))
+      throw new Error(`Invalid publication track: ${paper.id}`);
+    if (
+      (paper.id === 'decision-sufficiency' || (paper.acceptedDate ?? '') >= researchResourcesFrom) &&
+      (!paper.technicalReport || !paper.codeUrl)
+    )
+      throw new Error(`Technical report and GitHub repository required: ${paper.id}`);
+    if (paper.codeUrl) validateGitHubRepository(paper.codeUrl);
+    if (paper.technicalReport) validateReport(paper.technicalReport, paper.id);
   }
   for (const id of profile.featured)
     if (!ids.has(id)) throw new Error(`Featured publication does not exist: ${id}`);
+  for (const project of profile.openSource ?? []) {
+    if (!hasText(project.name) || !isBilingual(project.description))
+      throw new Error('Incomplete open-source project');
+    validateGitHubRepository(project.url);
+  }
   const newsIds = new Set();
   if (!Array.isArray(profile.news)) throw new Error('News must be an array');
   for (const item of profile.news) {
@@ -134,6 +193,10 @@ export function normalizeBasePath(value = '') {
   if (!/^\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_-]+$/.test(normalized))
     throw new Error('BASE_PATH must be a plain URL path such as /homepage');
   return normalized;
+}
+
+export function technicalReportPath(id, locale, basePath = '') {
+  return `${basePath}/${locale === 'zh' ? 'zh/' : ''}technical-reports/${id}/`;
 }
 
 export function paperUrl(paper) {

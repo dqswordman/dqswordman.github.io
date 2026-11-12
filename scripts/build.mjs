@@ -2,7 +2,7 @@ import { readFile, writeFile, mkdir, cp, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve, relative, sep } from 'node:path';
-import { loadContent, normalizeBasePath, escapeHtml as h } from '../src/content.mjs';
+import { loadContent, normalizeBasePath, escapeHtml as h, supportedLocales, technicalReportPath } from '../src/content.mjs';
 import { renderPage } from '../src/render.mjs';
 import { renderMiscPage, historyRoutes } from '../src/misc-render.mjs';
 import { history, localizedHistory, validateHistory, referencesFor, studiesForEvent, historyCensus } from '../src/history.mjs';
@@ -87,13 +87,22 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     writeFile(new URL('assets/history-catalog.en.json', outputRoot), JSON.stringify(catalogFor('en'), null, 2)),
   ]);
 
-  for (const locale of ['en', 'zh']) {
+  const reportPapers = publications.filter((paper) => paper.technicalReport);
+  for (const locale of supportedLocales) {
     const folder = locale === 'en' ? outputRoot : new URL('zh/', outputRoot);
     await mkdir(folder, { recursive: true });
     await writeFile(
       new URL('index.html', folder),
       renderPage({ profile, publications, locale, basePath, assets }),
     );
+    for (const report of reportPapers) {
+      const reportFolder = new URL(technicalReportPath(report.id, locale).slice(1), outputRoot);
+      await mkdir(reportFolder, { recursive: true });
+      await writeFile(
+        new URL('index.html', reportFolder),
+        renderPage({ profile, publications, locale, basePath, assets, report }),
+      );
+    }
   }
   await writeFile(
     new URL('404.html', outputRoot),
@@ -128,14 +137,21 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     new URL('assets/redirect.js', outputRoot),
     "const target = new URL(document.querySelector('link[rel=canonical]').href); target.search = location.search; target.hash = location.hash; location.replace(target.pathname + target.search + target.hash);\n",
   );
-  const urls = [`${profile.url}${basePath}/`, `${profile.url}${basePath}/zh/`];
-  const alternates = `<xhtml:link rel="alternate" hreflang="en" href="${h(urls[0])}"/><xhtml:link rel="alternate" hreflang="zh-CN" href="${h(urls[1])}"/>`;
+  const publicRoutePairs = [
+    [`${basePath}/`, `${basePath}/zh/`],
+    ...reportPapers.map((paper) => supportedLocales.map((locale) => technicalReportPath(paper.id, locale, basePath))),
+  ];
+  const publicSitemap = publicRoutePairs.map(([english, chinese]) => {
+    const urls = [english, chinese].map((route) => profile.url + route);
+    const alternates = `<xhtml:link rel="alternate" hreflang="en" href="${h(urls[0])}"/><xhtml:link rel="alternate" hreflang="zh-CN" href="${h(urls[1])}"/>`;
+    return urls.map((url) => `<url><loc>${h(url)}</loc>${alternates}</url>`).join('');
+  }).join('');
   const miscSitemap = miscRoutes.map(route => {
     const pair = ['zh-CN', 'en'].map(locale => [locale, `${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}${route}`]);
     const links = pair.map(([locale, url]) => `<xhtml:link rel="alternate" hreflang="${locale}" href="${h(url)}"/>`).join('');
     return pair.map(([, url]) => `<url><loc>${h(url)}</loc><lastmod>${history.updated}</lastmod>${links}</url>`).join('');
   }).join('');
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${urls.map((url) => `<url><loc>${h(url)}</loc>${alternates}</url>`).join('')}${miscSitemap}</urlset>\n`;
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${publicSitemap}${miscSitemap}</urlset>\n`;
   await writeFile(new URL('sitemap.xml', outputRoot), sitemap);
   await writeFile(
     new URL('robots.txt', outputRoot),
@@ -153,8 +169,8 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
         start_url: `${basePath}/`,
         scope: `${basePath}/`,
         display: 'browser',
-        background_color: '#f8f7f3',
-        theme_color: '#17332e',
+        background_color: '#f7f8f3',
+        theme_color: '#f7f8f3',
         icons: [
           {
             src: `${basePath}/assets/favicon.svg`,

@@ -4,7 +4,7 @@ import { relative, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import assert from 'node:assert/strict';
 import { outputRoot, projectRoot } from './build.mjs';
-import { loadContent, legacyAnchors, normalizeBasePath } from '../src/content.mjs';
+import { loadContent, legacyAnchors, normalizeBasePath, supportedLocales, technicalReportPath } from '../src/content.mjs';
 import { history, localizedHistory, historyRoutes, validateHistory } from '../src/history.mjs';
 
 const root = fileURLToPath(outputRoot);
@@ -152,6 +152,11 @@ check(files.has(resolve(root, '.nojekyll')), 'Missing .nojekyll');
 const sitemap = await readFile(resolve(root, 'sitemap.xml'), 'utf8');
 check(sitemap.includes(`${profile.url}${basePath}/zh/`), 'Chinese page missing from sitemap');
 check(!sitemap.includes('404.html'), '404 should not be indexed');
+for (const paper of publications.filter((item) => item.technicalReport))
+  for (const locale of supportedLocales) {
+    const route = technicalReportPath(paper.id, locale, basePath);
+    check(sitemap.includes(`<loc>${profile.url}${route}</loc>`), `Missing technical report in sitemap: ${route}`);
+  }
 for (const locale of ['zh', 'en']) for (const route of historyRoutes()) check(sitemap.includes(`${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}${route}`), `Miscellany page missing from sitemap: ${locale}/${route}`);
 const pngSignature = '89504e470d0a1a0a';
 for (const name of ['assets/social-card.png', 'assets/apple-touch-icon.png']) {

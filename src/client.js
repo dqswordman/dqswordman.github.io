@@ -8,7 +8,7 @@ initExperience();
 const header = document.querySelector('[data-header]');
 const menuButton = document.querySelector('[data-menu]');
 const nav = document.querySelector('#main-nav');
-const mobile = window.matchMedia('(max-width: 640px)');
+const mobile = window.matchMedia('(max-width: 760px)');
 
 function setMenu(open, restoreFocus = false) {
   header.toggleAttribute('data-menu-open', open);
@@ -53,8 +53,15 @@ function updateNavigation() {
   header.toggleAttribute('data-scrolled', window.scrollY > 16);
   const offset = header.offsetHeight + 90;
   let active = '';
-  for (const section of navSections)
-    if (section.getBoundingClientRect().top <= offset) active = section.id;
+  let closest = -Infinity;
+  for (const section of navSections) {
+    const top = section.getBoundingClientRect().top;
+    if (top > offset || top < closest) continue;
+    if (top > closest || location.hash === `#${section.id}`) {
+      active = section.id;
+      closest = top;
+    }
+  }
   for (const link of navLinks) {
     if (link.dataset.nav === active) link.setAttribute('aria-current', 'location');
     else link.removeAttribute('aria-current');
@@ -72,6 +79,7 @@ window.addEventListener(
   { passive: true },
 );
 window.addEventListener('resize', updateNavigation, { passive: true });
+window.addEventListener('hashchange', updateNavigation);
 updateNavigation();
 
 const languageLink = document.querySelector('[data-language]');

@@ -8,7 +8,95 @@
     "acceptedDate": "2026-11-03",
     "group": "major",
     "status": "accepted",
-    "topics": ["evaluation"]
+    "topics": ["evaluation"],
+    "track": "Findings",
+    "codeUrl": "https://github.com/dqswordman/rag-decision-sufficiency",
+    "technicalReport": {
+      "metrics": [
+        {
+          "value": "0.272 → 0.162",
+          "label": { "en": "Mean regret, P1 to P1 + one check", "zh": "平均归一化遗憾值，P1 到 P1 + 一次核验" }
+        },
+        {
+          "value": "9.61",
+          "label": { "en": "Mean target calls with the check", "zh": "加入核验后的平均目标模型调用次数" }
+        },
+        {
+          "value": "+0.038",
+          "label": { "en": "Token F1 change relative to P1", "zh": "相对 P1 的词元 F1 变化" }
+        }
+      ],
+      "sources": [
+        {
+          "url": "https://github.com/dqswordman/rag-decision-sufficiency/releases/tag/v1.0.0",
+          "label": { "en": "Reproduction release v1.0.0", "zh": "复现版本 v1.0.0" }
+        },
+        {
+          "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/reference/tables/table_primary.tex",
+          "label": { "en": "Main results table", "zh": "主结果表" }
+        },
+        {
+          "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/reference/tables/table_paired.tex",
+          "label": { "en": "Paired comparisons", "zh": "配对比较表" }
+        },
+        {
+          "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/DATA_PROVENANCE.md",
+          "label": { "en": "Data provenance", "zh": "数据来源" }
+        }
+      ],
+      "locales": {
+        "en": {
+          "summary": "In multi-hop retrieval-augmented generation, how much evidence utility do we need to measure before we can choose a good context?",
+          "sections": [
+            {
+              "title": "Evaluation setup",
+              "paragraphs": [
+                "The main experiment covers 180 held-out questions from HotpotQA, 2WikiMultiHopQA and MuSiQue. Two fixed eight-passage pools per question and four generators yield 1,440 question–pool–generator cases. The primary budget allows up to three passages in the selected context.",
+                "Utility is the mean log probability of the reference answer relative to the empty context. Normalized regret is the gap to the best feasible context divided by a scale estimated on the calibration data. We compare methods on the same cases and estimate uncertainty by resampling question clusters."
+              ]
+            },
+            {
+              "title": "What one extra check changes",
+              "paragraphs": [
+                "We start with nine utility measurements, one for the empty context and one for each singleton. The additive policy (P1) uses these measurements to propose a subset. The best-measured policy chooses among the nine observed contexts and achieves lower mean regret than P1 (0.213 versus 0.272) with the same number of calls.",
+                "P1 + one check scores the proposed subset if it has not already been measured, then chooses the highest-utility context among the measured candidates. Relative to P1, its paired mean regret difference is −0.109 (95% interval [−0.138, −0.085]). Token F1 improves by 0.038 (95% interval [0.020, 0.056])."
+              ]
+            },
+            {
+              "title": "Reproduction and scope",
+              "paragraphs": [
+                "The result concerns labelled multi-hop QA with fixed candidate pools and reference-answer utility. The GitHub release packages the archived context scores, policy code, generation metrics and reference tables. The CPU replay verifies input checksums, reruns selection and paired comparisons, and checks 22 result CSVs and four paper tables against the reference files."
+              ]
+            }
+          ]
+        },
+        "zh": {
+          "summary": "在多跳检索增强生成中，要测量多少次上下文效用，才能选出一个好的证据集合？",
+          "sections": [
+            {
+              "title": "评估设置",
+              "paragraphs": [
+                "主实验使用 HotpotQA、2WikiMultiHopQA 和 MuSiQue 的 180 道留出问题。每道题使用两个固定的八段候选池和四个生成模型，共形成 1,440 个问题–候选池–模型组合。主实验允许最终上下文包含至多三段证据。",
+                "效用定义为参考答案在给定上下文中的平均对数概率，相对于空上下文的增量。归一化遗憾值是所选上下文与可行最优上下文之间的效用差，再除以校准数据估计的尺度。方法在同一批案例上比较，区间通过按问题聚类的 Bootstrap 得到。"
+              ]
+            },
+            {
+              "title": "一次额外核验带来的变化",
+              "paragraphs": [
+                "初始九次效用测量覆盖空上下文和八个单段上下文。加性策略（P1）据此提出一个证据集合。在相同调用预算下，直接选择九个已测上下文中的最优者，平均归一化遗憾值为 0.213，低于 P1 的 0.272。",
+                "P1 + 一次核验会对尚未测量的候选集合补测一次，再从已测上下文中选择效用最高者。相对 P1，配对平均归一化遗憾值差为 −0.109（95% 区间 [−0.138, −0.085]），词元 F1 提高 0.038（95% 区间 [0.020, 0.056]）。"
+              ]
+            },
+            {
+              "title": "复现与适用范围",
+              "paragraphs": [
+                "以上结果对应有参考答案的多跳问答、固定候选池和基于参考答案的效用。GitHub 复现版本提供归档的上下文分数、选择策略、生成评估指标与参考表格。CPU 复现脚本会校验输入哈希、重算选择与配对比较，并逐项核对 22 份结果 CSV 和 4 张论文表格。"
+              ]
+            }
+          ]
+        }
+      }
+    }
   },
   {
     "id": "pairsafe",

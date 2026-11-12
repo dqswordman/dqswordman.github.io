@@ -26,9 +26,10 @@ html[data-motion="off"] { scroll-behavior:auto }
   *, *::before, *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important }
 }
 @media screen {
-  .site-header, .m-header { background:#f8f7f3f2; backdrop-filter:blur(18px); transition:box-shadow .25s,border-color .25s }
+  .site-header, .m-header { backdrop-filter:blur(18px); transition:box-shadow .25s,border-color .25s }
+  .site-header { background:#f7f8f3f5 }
+  .m-header { background:#f8f7f3f2 }
   .m-header[data-scrolled] { box-shadow:0 6px 24px #17332e08 }
-  .hero::before { content:''; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 78% 46%,#608e6e15,transparent 52%),linear-gradient(110deg,transparent 44%,#d4b98c04 45%,transparent 80%) }
   .hero-art { transform:perspective(1000px) rotateX(var(--depth-x,0deg)) rotateY(var(--depth-y,0deg)); transition:transform .5s cubic-bezier(.2,.65,.2,1) }
   .field-mesh { transform-origin:280px 280px }
   .field-satellite { transform-origin:280px 280px }
