@@ -1,0 +1,508 @@
+{
+  "locales": {
+    "en": {
+      "summary": "In labelled multi-hop question answering, a single targeted utility check improves evidence selection by testing the subset proposed by an additive model."
+    },
+    "zh": {
+      "summary": "在带参考答案的多跳问答中，只需对加性模型提出的证据组合补测一次，就能改善证据选择。"
+    }
+  },
+  "artifact": {
+    "version": "v1.0.0",
+    "url": "https://github.com/dqswordman/rag-decision-sufficiency/releases/tag/v1.0.0",
+    "description": {
+      "en": "CPU replay of the evidence-selection study, with archived context scores, generation metrics, and reference tables.",
+      "zh": "证据选择研究的 CPU 复现包，包含归档上下文分数、生成评估指标和参考结果表。"
+    }
+  },
+  "metrics": [
+    {
+      "value": "0.272 → 0.162",
+      "label": {
+        "en": "Mean normalized regret, P1 to P1 + one check",
+        "zh": "平均归一化遗憾值，P1 到 P1 + 一次核验"
+      }
+    },
+    {
+      "value": "9.61",
+      "label": {
+        "en": "Mean target utility calls with one check",
+        "zh": "加入核验后的平均目标效用测量次数"
+      }
+    },
+    {
+      "value": "+0.038",
+      "label": {
+        "en": "Paired token F1 change relative to P1",
+        "zh": "相对 P1 的配对词元 F1 变化"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "overview",
+      "title": {
+        "en": "Quick summary",
+        "zh": "快速总结"
+      },
+      "paragraphs": {
+        "en": [
+          "A retriever has returned eight passages for a multi-hop question. The final context can contain up to three. Two passages that look useful in isolation may cover the same fact, while two weak individual passages may supply complementary steps. How much of that subset utility needs to be measured to make a good decision?",
+          "Nine initial measurements cover the empty context and each single passage. With those measurements, choosing the best observed context has lower mean regret than selecting an unverified additive proposal. Measuring that proposal when it is new and then choosing from observed contexts reduces mean normalized regret from 0.272 to 0.162 relative to the additive policy, with 9.61 target utility calls on average."
+        ],
+        "zh": [
+          "检索器为一道多跳问答返回八段候选证据，最终最多保留三段。两段分别得分很高的证据可能在重复同一个事实，而单独作用较小的两段也可能补齐不同推理步骤。这里的问题是，要测量多少个上下文，才能选到一个好的证据组合？",
+          "初始九次测量覆盖空上下文和八个单段上下文。在相同测量预算下，直接选择已测最优的上下文，平均遗憾值低于未经核验的加性方案。对尚未测过的加性候选补测一次，再从已测上下文中选择，平均归一化遗憾值由加性策略的 0.272 降至 0.162，平均需要 9.61 次目标效用测量。"
+        ]
+      }
+    },
+    {
+      "id": "results",
+      "title": {
+        "en": "Main results",
+        "zh": "结果预览"
+      },
+      "paragraphs": {
+        "en": [
+          "The comparison uses the same 1,440 question–pool–generator cases and a three-passage limit. Best measured (BO9) and additive selection (P1) use the same nine scores. P1 + one check takes a tenth measurement in 876 cases. The chart shows mean normalized regret, where lower values indicate a smaller utility gap to the best feasible context.",
+          "The paired result for one check versus P1 is a reduction of 0.109 in mean normalized regret and a gain of 0.038 in token F1. Against BO9, the mean regret gap also decreases. The token F1 and answer exact-match intervals for that comparison include zero."
+        ],
+        "zh": [
+          "三种策略在同一批 1,440 个问题–候选池–生成模型组合上比较，最终上下文均至多包含三段。已测最优（BO9）和加性策略（P1）使用同样的九次测量。P1 + 一次核验在 876 个组合上补测第十次。图中平均归一化遗憾值越小，所选上下文与可行最优上下文的效用差越小。",
+          "相对 P1，补测一次的配对平均归一化遗憾值下降 0.109，词元 F1 提高 0.038。与 BO9 相比，平均遗憾值也下降。该比较的词元 F1 与答案完全匹配率区间均包含零。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "figure",
+          "file": "assets/reports/decision-sufficiency/mean-regret.png",
+          "width": 1350,
+          "height": 570,
+          "alt": {
+            "en": "Mean normalized regret is 0.213 for BO9, 0.272 for P1, and 0.162 for P1 plus one check.",
+            "zh": "BO9、P1、P1 加一次核验的平均归一化遗憾值分别为 0.213、0.272、0.162。"
+          },
+          "caption": {
+            "en": "Mean normalized regret in the eight-passage, three-passage-budget study. Lower is better. Drawn from the archived result CSV.",
+            "zh": "八段候选池、最多选三段时的平均归一化遗憾值，越低越好。根据归档结果 CSV 绘制。"
+          },
+          "source": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/reference/results/selection_overall.csv"
+        },
+        {
+          "type": "table",
+          "key": "policies",
+          "caption": {
+            "en": "Primary-budget results across 1,440 cases",
+            "zh": "主预算下 1,440 个组合的结果"
+          },
+          "columns": [
+            {
+              "en": "Policy",
+              "zh": "策略"
+            },
+            {
+              "en": "Mean utility calls",
+              "zh": "平均效用测量次数"
+            },
+            {
+              "en": "Normalized regret ↓",
+              "zh": "归一化遗憾值 ↓"
+            },
+            {
+              "en": "Token F1 ↑",
+              "zh": "词元 F1 ↑"
+            },
+            {
+              "en": "Answer EM ↑",
+              "zh": "答案完全匹配率 ↑"
+            }
+          ],
+          "rows": [
+            [
+              {
+                "en": "Best measured (BO9)",
+                "zh": "已测最优（BO9）"
+              },
+              "9.00",
+              "0.213",
+              "0.586",
+              "0.444"
+            ],
+            [
+              {
+                "en": "Additive (P1)",
+                "zh": "加性策略（P1）"
+              },
+              "9.00",
+              "0.272",
+              "0.554",
+              "0.422"
+            ],
+            [
+              {
+                "en": "P1 + one check",
+                "zh": "P1 + 一次核验"
+              },
+              "9.61",
+              "0.162",
+              "0.592",
+              "0.453"
+            ]
+          ]
+        },
+        {
+          "type": "table",
+          "key": "paired",
+          "caption": {
+            "en": "Paired mean differences with 95% query-cluster bootstrap intervals",
+            "zh": "配对均值差与按问题聚类的 95% Bootstrap 区间"
+          },
+          "columns": [
+            {
+              "en": "First policy minus second",
+              "zh": "前一策略减后一策略"
+            },
+            {
+              "en": "Normalized regret Δ",
+              "zh": "归一化遗憾值差"
+            },
+            {
+              "en": "Token F1 Δ",
+              "zh": "词元 F1 差"
+            },
+            {
+              "en": "Answer EM Δ",
+              "zh": "答案完全匹配率差"
+            }
+          ],
+          "rows": [
+            [
+              {
+                "en": "Additive (P1) − Best measured (BO9)",
+                "zh": "加性策略（P1） − 已测最优（BO9）"
+              },
+              "+0.059 [+0.025, +0.092]",
+              "−0.032 [−0.051, −0.014]",
+              "−0.023 [−0.044, −0.001]"
+            ],
+            [
+              {
+                "en": "P1 + one check − Best measured (BO9)",
+                "zh": "P1 + 一次核验 − 已测最优（BO9）"
+              },
+              "−0.051 [−0.078, −0.031]",
+              "+0.006 [−0.003, +0.015]",
+              "+0.009 [−0.001, +0.021]"
+            ],
+            [
+              {
+                "en": "P1 + one check − Additive (P1)",
+                "zh": "P1 + 一次核验 − 加性策略（P1）"
+              },
+              "−0.109 [−0.138, −0.085]",
+              "+0.038 [+0.020, +0.056]",
+              "+0.032 [+0.013, +0.051]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "method",
+      "title": {
+        "en": "How the policy works",
+        "zh": "核心思路与方法流程"
+      },
+      "paragraphs": {
+        "en": [
+          "Let ℓ(S) be the target generator’s mean reference-answer token log probability with context S. Subtracting the empty-context score gives the centered utility U(S). The additive model estimates a multi-passage utility by adding singleton utilities. Its proposal determines which subset to check.",
+          "The eight-passage pool has 93 feasible subsets under the primary limit of three, including the empty set. P1 searches those subsets using predicted scores. The final choice after the check compares only measured scores. Ties use the smallest integer bitmask. The full utility array is used after selection to identify the best feasible subset for regret."
+        ],
+        "zh": [
+          "记 ℓ(S) 为目标生成模型在上下文 S 下对参考答案词元给出的平均对数概率。减去空上下文分数，得到中心化效用 U(S)。加性模型用各单段效用之和估计组合效用，并据此决定核验哪个组合。",
+          "在最多选三段的主预算下，八段候选共有 93 个可行子集，包含空集。P1 按估计分数搜索这些子集。核验后的最终选择只比较实际测得的效用。并列时取整数掩码最小的子集。完成选择后，再用完整效用数组找出可行最优子集，用于计算遗憾值。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "steps",
+          "steps": [
+            {
+              "title": {
+                "en": "Measure nine contexts",
+                "zh": "先测九个上下文"
+              },
+              "text": {
+                "en": "Score the empty context and each of the eight singleton contexts. BO9 returns the best of these nine.",
+                "zh": "测量空上下文和八个单段上下文。BO9 直接选九者中效用最高的一个。"
+              },
+              "formula": "U(S) = ℓ(S) − ℓ(∅)"
+            },
+            {
+              "title": {
+                "en": "Propose a subset",
+                "zh": "用加性模型提出组合"
+              },
+              "text": {
+                "en": "P1 chooses the subset with the highest sum of singleton utilities under the three-passage limit.",
+                "zh": "P1 在至多三段的限制下，选择单段效用之和最大的子集。"
+              },
+              "formula": "S* = arg max Σ U({i}),  i ∈ S,  |S| ≤ 3"
+            },
+            {
+              "title": {
+                "en": "Measure the proposal if new",
+                "zh": "对新组合补测一次"
+              },
+              "text": {
+                "en": "Score S* with the same target generator if it is outside the initial nine contexts. Reuse its existing score otherwise.",
+                "zh": "若 S* 不在初始九个上下文中，用同一个目标生成模型测量它。若已测过，直接复用原分数。"
+              }
+            },
+            {
+              "title": {
+                "en": "Return the best measured context",
+                "zh": "选出已测效用最高者"
+              },
+              "text": {
+                "en": "Compare the measured proposal with the initial best. The selected context attains at least the utility of both BO9 and P1 on that case.",
+                "zh": "把候选的实测效用与初始最优者比较。对同一个案例，最终选择的效用至少达到 BO9 和 P1 两者的水平。"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "worked-examples",
+      "title": {
+        "en": "Two archived examples",
+        "zh": "两个真实归档案例"
+      },
+      "paragraphs": {
+        "en": [
+          "The release’s example selector looks at the 720 Track B cases. It keeps multi-passage P1 proposals and selects the case nearest the median gain in each of two strata, where P1 improves on BO9 by at least 0.05 normalized regret or worsens it by at least 0.05. The strata contain 105 and 185 cases, respectively.",
+          "Case A uses MuSiQue query 2hop__107905_110222 with Qwen. The proposed triple measures 4.491, above the initial best of 3.953, so the checked policy selects the triple. Case B uses MuSiQue query 2hop__10620_49084 with Mistral. The proposed pair is estimated at 1.574 and measures 0.206, so the checked policy returns the initial context at 0.918.",
+          "The answer scores show a separate part of the decision. In Case A both contexts yield token F1 of 0. In Case B, the pair with lower measured utility yields an exact answer, while the higher-utility singleton yields token F1 of 0.444. The cases illustrate the per-case check and how the utility and decoded-answer metrics can diverge."
+        ],
+        "zh": [
+          "复现代码在 Track B 的 720 个组合中选例。只看 P1 提出多段证据的情况，按相对 BO9 的归一化遗憾值至少改善 0.05 或至少恶化 0.05 分成两组，再分别选择最接近组内中位数的案例。两组分别有 105 和 185 个组合。",
+          "案例 A 使用 MuSiQue 问题 2hop__107905_110222 与 Qwen。三段组合的实测效用为 4.491，高于初始最优的 3.953，因此核验后选中三段组合。案例 B 使用 MuSiQue 问题 2hop__10620_49084 与 Mistral。两段组合的加性估计为 1.574，实测只有 0.206，因此核验后选回效用为 0.918 的初始上下文。",
+          "生成答案还提供了另一层信息。案例 A 的两个上下文都得到词元 F1 为 0。案例 B 中，实测效用较低的两段组合生成了完全匹配的答案，而效用更高的单段上下文的词元 F1 为 0.444。这两例展示了核验如何决定上下文，也展示了效用与解码后答案指标可能分离。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "figure",
+          "file": "assets/reports/decision-sufficiency/utility-examples.png",
+          "width": 1350,
+          "height": 1080,
+          "alt": {
+            "en": "The measured proposal beats the initial best in MuSiQue case A, while the initial best beats the measured proposal in case B.",
+            "zh": "MuSiQue 案例 A 中，候选组合实测效用高于初始最优。案例 B 的结果相反。"
+          },
+          "caption": {
+            "en": "Predicted and measured centered utilities for the two archived cases. Each panel has its own horizontal scale. The green bar marks the context returned after checking.",
+            "zh": "两个归档案例的估计与实测中心化效用。两图横轴刻度各自独立，绿色条表示核验后选中的上下文。"
+          },
+          "source": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/data/m8_raw_mean_logprobs.csv"
+        },
+        {
+          "type": "table",
+          "key": "examples",
+          "caption": {
+            "en": "Selected contexts and archived answer scores. Passage positions are 1-based.",
+            "zh": "所选上下文及归档答案分数。候选段落从 1 开始编号。"
+          },
+          "columns": [
+            {
+              "en": "Case",
+              "zh": "案例"
+            },
+            {
+              "en": "Policy",
+              "zh": "策略"
+            },
+            {
+              "en": "Passage positions",
+              "zh": "段落编号"
+            },
+            {
+              "en": "Measured utility",
+              "zh": "实测效用"
+            },
+            {
+              "en": "Token F1",
+              "zh": "词元 F1"
+            },
+            {
+              "en": "Answer EM",
+              "zh": "答案完全匹配"
+            }
+          ],
+          "rows": [
+            [
+              "A",
+              {
+                "en": "Best measured (BO9)",
+                "zh": "已测最优（BO9）"
+              },
+              "6",
+              "3.953",
+              "0.000",
+              "0"
+            ],
+            [
+              "A",
+              {
+                "en": "Additive (P1)",
+                "zh": "加性策略（P1）"
+              },
+              "4, 5, 6",
+              "4.491",
+              "0.000",
+              "0"
+            ],
+            [
+              "A",
+              {
+                "en": "P1 + one check",
+                "zh": "P1 + 一次核验"
+              },
+              "4, 5, 6",
+              "4.491",
+              "0.000",
+              "0"
+            ],
+            [
+              "B",
+              {
+                "en": "Best measured (BO9)",
+                "zh": "已测最优（BO9）"
+              },
+              "1",
+              "0.918",
+              "0.444",
+              "0"
+            ],
+            [
+              "B",
+              {
+                "en": "Additive (P1)",
+                "zh": "加性策略（P1）"
+              },
+              "1, 5",
+              "0.206",
+              "1.000",
+              "1"
+            ],
+            [
+              "B",
+              {
+                "en": "P1 + one check",
+                "zh": "P1 + 一次核验"
+              },
+              "1",
+              "0.918",
+              "0.444",
+              "0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evaluation",
+      "title": {
+        "en": "Evaluation and scope",
+        "zh": "评估协议与适用范围"
+      },
+      "paragraphs": {
+        "en": [
+          "The main study uses 60 held-out questions from each of HotpotQA, 2WikiMultiHopQA, and MuSiQue. For each question, Track A contains annotated support and fills the remaining positions using BGE. Track B combines dataset-local BM25 and BGE ranks by reciprocal rank fusion. Both pools are fixed before selection and evaluated with Qwen2.5-7B-Instruct, Gemma-3-4B-IT, Mistral-7B-Instruct-v0.3, and Phi-4-Mini-Instruct.",
+          "Normalized regret divides the utility gap to the best feasible subset by the frozen calibration scale. The paired intervals use 10,000 bootstrap resamples of the 180 question clusters, preserving repeated evaluations of each question across generators and tracks. Token F1 and answer exact match come from archived scores of greedy decodes against normalized answer aliases.",
+          "This is an offline, labelled evaluation with fixed pools. Target-call counts describe utility measurements under that protocol. Applying the rule in a setting without reference answers would require a different, independently validated utility."
+        ],
+        "zh": [
+          "主实验从 HotpotQA、2WikiMultiHopQA 和 MuSiQue 各取 60 道留出问题。Track A 保留标注支持段，并用 BGE 填充其余位置。Track B 用倒数排名融合合并数据集内的 BM25 与 BGE 排名。两个候选池均在选择前固定，并分别用 Qwen2.5-7B-Instruct、Gemma-3-4B-IT、Mistral-7B-Instruct-v0.3 和 Phi-4-Mini-Instruct 评估。",
+          "归一化遗憾值等于所选上下文与可行最优者之间的效用差除以冻结的校准尺度。配对区间基于 180 个问题簇的 10,000 次 Bootstrap 重抽样，保留同一问题在不同模型和候选池上的重复评估。词元 F1 和答案完全匹配率来自归档评分，原评估以规范化答案别名对贪心解码结果打分。",
+          "这是带参考答案、固定候选池的离线评估。目标调用次数指该协议下的效用测量次数。若应用场景无法取得参考答案，需要另行定义并验证可用的效用指标。"
+        ]
+      }
+    },
+    {
+      "id": "reproduce",
+      "title": {
+        "en": "Reproduce and audit",
+        "zh": "复现与核查"
+      },
+      "paragraphs": {
+        "en": [
+          "The v1.0.0 release starts from archived numerical scores and runs on CPU. Its verification record uses Python 3.9.21. In an isolated Python environment, install the pinned dependencies and run the replay.",
+          "The script checks the input hashes, reruns evidence selection and paired analysis, and compares 22 result CSVs and four paper tables with the archived references. The verification record is written to results/reproduction_report.json. The main comparison can be audited in results/selection_overall.csv and results/selection_paired.csv, with answer metrics in results/generation_overall.csv and results/generation_paired.csv."
+        ],
+        "zh": [
+          "v1.0.0 从归档的数值分数开始，在 CPU 上复现。发布验证记录使用 Python 3.9.21。请在独立 Python 环境中安装固定版本的依赖，然后运行复现入口。",
+          "脚本校验输入哈希、重算证据选择和配对分析，并逐项核对 22 份结果 CSV 与 4 张论文表格。验证记录写入 results/reproduction_report.json。可在 results/selection_overall.csv 和 results/selection_paired.csv 核查选择结果，在 results/generation_overall.csv 和 results/generation_paired.csv 查看答案指标。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "code",
+          "code": "git clone --branch v1.0.0 https://github.com/dqswordman/rag-decision-sufficiency.git\ncd rag-decision-sufficiency\npython -m pip install -r requirements.txt\npython code/reproduce.py"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://github.com/dqswordman/rag-decision-sufficiency/releases/tag/v1.0.0",
+      "label": {
+        "en": "Release and verification record",
+        "zh": "复现版本与验证记录"
+      }
+    },
+    {
+      "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/reference/tables/table_primary.tex",
+      "label": {
+        "en": "Main results table",
+        "zh": "主结果表"
+      }
+    },
+    {
+      "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/reference/tables/table_paired.tex",
+      "label": {
+        "en": "Paired comparisons",
+        "zh": "配对比较表"
+      }
+    },
+    {
+      "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/DATA_PROVENANCE.md",
+      "label": {
+        "en": "Data provenance and reuse",
+        "zh": "数据来源与许可"
+      }
+    },
+    {
+      "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/data/generation_context_scores.csv",
+      "label": {
+        "en": "Archived answer scores",
+        "zh": "归档答案评分"
+      }
+    },
+    {
+      "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/data/revision_protocol.json",
+      "label": {
+        "en": "Evaluation protocol",
+        "zh": "评估协议"
+      }
+    },
+    {
+      "url": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/code/replay.py",
+      "label": {
+        "en": "Policy replay and example selector",
+        "zh": "策略复现与选例代码"
+      }
+    }
+  ]
+}

@@ -32,7 +32,8 @@ npm run dev -- --port 4174
 | 文件                        | 用途                                                       |
 | --------------------------- | ---------------------------------------------------------- |
 | `content/profile.json`      | 个人资料、中英文文案与 News 时间轴                          |
-| `content/publications.json` | 论文元数据、GitHub 仓库地址及双语技术报告                   |
+| `content/publications.json` | 论文元数据、GitHub 仓库地址及技术报告开关                   |
+| `content/technical-reports/` | 双语报告正文、分节、图表、复现说明及证据链接               |
 | `src/render.mjs`            | 页面与组件组合、双语界面文字、SEO 与结构化数据             |
 | `src/components.mjs`        | 原创图标、WD 标识、数学球面图形                            |
 | `src/styles.css`            | 响应式设计、无障碍状态与打印样式                           |
@@ -70,9 +71,11 @@ npm run dev -- --port 4174
 
 已录用、尚未正式发表的论文使用 `"status": "accepted"`，已核实的首次通知接收日期填入 `acceptedDate`（必须为完整日期），正式发表后改为 `"status": "published"`。列表展示标题、会议与接收日期，完整作者和发表状态保留在可展开引用中。`affiliation` 可保存论文对应身份。PAIRSAFE 的录用日期为 **2026-09-08**，WSDM 的录用日期为 **2026-11-03**，会议届次为 [WSDM 2027](https://www.wsdm-conference.org/2027/)。
 
-从 WSDM 2027 Findings 起（录用日期 **2026-11-03** 及以后），在 `content/publications.json` 的论文条目填写 `codeUrl` 和 `technicalReport`。`codeUrl` 指向公开的 GitHub 仓库。`technicalReport.locales.en` 和 `technicalReport.locales.zh` 各填 `summary`，以及由 `title` 和 `paragraphs` 组成的 `sections`。需要展示关键指标或证据链接时，可按 `decision-sufficiency` 示例填写 `metrics` 和 `sources`。
+从 WSDM 2027 Findings 起（录用日期 **2026-11-03** 及以后），在 `content/publications.json` 的论文条目填写指向公开 GitHub 仓库的 `codeUrl`，并设置 `"technicalReport": true`。将报告保存为 `content/technical-reports/<id>.json`。各语言的 `locales.*.summary` 用于报告摘要和目录卡片，`sections` 保存双语正文与稳定锚点。可在分节的 `blocks` 中加入 `figure`、`table`、`steps` 和 `code`，并通过 `artifact`、`metrics` 和 `sources` 补充复现版本、关键指标和来源。沿用 [WSDM 报告数据](content/technical-reports/decision-sufficiency.json) 的字段即可。
 
-构建会使用论文的 `id` 生成 `/technical-reports/<id>/` 和 `/zh/technical-reports/<id>/`，同时更新论文按钮、首页技术报告、开源项目和站点地图。已有的独立开源项目可写入 `profile.json` 的 `openSource`。
+构建为两个语言版本分别生成技术报告目录 `/technical-reports/`、开源论文目录 `/open-source/` 和论文的 `/technical-reports/<id>/`。导航直达独立目录，论文条目直达对应报告和代码仓库。旧首页锚点 `#technical-reports` 与 `#open-source` 会转到相应目录。
+
+WSDM 两张网页图和三张数据表来自公开的 `v1.0.0` 复现归档。使用有 NumPy 和 Matplotlib 的 Python 环境，在站点仓库运行 `python scripts/render-wsdm-figures.py --artifact ../rag-decision-sufficiency` 可重新生成。脚本固定读取该版本的 Git 对象，核对归档 P1 掩码及主要策略平均遗憾值。站点构建直接使用提交的图片和表格数据。
 
 如有已经核实的 Google Scholar 链接，可增加 `scholarUrl`；否则自动生成按完整标题检索的 Scholar 入口。引用复制使用记录中的作者、标题、会议与年份。当前资料没有 DOI、论文 PDF 或可下载 CV，页面不生成这些信息或空链接。最初若只记录了一名作者，请核实完整作者列表后直接补充数据。
 

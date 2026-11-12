@@ -14,6 +14,8 @@ import {
   legacyAnchors,
   acceptanceYear,
   newsItems,
+  researchIndexes,
+  researchIndexPath,
   technicalReportPath,
 } from '../src/content.mjs';
 import {
@@ -110,8 +112,18 @@ test('WSDM resources link both homepages, their localized reports, and the code 
     const row = html.split(`id="paper-${paper.id}"`)[1].split('</article>')[0];
     assert.ok(row.includes(`href="${basePath + route}"`));
     assert.ok(row.includes(`href="${paper.codeUrl}"`));
-    assert.ok(html.includes('id="technical-reports"'));
-    assert.ok(html.includes('id="open-source"'));
+    for (const index of researchIndexes) {
+      const path = researchIndexPath(index, locale);
+      const alt = researchIndexPath(index, locale === 'en' ? 'zh' : 'en', basePath);
+      assert.ok(html.includes(`id="${index}" data-research-index href="${basePath + path}"`));
+      const indexHtml = await readFile(new URL(`dist${path}index.html`, projectRoot), 'utf8');
+      assert.match(indexHtml, /class="research-index"/);
+      assert.ok(indexHtml.includes(`rel="canonical" href="${profile.url + basePath + path}"`));
+      assert.ok(indexHtml.includes(`data-language href="${alt}"`));
+      assert.ok(indexHtml.includes(`href="${basePath + route}"`));
+      assert.doesNotMatch(indexHtml, /OSAG EO Governance|osag-eo-governance/);
+    }
+    assert.doesNotMatch(html, /class="research-resources"|马汉科理工大学|Mahanakorn University/);
 
     const report = await readFile(new URL(`dist${route}index.html`, projectRoot), 'utf8');
     assert.ok(report.includes(escapeHtml(paper.technicalReport.locales[locale].summary)));
@@ -119,6 +131,11 @@ test('WSDM resources link both homepages, their localized reports, and the code 
     assert.ok(report.includes(`data-language href="${counterpart}"`));
     assert.ok(report.includes(`href="${basePath + home}#paper-${paper.id}"`));
     assert.ok(report.includes(`href="${paper.codeUrl}"`));
+    for (const section of ['overview', 'results', 'method', 'worked-examples', 'evaluation', 'reproduce', 'sources'])
+      assert.ok(report.includes(`href="#${section}"`) && report.includes(`id="${section}"`));
+    assert.equal((report.match(/<figure class="report-figure">/g) ?? []).length, 2);
+    assert.equal((report.match(/<table>/g) ?? []).length, 3);
+    assert.ok(report.includes('0.272') && report.includes('0.162') && report.includes('2hop__10620_49084'));
   }
 });
 

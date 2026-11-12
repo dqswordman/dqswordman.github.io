@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 export const supportedLocales = ['en', 'zh'];
 export const topicKeys = ['evaluation', 'earth', 'efficient', 'applied'];
 export const publicationGroups = ['major', 'ei'];
+export const researchIndexes = ['technical-reports', 'open-source'];
 // WSDM Findings acceptance date, in the site's acceptance time zone.
 const researchResourcesFrom = '2026-11-03';
 export const legacyAnchors = [
@@ -14,6 +15,7 @@ export const legacyAnchors = [
   'education',
   'internships',
   'skills',
+  ...researchIndexes,
 ];
 
 export function escapeHtml(value) {
@@ -43,22 +45,60 @@ function validateGitHubRepository(value) {
 
 const hasText = (value) => typeof value === 'string' && Boolean(value.trim());
 const isBilingual = (value) => supportedLocales.every((locale) => hasText(value?.[locale]));
+const validId = (value) => typeof value === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+const textList = (value) => Array.isArray(value) && value.length > 0 && value.every(hasText);
+
+function validReportBlock(block) {
+  switch (block?.type) {
+    case 'figure':
+      if (block.source) safeHttps(block.source);
+      return /^assets\/(?:[\w-]+\/)*[\w-]+\.(png|webp|jpe?g)$/i.test(block.file) &&
+        Number.isSafeInteger(block.width) && block.width > 0 &&
+        Number.isSafeInteger(block.height) && block.height > 0 &&
+        isBilingual(block.alt) && isBilingual(block.caption);
+    case 'table':
+      return isBilingual(block.caption) && Array.isArray(block.columns) &&
+        block.columns.length > 0 && block.columns.every(isBilingual) &&
+        Array.isArray(block.rows) && block.rows.length > 0 &&
+        block.rows.every((row) => Array.isArray(row) && row.length === block.columns.length &&
+          row.every((cell) => hasText(cell) || Number.isFinite(cell) || isBilingual(cell)));
+    case 'steps':
+      return Array.isArray(block.steps) && block.steps.length > 0 &&
+        block.steps.every((step) => isBilingual(step?.title) && isBilingual(step.text) &&
+          (step.formula === undefined || hasText(step.formula)));
+    case 'code':
+      return hasText(block.code);
+    default:
+      return false;
+  }
+}
 
 function validateReport(report, id) {
   for (const locale of supportedLocales) {
     const copy = report.locales?.[locale];
-    if (
-      !hasText(copy?.summary) ||
-      !Array.isArray(copy.sections) ||
-      !copy.sections.length ||
-      !copy.sections.every((section) =>
-        hasText(section?.title) &&
-        Array.isArray(section.paragraphs) &&
-        section.paragraphs.length &&
-        section.paragraphs.every(hasText),
-      )
-    )
+    const legacySectionsValid = Array.isArray(copy?.sections) && copy.sections.length > 0 &&
+      copy.sections.every((section) => hasText(section?.title) && textList(section.paragraphs));
+    if (!hasText(copy?.summary) || (report.sections === undefined && !legacySectionsValid))
       throw new Error(`Incomplete ${locale} technical report: ${id}`);
+  }
+  if (report.sections !== undefined) {
+    if (!Array.isArray(report.sections) || !report.sections.length)
+      throw new Error(`Missing technical report sections: ${id}`);
+    const sections = new Set(['sources']);
+    for (const section of report.sections) {
+      if (!validId(section?.id) || sections.has(section.id) ||
+          !isBilingual(section.title) ||
+          !supportedLocales.every((locale) => textList(section.paragraphs?.[locale])) ||
+          (section.blocks !== undefined &&
+            (!Array.isArray(section.blocks) || !section.blocks.every(validReportBlock))))
+        throw new Error(`Invalid technical report section: ${id}/${section?.id}`);
+      sections.add(section.id);
+    }
+  }
+  if (report.artifact !== undefined) {
+    if (!hasText(report.artifact?.version) || !isBilingual(report.artifact.description))
+      throw new Error(`Invalid technical report artifact: ${id}`);
+    safeHttps(report.artifact.url);
   }
   if (
     report.metrics !== undefined &&
@@ -109,7 +149,7 @@ export function validateContent(profile, publications) {
     throw new Error('Publications must not be empty');
   const ids = new Set();
   for (const paper of publications) {
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(paper.id) || ids.has(paper.id))
+    if (!validId(paper.id) || ids.has(paper.id))
       throw new Error(`Invalid or duplicate publication ID: ${paper.id}`);
     ids.add(paper.id);
     for (const key of ['title', 'venue'])
@@ -145,11 +185,6 @@ export function validateContent(profile, publications) {
   }
   for (const id of profile.featured)
     if (!ids.has(id)) throw new Error(`Featured publication does not exist: ${id}`);
-  for (const project of profile.openSource ?? []) {
-    if (!hasText(project.name) || !isBilingual(project.description))
-      throw new Error('Incomplete open-source project');
-    validateGitHubRepository(project.url);
-  }
   const newsIds = new Set();
   if (!Array.isArray(profile.news)) throw new Error('News must be an array');
   for (const item of profile.news) {
@@ -184,7 +219,13 @@ export async function loadContent(root) {
       JSON.parse(await readFile(new URL(`content/${name}.json`, root), 'utf8')),
     ),
   );
-  return validateContent(profile, publications);
+  const withReports = await Promise.all(publications.map(async (paper) => {
+    if (paper.technicalReport !== true) return paper;
+    if (!validId(paper.id)) throw new Error(`Invalid publication ID: ${paper.id}`);
+    const file = new URL(`content/technical-reports/${paper.id}.json`, root);
+    return { ...paper, technicalReport: JSON.parse(await readFile(file, 'utf8')) };
+  }));
+  return validateContent(profile, withReports);
 }
 
 export function normalizeBasePath(value = '') {
@@ -195,8 +236,16 @@ export function normalizeBasePath(value = '') {
   return normalized;
 }
 
+export function researchIndexPath(index, locale, basePath = '') {
+  return `${basePath}/${locale === 'zh' ? 'zh/' : ''}${index}/`;
+}
+
 export function technicalReportPath(id, locale, basePath = '') {
-  return `${basePath}/${locale === 'zh' ? 'zh/' : ''}technical-reports/${id}/`;
+  return `${researchIndexPath('technical-reports', locale, basePath)}${id}/`;
+}
+
+export function venueLabel(paper) {
+  return `${paper.venue} ${paper.year}${paper.track ? ` ${paper.track}` : ''}`;
 }
 
 export function paperUrl(paper) {

@@ -17,16 +17,6 @@
   },
   "internshipStart": "2025-07",
   "featured": ["decision-sufficiency", "pairsafe", "paired-bootstrap", "arc-ctrl"],
-  "openSource": [
-    {
-      "name": "OSAG EO Governance",
-      "url": "https://github.com/dqswordman/osag-eo-governance",
-      "description": {
-        "en": "Reproduction scripts for Earth observation experiments and an offline dispatch demo.",
-        "zh": "对地观测实验的复现脚本，以及可离线运行的调度演示。"
-      }
-    }
-  ],
   "news": [],
   "locales": {
     "en": {
@@ -78,7 +68,6 @@
         {
           "date": "2025-11-28",
           "title": "Project Day Recognition",
-          "detail": "Mahanakorn University of Technology · Project Day",
           "kind": "award"
         },
         {
@@ -158,7 +147,6 @@
         {
           "date": "2025-11-28",
           "title": "Project Day 荣誉奖",
-          "detail": "马汉科理工大学 · Project Day",
           "kind": "award"
         },
         {

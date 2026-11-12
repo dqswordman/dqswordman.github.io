@@ -2,13 +2,21 @@ import { matchesPaper, readFilterState, writeFilterState } from './filter.mjs';
 import { initVisitorStats } from './visitors.mjs';
 import { initExperience } from './experience.mjs';
 
-initVisitorStats();
+function followLegacyResearchAnchor() {
+  const link = document.getElementById(location.hash.slice(1));
+  if (!link?.hasAttribute('data-research-index')) return false;
+  location.replace(link.href);
+  return true;
+}
+
+if (!followLegacyResearchAnchor()) initVisitorStats();
+window.addEventListener('hashchange', followLegacyResearchAnchor);
 initExperience();
 
 const header = document.querySelector('[data-header]');
 const menuButton = document.querySelector('[data-menu]');
 const nav = document.querySelector('#main-nav');
-const mobile = window.matchMedia('(max-width: 760px)');
+const mobile = window.matchMedia('(max-width: 820px)');
 
 function setMenu(open, restoreFocus = false) {
   header.toggleAttribute('data-menu-open', open);
@@ -44,27 +52,25 @@ header.setAttribute('data-enhanced', '');
 menuButton.hidden = false;
 
 // Scroll work is bounded to the navigation targets and one animation frame.
-const navLinks = [...document.querySelectorAll('[data-nav]')];
-const navSections = navLinks
-  .map((link) => document.getElementById(link.dataset.nav))
-  .filter(Boolean);
+const navigationGroups = ['[data-nav]', '[data-report-contents] a'].map((selector) =>
+  [...document.querySelectorAll(selector)]
+    .filter((link) => link.pathname === location.pathname)
+    .map((link) => [link, document.getElementById(link.hash.slice(1))])
+    .filter(([, section]) => section),
+);
 let scrollPending = false;
 function updateNavigation() {
   header.toggleAttribute('data-scrolled', window.scrollY > 16);
   const offset = header.offsetHeight + 90;
-  let active = '';
-  let closest = -Infinity;
-  for (const section of navSections) {
-    const top = section.getBoundingClientRect().top;
-    if (top > offset || top < closest) continue;
-    if (top > closest || location.hash === `#${section.id}`) {
-      active = section.id;
-      closest = top;
+  for (const group of navigationGroups) {
+    let active;
+    for (const [link, section] of group) {
+      if (section.getBoundingClientRect().top <= offset) active = link;
     }
-  }
-  for (const link of navLinks) {
-    if (link.dataset.nav === active) link.setAttribute('aria-current', 'location');
-    else link.removeAttribute('aria-current');
+    for (const [link] of group) {
+      if (link === active) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    }
   }
   scrollPending = false;
 }

@@ -2,7 +2,10 @@ import { readFile, writeFile, mkdir, cp, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve, relative, sep } from 'node:path';
-import { loadContent, normalizeBasePath, escapeHtml as h, supportedLocales, technicalReportPath } from '../src/content.mjs';
+import {
+  loadContent, normalizeBasePath, escapeHtml as h, supportedLocales,
+  researchIndexes, researchIndexPath, technicalReportPath,
+} from '../src/content.mjs';
 import { renderPage } from '../src/render.mjs';
 import { renderMiscPage, historyRoutes } from '../src/misc-render.mjs';
 import { history, localizedHistory, validateHistory, referencesFor, studiesForEvent, historyCensus } from '../src/history.mjs';
@@ -17,8 +20,8 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   validateHistory();
   validateHistory(localizedHistory('en'));
   if (historyCensus().hanCharacters < 200_000) throw new Error('The Full edition requires at least 200,000 unique Chinese narrative characters.');
-  const [css, originalJs, filter, visitors, experience, experienceCss, reading] = await Promise.all(
-    ['styles.css', 'client.js', 'filter.mjs', 'visitors.mjs', 'experience.mjs', 'experience.css', 'reading.mjs'].map((name) =>
+  const [css, originalJs, filter, visitors, experience, experienceCss, reading, researchCss] = await Promise.all(
+    ['styles.css', 'client.js', 'filter.mjs', 'visitors.mjs', 'experience.mjs', 'experience.css', 'reading.mjs', 'research.css'].map((name) =>
       readFile(new URL(`src/${name}`, projectRoot), 'utf8'),
     ),
   );
@@ -30,7 +33,12 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     .replace("'./filter.mjs'", `'./${filterName}'`)
     .replace("'./visitors.mjs'", `'./${visitorsName}'`)
     .replace("'./experience.mjs'", `'./${experienceName}'`);
-  const assets = { css: `site.${hash(css)}.css`, js: `site.${hash(js)}.js`, experienceCss: `experience.${hash(experienceCss)}.css` };
+  const assets = {
+    css: `site.${hash(css)}.css`,
+    js: `site.${hash(js)}.js`,
+    experienceCss: `experience.${hash(experienceCss)}.css`,
+    researchCss: `research.${hash(researchCss)}.css`,
+  };
   const [miscCss, originalMiscJs, graph, search] = await Promise.all(
     ['misc.css', 'misc-client.js', 'history-graph.mjs', 'history-search.mjs'].map((name) => readFile(new URL(`src/${name}`, projectRoot), 'utf8')),
   );
@@ -77,6 +85,7 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     writeFile(new URL(`assets/${experienceName}`, outputRoot), experience),
     writeFile(new URL(`assets/${readingName}`, outputRoot), reading),
     writeFile(new URL(`assets/${assets.experienceCss}`, outputRoot), experienceCss),
+    writeFile(new URL(`assets/${assets.researchCss}`, outputRoot), researchCss),
     writeFile(new URL(`assets/${assets.miscCss}`, outputRoot), miscCss),
     writeFile(new URL(`assets/${assets.miscJs}`, outputRoot), miscJs),
     writeFile(new URL(`assets/${graphName}`, outputRoot), graph),
@@ -95,6 +104,14 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
       new URL('index.html', folder),
       renderPage({ profile, publications, locale, basePath, assets }),
     );
+    for (const index of researchIndexes) {
+      const indexFolder = new URL(researchIndexPath(index, locale).slice(1), outputRoot);
+      await mkdir(indexFolder, { recursive: true });
+      await writeFile(
+        new URL('index.html', indexFolder),
+        renderPage({ profile, publications, locale, basePath, assets, index }),
+      );
+    }
     for (const report of reportPapers) {
       const reportFolder = new URL(technicalReportPath(report.id, locale).slice(1), outputRoot);
       await mkdir(reportFolder, { recursive: true });
@@ -139,6 +156,7 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   );
   const publicRoutePairs = [
     [`${basePath}/`, `${basePath}/zh/`],
+    ...researchIndexes.map((index) => supportedLocales.map((locale) => researchIndexPath(index, locale, basePath))),
     ...reportPapers.map((paper) => supportedLocales.map((locale) => technicalReportPath(paper.id, locale, basePath))),
   ];
   const publicSitemap = publicRoutePairs.map(([english, chinese]) => {
