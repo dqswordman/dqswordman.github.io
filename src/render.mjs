@@ -32,6 +32,7 @@ export const ui = {
     readReport: 'Read the report',
     resultsPreview: 'Read the results',
     githubRepository: 'GitHub repository',
+    huggingFaceSpace: 'Hugging Face Space',
     reproductionGuide: 'Reproduction guide',
     release: 'Release',
     publicationEntry: 'Publication entry',
@@ -139,6 +140,7 @@ export const ui = {
     readReport: '阅读技术报告',
     resultsPreview: '阅读实验结果',
     githubRepository: 'GitHub 仓库',
+    huggingFaceSpace: 'Hugging Face Space',
     reproductionGuide: '复现指南',
     release: '复现版本',
     publicationEntry: '论文条目',
@@ -355,7 +357,7 @@ export function renderPage({
       description: copy.description,
       jobTitle: copy.identity,
       email: `mailto:${profile.email}`,
-      sameAs: [profile.github, profile.scholar],
+      sameAs: [profile.github, profile.scholar, profile.huggingFace].filter(Boolean),
       knowsAbout: copy.research.flatMap((item) => item.tags),
     },
   };
@@ -385,6 +387,7 @@ export function renderPage({
         <div class="hero-links">
           <a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)}${icon('external')}</a>
           <a class="text-link" href="${h(profile.github)}" ${external}>GitHub${icon('external')}</a>
+          ${profile.huggingFace ? `<a class="text-link" href="${h(profile.huggingFace)}" ${external}>Hugging Face${icon('external')}</a>` : ''}
         </div>
       </div>
     </section>

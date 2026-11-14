@@ -109,6 +109,11 @@ function validateReport(report, id) {
       throw new Error(`Invalid technical report artifact: ${id}`);
     safeHttps(report.artifact.url);
     if (report.artifact.guide !== undefined) safeHttps(report.artifact.guide);
+    if (report.artifact.space !== undefined) {
+      const url = new URL(safeHttps(report.artifact.space));
+      if (url.host !== 'huggingface.co' || !/^\/spaces\/[\w.-]+\/[\w.-]+\/?$/.test(url.pathname) || url.search || url.hash)
+        throw new Error(`Expected a Hugging Face Space URL: ${report.artifact.space}`);
+    }
   }
   if (report.article !== undefined) {
     const { version, published, updated, manuscriptDate, updateNote } = report.article ?? {};
@@ -154,6 +159,7 @@ export function newsItems(profile, publications) {
 
 export function validateContent(profile, publications) {
   for (const key of ['url', 'github', 'scholar']) safeHttps(profile[key]);
+  if (profile.huggingFace !== undefined) safeHttps(profile.huggingFace);
   if (profile.url !== new URL(profile.url).origin)
     throw new Error('profile.url must be the site origin; use BASE_PATH for a subdirectory.');
   if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(profile.email))

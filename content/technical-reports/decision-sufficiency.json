@@ -22,6 +22,7 @@
   "artifact": {
     "version": "v1.0.0",
     "url": "https://github.com/dqswordman/rag-decision-sufficiency/releases/tag/v1.0.0",
+    "space": "https://huggingface.co/spaces/DQSWORDMAN/rag-decision-sufficiency",
     "description": {
       "en": "Run one archived decision in standard-library Python, or replay the four manuscript tables and paired results on CPU from the fixed release.",
       "zh": "用 Python 标准库查看一条真实归档决策，或用固定版本在 CPU 上复现四张论文表与配对结果。"

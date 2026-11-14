@@ -3,6 +3,12 @@ import { icon } from './components.mjs';
 
 const external = 'target="_blank" rel="noopener noreferrer"';
 
+function spaceBadge(artifact, t) {
+  return artifact?.space
+    ? `<a class="platform-badge" href="${h(artifact.space)}" ${external}>${h(t.huggingFaceSpace)}${icon('external')}</a>`
+    : '';
+}
+
 function reportFigure(figure, locale, basePath) {
   return `<img src="${h(`${basePath}/${figure.file}`)}" width="${figure.width}" height="${figure.height}"
     alt="${h(figure.alt[locale])}" loading="lazy" decoding="async">`;
@@ -50,6 +56,7 @@ function reportIndexCard(paper, t, locale, basePath) {
       <div class="research-actions">
         <a class="button button-dark" href="${h(href)}">${h(t.readReport)}${icon('arrow')}</a>
         ${paper.codeUrl ? `<a class="text-link" href="${h(paper.codeUrl)}" ${external}>GitHub${icon('external')}</a>` : ''}
+        ${spaceBadge(report.artifact, t)}
       </div>
     </div>
     ${preview ? `<a class="research-entry-figure" href="${h(href)}#${h(preview.sectionId)}" aria-label="${h(t.resultsPreview)}">${reportFigure(preview.figure, locale, basePath)}</a>` : ''}
@@ -69,7 +76,10 @@ function codeIndexCard(paper, t, locale, basePath) {
     </div>
     <div class="repository-access">
       <p class="repository-name">${icon('code')}<span>${h(repo)}</span></p>
-      <a class="button button-dark" href="${h(paper.codeUrl)}" ${external}>${h(t.githubRepository)}${icon('external')}</a>
+      <div class="repository-platforms">
+        <a class="platform-badge" href="${h(paper.codeUrl)}" ${external}>${h(t.githubRepository)}${icon('external')}</a>
+        ${spaceBadge(artifact, t)}
+      </div>
       ${artifact ? `<div class="repository-links">
         ${artifact.guide ? `<a class="text-link" href="${h(artifact.guide)}" ${external}>${h(t.reproductionGuide)}${icon('external')}</a>` : ''}
         <a class="text-link" href="${h(artifact.url)}" ${external}>${h(t.release)} ${h(artifact.version)}${icon('external')}</a>
@@ -164,6 +174,7 @@ export function renderReport(paper, t, locale, home, basePath) {
           </p>` : ''}
           <div class="research-actions">
             ${paper.codeUrl ? `<a class="button button-dark" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub ${icon('external')}</a>` : ''}
+            ${spaceBadge(artifact, t)}
             ${artifact ? `<a class="text-link" href="${h(artifact.url)}" ${external}>${h(t.release)} ${h(artifact.version)}${icon('external')}</a>` : ''}
             ${artifact?.guide ? `<a class="text-link" href="${h(artifact.guide)}" ${external}>${h(t.reproductionGuide)} ${icon('external')}</a>` : ''}
             ${article ? '' : `<a class="text-link" href="${h(publication)}">${h(t.publicationEntry)} ${icon('arrow')}</a>`}
