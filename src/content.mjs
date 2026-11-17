@@ -62,7 +62,13 @@ function validReportBlock(block) {
         block.columns.length > 0 && block.columns.every(isBilingual) &&
         Array.isArray(block.rows) && block.rows.length > 0 &&
         block.rows.every((row) => Array.isArray(row) && row.length === block.columns.length &&
-          row.every((cell) => hasText(cell) || Number.isFinite(cell) || isBilingual(cell)));
+          row.every((cell) => hasText(cell) || Number.isFinite(cell) || isBilingual(cell))) &&
+        (block.previewColumn === undefined ||
+          (Number.isInteger(block.previewColumn) && block.previewColumn > 0 &&
+            block.previewColumn < block.columns.length && block.rows.every((row) => {
+              const value = Number(row[block.previewColumn]);
+              return Number.isFinite(value) && value >= 0;
+            })));
     case 'steps':
       return Array.isArray(block.steps) && block.steps.length > 0 &&
         block.steps.every((step) => isBilingual(step?.title) && isBilingual(step.text) &&

@@ -172,6 +172,7 @@
         {
           "type": "table",
           "key": "policies",
+          "previewColumn": 2,
           "caption": {
             "en": "Primary-budget results across 1,440 cases",
             "zh": "主预算下 1,440 个组合的结果"

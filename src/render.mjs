@@ -3,7 +3,7 @@ import {
   researchIndexes, researchIndexPath, technicalReportPath, venueLabel,
 } from './content.mjs';
 import { icon, monogram } from './components.mjs';
-import { renderResearchIndex, renderReport, reportPreview } from './research.mjs';
+import { paperSpotlight, renderResearchIndex, renderReport, reportPreview } from './research.mjs';
 
 export const ui = {
   en: {
@@ -20,6 +20,8 @@ export const ui = {
     research: 'Research interests',
     recentResearch: 'Recent research',
     selected: 'Selected papers',
+    featuredPaper: 'Featured paper',
+    sourceCode: 'GitHub code',
     publications: 'Publications',
     experience: 'Education & experience',
     awards: 'Honors & awards',
@@ -129,6 +131,8 @@ export const ui = {
     research: '研究兴趣',
     recentResearch: '近期研究',
     selected: '精选论文',
+    featuredPaper: '代表作',
+    sourceCode: 'GitHub 源码',
     publications: '学术论文',
     experience: '教育与研究经历',
     awards: '荣誉与奖励',
@@ -240,22 +244,22 @@ function dateLabel(value, locale) {
   }).format(date);
 }
 
-function header(profile, t, locale, basePath, { away, alternate, currentIndex }) {
+function header(profile, t, locale, basePath, { away, alternate, currentIndex, onReport }) {
   const home = `${basePath}/${locale === 'zh' ? 'zh/' : ''}`;
   const anchor = (id) => `${away ? home : ''}#${id}`;
   const links = navigationIds.map((id, i) => {
     const label = h(t.nav[i]);
     if (researchIndexes.includes(id)) {
       const href = researchIndexPath(id, locale, basePath);
-      return `<a href="${h(href)}"${currentIndex === id ? ' aria-current="true"' : ''}>${label}</a>`;
+      return `<a href="${h(href)}"${currentIndex === id ? ` aria-current="${onReport ? 'location' : 'page'}"` : ''}>${label}</a>`;
     }
     return `<a href="${anchor(id)}" data-nav="${id}">${label}</a>`;
   }).join('');
   return `<header class="site-header" data-header>
     <div class="container header-inner">
       <a class="brand" href="${away ? home : '#top'}" aria-label="${h(t.home)}">${monogram()}<span>${h(profile.name)}</span></a>
-      <nav class="main-nav" id="main-nav" aria-label="${h(t.primaryNav)}">${links}<a class="mobile-contact" href="${anchor('contact')}">${h(t.contact)} ${icon('external')}</a></nav>
-      <div class="header-actions"><a class="language-link" data-language href="${alternate}" lang="${locale === 'en' ? 'zh-CN' : 'en'}" hreflang="${locale === 'en' ? 'zh-CN' : 'en'}" aria-label="${h(t.language)} — ${h(t.languageLabel)}">${h(t.language)}</a><a class="header-contact" href="${anchor('contact')}">${h(t.contact)} ${icon('external')}</a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="${h(t.menu)}" data-open-label="${h(t.menu)}" data-close-label="${h(t.closeMenu)}" data-menu hidden>${icon('menu')}<span class="sr-only">${h(t.menu)}</span></button></div>
+      <nav class="main-nav" id="main-nav" aria-label="${h(t.primaryNav)}">${links}<a class="mobile-contact" href="${anchor('contact')}">${h(t.contact)} ${icon('down')}</a></nav>
+      <div class="header-actions"><a class="language-link" data-language href="${alternate}" lang="${locale === 'en' ? 'zh-CN' : 'en'}" hreflang="${locale === 'en' ? 'zh-CN' : 'en'}" aria-label="${h(t.language)} — ${h(t.languageLabel)}">${h(t.language)}</a><a class="header-contact" href="${anchor('contact')}">${h(t.contact)} ${icon('down')}</a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="${h(t.menu)}" data-open-label="${h(t.menu)}" data-close-label="${h(t.closeMenu)}" data-menu hidden>${icon('menu', 'menu-open-icon')}${icon('close', 'menu-close-icon')}<span class="sr-only">${h(t.menu)}</span></button></div>
     </div>
   </header>`;
 }
@@ -264,7 +268,7 @@ function newsPanel(profile, publications, t, locale) {
   const items = newsItems(profile, publications);
   const years = [...new Set(items.map(item => item.date.slice(0, 4)))];
   return `<aside class="news-panel" id="news" aria-labelledby="news-title" data-news data-section>
-    <header class="news-heading"><h2 id="news-title">${h(t.news)}</h2>${icon('chart')}</header>
+    <header class="news-heading"><h2 id="news-title">${h(t.news)}</h2></header>
     <div class="news-tools" data-news-tools hidden><div class="news-years" role="group" aria-label="${h(t.newsYears)}"><button type="button" data-news-filter="all" aria-pressed="true" aria-controls="news-list">${h(t.newsAll)}</button>${years.map(year => `<button type="button" data-news-filter="${year}" aria-pressed="false" aria-controls="news-list">${year}</button>`).join('')}</div></div>
     <ol class="news-timeline" id="news-list" role="list">${items.map((item) => {
       const paper = item.publication ? publications.find(p => p.id === item.publication) : null;
@@ -279,6 +283,8 @@ function newsPanel(profile, publications, t, locale) {
 }
 
 function paperRow(paper, t, locale, basePath) {
+  const report = paper.technicalReport && technicalReportPath(paper.id, locale, basePath);
+  const scholar = paperUrl(paper);
   const search = [
     paper.title,
     ...paper.authors,
@@ -293,11 +299,11 @@ function paperRow(paper, t, locale, basePath) {
   return `<li class="publication" id="paper-${h(paper.id)}" data-publication data-year="${h(acceptanceYear(paper))}" data-topics="${h(paper.topics.join(' '))}" data-search="${h(search)}">
     <article class="paper-content" aria-labelledby="title-${h(paper.id)}">
       <div class="paper-meta"><span>${h(paper.venue)} ${paper.year}</span>${paper.acceptedDate ? `<time datetime="${h(paper.acceptedDate)}" aria-label="${h(t.acceptedOn)} ${h(paper.acceptedDate)}">${h(paper.acceptedDate)}</time>` : `<span class="paper-date-pending">${h(t.datePending)}</span>`}</div>
-      <h3 id="title-${h(paper.id)}"><a href="${h(paperUrl(paper))}" ${external}>${h(paper.title)} ${icon('external')}</a></h3>
+      <h3 id="title-${h(paper.id)}"><a href="${h(report || scholar)}"${report ? '' : ' ' + external}>${h(paper.title)} ${icon(report ? 'arrow' : 'external')}</a></h3>
       <div class="paper-bottom">
-        ${paper.technicalReport ? `<a class="resource-link" href="${h(technicalReportPath(paper.id, locale, basePath))}">${icon('book')}${h(t.report)}</a>` : ''}
+        ${report ? `<a class="resource-link" href="${h(report)}">${icon('book')}${h(t.report)}</a>` : ''}
         ${paper.codeUrl ? `<a class="resource-link" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub${icon('external')}</a>` : ''}
-        <details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button></div></details>
+        <details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button>${report ? `<a class="text-link" href="${h(scholar)}" ${external}>${h(t.findPaper)}${icon('external')}</a>` : ''}</div></details>
       </div>
     </article>
   </li>`;
@@ -343,6 +349,8 @@ export function renderPage({
   const shareImage = figure ?? { file: 'assets/social-card.png', width: 1200, height: 630 };
   const shareAlt = figure?.alt[locale] ?? `${profile.name} · ${profile.locales.en.heroStatement.join(' ')}`;
   const orderedPapers = [...publications].sort((a, b) => (b.acceptedDate || '').localeCompare(a.acceptedDate || ''));
+  const featuredReport = profile.featured.map(id => publications.find(paper => paper.id === id))
+    .find(paper => paper?.technicalReport);
   const years = [...new Set(publications.map(acceptanceYear).filter(year => year !== 'undated'))].sort((a, b) => b - a);
   const yearGroups = [...years, ...(publications.some(paper => !paper.acceptedDate) ? ['undated'] : [])];
   const yearLabel = year => year === 'undated' ? t.datePending : year;
@@ -371,18 +379,17 @@ export function renderPage({
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow hero-eyebrow"><span class="status-dot" aria-hidden="true"></span>${h(copy.identity)}</p>
+          <p class="eyebrow hero-eyebrow">${h(copy.identity)}</p>
           <h1 id="hero-title">${h(profile.name)}</h1>
           <p class="hero-role">${h(copy.role)}</p>
           <p class="hero-statement">${h(copy.heroStatement[0])} <em>${h(copy.heroStatement[1])}</em></p>
-          <p class="hero-intro">${h(copy.heroIntro)}</p>
           <div class="hero-actions">
             <a class="button button-dark" href="#publications">${h(t.publications)}${icon('down')}</a>
-            <a class="hero-route" id="technical-reports" data-research-index href="${h(researchIndexPath('technical-reports', locale, basePath))}">${icon('book')}${h(t.reports)}${icon('arrow')}</a>
-            <a class="hero-route" id="open-source" data-research-index href="${h(researchIndexPath('open-source', locale, basePath))}">${icon('code')}${h(t.openSource)}${icon('arrow')}</a>
+            <a class="hero-route" id="technical-reports" data-research-index href="${h(researchIndexPath('technical-reports', locale, basePath))}">${h(t.reports)}${icon('arrow')}</a>
+            <a class="hero-route" id="open-source" data-research-index href="${h(researchIndexPath('open-source', locale, basePath))}">${h(t.openSource)}${icon('arrow')}</a>
           </div>
         </div>
-        ${newsPanel(profile, publications, t, locale)}
+        ${paperSpotlight(featuredReport, t, locale, basePath)}
       </div>
       <div class="container hero-bottom">
         <p>${icon('pin')}${h(copy.location)}<span class="hero-divider" aria-hidden="true"></span>${h(copy.degree)}</p>
@@ -393,9 +400,10 @@ export function renderPage({
         </div>
       </div>
     </section>
+    <div class="container news-strip">${newsPanel(profile, publications, t, locale)}</div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>
-      <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}<div class="about-links"><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div></div>
+      <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p><p>${h(copy.heroIntro)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}<div class="about-links"><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div></div>
     </section>
     <section class="research-section" id="research-profile" aria-labelledby="research-title" data-section>
       <div class="container section">
@@ -471,6 +479,7 @@ export function renderPage({
     away: Boolean(notFound || report || index),
     alternate: routes[locale === 'en' ? 'zh' : 'en'],
     currentIndex: report ? 'technical-reports' : index,
+    onReport: Boolean(report),
   })}
   ${main}
   ${footer(profile, t, notFound)}

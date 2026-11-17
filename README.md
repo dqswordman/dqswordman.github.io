@@ -1,8 +1,8 @@
 # Wenzhang Du · Research Homepage
 
-Wenzhang Du 的个人学术主页，使用原创页面结构、视觉设计与交互实现。英文首页位于 `/`，中文首页位于 `/zh/`。
+[中文主页](https://dqswordman.github.io/zh/) · [English homepage](https://dqswordman.github.io/) · [GitHub 个人页](https://github.com/dqswordman)
 
-暖白首屏配深绿动态卡片，衬线标题搭配简洁正文。WD 标识、图标与分享卡均由本项目代码绘制。主页与技术报告在构建时生成 HTML，JavaScript 增强搜索、筛选、导航与复制。
+浏览[论文目录](https://dqswordman.github.io/zh/#publications)、阅读[双语技术报告](https://dqswordman.github.io/zh/technical-reports/)，或在[开源项目](https://dqswordman.github.io/zh/open-source/)中查找代码和复现版本。
 
 ## 本地运行
 
@@ -47,7 +47,9 @@ npm run dev -- --port 4174
 
 修改个人资料时，同时维护 `locales.en` 与 `locales.zh`，并更新 `updated`。当前资料更新于 **2026-11**，包括 WSDM 2027 和 PAIRSAFE 的录用信息。GPA 按本人要求简写为 **3.5/4**。
 
-首屏的 News 默认展示两条最新消息，可按年份切换、展开完整时间轴并跳转到对应论文。论文录用消息由 `acceptedDate` 自动生成，日期统一显示为 `YYYY-MM-DD`。其他有确切日期的近况可放入 `profile.json` 的 `news` 数组，使用 `title`、`text` 保存中英文。
+首页首屏展示 `featured` 中第一篇有技术报告的论文。若要预览一张报告表格，可在表格中用 `previewColumn` 指定数值列（从 0 开始，第 0 列是行标签）。预览直接使用表内数据，并链接到报告对应小节。没有预览列时显示报告摘要。
+
+首屏下方的 News 默认展示两条最新消息，可按年份切换、展开完整时间轴并跳转到对应论文。论文录用消息由 `acceptedDate` 自动生成，日期统一显示为 `YYYY-MM-DD`。其他有确切日期的近况可放入 `profile.json` 的 `news` 数组，使用 `title`、`text` 保存中英文。
 
 时间轴、论文排序与年份筛选采用录用日期；会议届次仍保存在 `year`，用于会议名称和学术引用。例如 WSDM 2027 的录用消息归入 2026 年。收件时间统一按本人确认的 America/Tijuana 时区换算，时区保存在 `acceptanceTimeZone`。IBSR 和 Structure-Aware 两篇按本人指定，参照同届 iEECON 2026 的 **2026-01-09** 记录日期，使用 `acceptedDateBasis: "same-conference"` 保存这一来源。尚未取得日期的记录可留空，取得日期后自动进入时间轴。
 

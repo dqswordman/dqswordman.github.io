@@ -5,7 +5,9 @@ import { initExperience } from './experience.mjs';
 function followLegacyResearchAnchor() {
   const link = document.getElementById(location.hash.slice(1));
   if (!link?.hasAttribute('data-research-index')) return false;
-  location.replace(link.href);
+  const destination = new URL(link.href);
+  destination.search = location.search;
+  location.replace(destination);
   return true;
 }
 
@@ -24,6 +26,7 @@ function setMenu(open, restoreFocus = false) {
   const label = open ? menuButton.dataset.closeLabel : menuButton.dataset.openLabel;
   menuButton.setAttribute('aria-label', label);
   menuButton.querySelector('.sr-only').textContent = label;
+  if (open) (nav.querySelector('[aria-current]') || nav.querySelector('a')).focus();
   if (restoreFocus) menuButton.focus();
 }
 
@@ -31,7 +34,15 @@ menuButton.addEventListener('click', () =>
   setMenu(menuButton.getAttribute('aria-expanded') !== 'true'),
 );
 nav.addEventListener('click', (event) => {
-  if (event.target.closest('a')) setMenu(false);
+  const link = event.target.closest('a');
+  if (!link || !header.hasAttribute('data-menu-open')) return;
+  setMenu(false);
+  if (link.pathname !== location.pathname) return;
+  const target = document.getElementById(link.hash.slice(1));
+  if (target) {
+    target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+  }
 });
 document.addEventListener('click', (event) => {
   if (!header.contains(event.target)) setMenu(false);
@@ -243,22 +254,24 @@ if (searchInput) {
     reset();
     searchInput.focus();
   });
-  for (const featured of document.querySelectorAll('[data-featured], [data-paper-jump]'))
-    featured.addEventListener('click', reset);
+  function revealLinkedPaper() {
+    const target = records.find((paper) => `#${paper.element.id}` === location.hash);
+    if (!target?.element.hidden) return;
+    reset();
+    target.element.scrollIntoView();
+  }
+  for (const link of document.querySelectorAll('[data-featured], [data-paper-jump]'))
+    link.addEventListener('click', event => {
+      if (link.hash === location.hash && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey)
+        revealLinkedPaper();
+    });
   window.addEventListener('popstate', () => {
     state = readFilterState(location.search, years, topics);
     filter({ updateUrl: false });
   });
-  window.addEventListener('hashchange', () => {
-    const target = records.find((paper) => `#${paper.element.id}` === location.hash);
-    if (target?.element.hidden) {
-      reset();
-      target.element.scrollIntoView();
-    }
-  });
+  window.addEventListener('hashchange', revealLinkedPaper);
   filter();
-  const initialTarget = records.find((paper) => `#${paper.element.id}` === location.hash);
-  if (initialTarget?.element.hidden) reset();
+  revealLinkedPaper();
   document.querySelector('[data-filter-tools]').hidden = false;
 }
 

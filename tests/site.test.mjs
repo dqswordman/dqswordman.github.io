@@ -149,6 +149,27 @@ test('WSDM resources link both homepages, their localized reports, and the code 
   }
 });
 
+test('the featured result links to its localized source section and uses the report table values', () => {
+  const papers = structuredClone(publications);
+  const paper = papers.find(item => item.id === 'decision-sufficiency');
+  const section = paper.technicalReport.sections.find(item => item.id === 'results');
+  const table = section.blocks.find(block => block.key === 'policies');
+  table.rows[0][table.previewColumn] = '0.235';
+  for (const locale of ['en', 'zh']) {
+    const html = renderPage({ profile, publications: papers, locale, assets, basePath: '/preview' });
+    const card = html.split('<article class="paper-spotlight"')[1].split('</article>')[0];
+    const report = technicalReportPath(paper.id, locale, '/preview');
+    assert.ok(card.includes(`href="${report}#${section.id}"`));
+    assert.ok(card.includes(`href="${report}"`) && card.includes(`href="${paper.codeUrl}"`));
+    assert.ok(card.includes('>0.235</span>') && card.includes(escapeHtml(table.caption[locale])));
+  }
+  table.previewColumn = 99;
+  assert.throws(() => validateContent(profile, papers), /Invalid technical report block/);
+  delete table.previewColumn;
+  const html = renderPage({ profile, publications: papers, assets });
+  assert.ok(html.includes(`<p class="spotlight-summary">${escapeHtml(paper.technicalReport.locales.en.summary)}</p>`));
+});
+
 test('new dated papers require a bilingual technical report and a GitHub repository', () => {
   const wsdm = publications.find((paper) => paper.id === 'decision-sufficiency');
   const future = { ...wsdm, id: 'next-paper', acceptedDate: '2026-11-04' };

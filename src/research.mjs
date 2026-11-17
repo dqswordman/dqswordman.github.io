@@ -21,6 +21,38 @@ export function reportPreview(report) {
   }
 }
 
+function resultChart(report, href, locale, t) {
+  for (const section of report.sections ?? []) {
+    const table = section.blocks?.find(block => block.type === 'table' && block.previewColumn !== undefined);
+    if (!table) continue;
+    const column = table.previewColumn;
+    const ceiling = Math.max(...table.rows.map(row => Number(row[column]))) || 1;
+    return `<figure class="spotlight-figure">
+      <figcaption><span>${h(table.columns[column][locale])}</span><a href="${h(href)}#${h(section.id)}">${h(t.resultsPreview)}${icon('arrow')}</a></figcaption>
+      <dl class="result-bars">${table.rows.map(row => {
+        const label = row[0][locale] ?? row[0];
+        const width = (Number(row[column]) / ceiling * 100).toFixed(2);
+        return `<div><dt>${h(label)}</dt><dd><span class="result-track" aria-hidden="true"><i style="width:${width}%"></i></span><span>${h(row[column])}</span></dd></div>`;
+      }).join('')}</dl>
+      <p>${h(table.caption[locale])}</p>
+    </figure>`;
+  }
+  return '';
+}
+
+export function paperSpotlight(paper, t, locale, basePath) {
+  if (!paper) return '';
+  const report = paper.technicalReport;
+  const copy = report.locales[locale];
+  const href = technicalReportPath(paper.id, locale, basePath);
+  return `<article class="paper-spotlight" aria-labelledby="spotlight-title">
+    <div class="spotlight-meta"><span>${h(t.featuredPaper)}</span><span>${h(venueLabel(paper))}</span></div>
+    <h2 id="spotlight-title">${h(copy.title ?? paper.title)}</h2>
+    ${resultChart(report, href, locale, t) || `<p class="spotlight-summary">${h(copy.summary)}</p>`}
+    <div class="spotlight-actions"><a href="${h(href)}">${h(t.readReport)}${icon('arrow')}</a>${paper.codeUrl ? `<a href="${h(paper.codeUrl)}" ${external}>${h(t.sourceCode)}${icon('external')}</a>` : ''}</div>
+  </article>`;
+}
+
 export function renderResearchIndex(index, papers, t, locale, home, basePath) {
   const reports = index === 'technical-reports';
   const title = reports ? t.reports : t.openSource;
