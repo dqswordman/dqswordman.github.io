@@ -18,6 +18,7 @@ export const ui = {
     primaryNav: 'Main navigation',
     about: 'About',
     research: 'Research interests',
+    recentResearch: 'Recent research',
     selected: 'Selected papers',
     publications: 'Publications',
     experience: 'Education & experience',
@@ -115,7 +116,7 @@ export const ui = {
     openPaper: 'Find this publication on Google Scholar',
   },
   zh: {
-    nav: ['关于', '研究方向', '论文', '技术报告', '开源项目', '经历'],
+    nav: ['关于', '研究兴趣', '论文', '技术报告', '开源项目', '经历'],
     contact: '联系我',
     skip: '跳至正文',
     home: 'Wenzhang Du — 首页',
@@ -125,7 +126,8 @@ export const ui = {
     closeMenu: '关闭导航',
     primaryNav: '主导航',
     about: '关于',
-    research: '研究方向',
+    research: '研究兴趣',
+    recentResearch: '近期研究',
     selected: '精选论文',
     publications: '学术论文',
     experience: '教育与研究经历',
@@ -395,7 +397,14 @@ export function renderPage({
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>
       <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}<div class="about-links"><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div></div>
     </section>
-    <section class="research-section" id="research-profile" aria-labelledby="research-title" data-section><div class="container section"><div class="section-heading section-heading-row"><h2 id="research-title">${h(t.research)}</h2><p class="section-description">${h(copy.researchIntro)}</p></div><div class="research-grid">${copy.research.map((item) => `<article class="research-card"><div class="research-card-top">${icon(item.icon)}</div><h3>${h(item.title)}</h3><p>${h(item.description)}</p><ul class="research-tags">${item.tags.map((tag) => `<li>${h(tag)}</li>`).join('')}</ul></article>`).join('')}</div>
+    <section class="research-section" id="research-profile" aria-labelledby="research-title" data-section>
+      <div class="container section">
+        <div class="section-heading"><h2 id="research-title">${h(t.research)}</h2></div>
+        <div class="research-grid">${copy.research.map((item) => `<article class="research-card"><div class="research-card-top">${icon(item.icon)}</div><h3>${h(item.title)}</h3><p>${h(item.description)}</p><ul class="research-tags">${item.tags.map((tag) => `<li>${h(tag)}</li>`).join('')}</ul></article>`).join('')}</div>
+        <section class="recent-research" aria-labelledby="recent-research-title">
+          <h3 id="recent-research-title">${h(t.recentResearch)}</h3>
+          ${copy.recentResearch.map((paragraph) => `<p>${h(paragraph)}</p>`).join('')}
+        </section>
       <div class="selected-heading"><h3>${h(t.selected)}</h3><a class="text-link" href="#publications">${h(t.allPapers)}${icon('arrow')}</a></div>
       <div class="selected-grid">${profile.featured
         .map((id) => {

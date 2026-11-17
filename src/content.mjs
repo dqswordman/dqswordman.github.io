@@ -228,6 +228,7 @@ export function validateContent(profile, publications) {
       !copy?.description ||
       !copy.aboutParagraphs?.length ||
       !copy.research?.length ||
+      !textList(copy.recentResearch) ||
       !copy.awards?.length ||
       !copy.skills?.length
     )
