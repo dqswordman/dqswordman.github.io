@@ -194,7 +194,10 @@ test('publication groups contain every paper once and presentation classificatio
   const groups = Object.fromEntries(['major', 'ei'].map(g => [g, publications.filter(p => p.group === g)]));
   assert.equal(groups.major.length, 7);
   assert.equal(groups.ei.length, 8);
-  for (const p of publications) assert.doesNotMatch(p.venue, /\b(?:oral|poster|findings|main)\b/i);
+  for (const p of publications) {
+    assert.doesNotMatch(p.venue, /\b(?:oral|poster|main)\b/i);
+    if (p.track) assert.ok(!p.venue.toLowerCase().includes(p.track.toLowerCase()));
+  }
   for (const locale of ['zh', 'en']) {
     const html = renderPage({ profile, publications, locale, assets });
     const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);

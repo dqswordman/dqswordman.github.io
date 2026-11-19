@@ -9,7 +9,6 @@
     "group": "major",
     "status": "accepted",
     "topics": ["evaluation"],
-    "track": "Findings",
     "codeUrl": "https://github.com/dqswordman/rag-decision-sufficiency"
   },
   {

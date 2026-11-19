@@ -4,7 +4,7 @@ export const supportedLocales = ['en', 'zh'];
 export const topicKeys = ['evaluation', 'earth', 'efficient', 'applied'];
 export const publicationGroups = ['major', 'ei'];
 export const researchIndexes = ['technical-reports', 'open-source'];
-// WSDM Findings acceptance date, in the site's acceptance time zone.
+// WSDM 2027 acceptance date, in the site's acceptance time zone.
 const researchResourcesFrom = '2026-11-03';
 export const legacyAnchors = [
   'about-me',

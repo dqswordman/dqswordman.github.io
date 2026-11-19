@@ -78,7 +78,7 @@ npm run dev -- --port 4174
 
 将双语正文保存为 `content/technical-reports/<报告 ID>.json`。沿用 [WSDM 报告](content/technical-reports/decision-sufficiency.json) 的 `locales`、`sections`、`metrics` 和 `sources` 结构。`article.version`、`published`、`updated` 记录网页文档本身的版本、首发和最近实质更新；对应稿件的日期可另填 `manuscriptDate`。`artifact` 可链接固定软件版本。每次发布按公开报告清单构建，报告目录默认按首发日期倒序，`?sort=updated` 切换到更新时间。
 
-正式论文继续遵循从 WSDM 2027 Findings 起的配套约定。录用日期为 **2026-11-03** 及以后的论文同时提供公开 `codeUrl` 和登记为 `paper-companion` 的双语伴读。论文目录、复制引用和搜索均读取同一份 track 字段。
+正式论文继续遵循从 WSDM 2027 起的配套约定。录用日期为 **2026-11-03** 及以后的论文同时提供公开 `codeUrl` 和登记为 `paper-companion` 的双语伴读。论文目录、复制引用和搜索共用同一会议名称。
 
 构建为两种语言分别生成项目目录 `/research/`、项目页 `/research/<项目 ID>/`、报告目录 `/technical-reports/`、报告页 `/technical-reports/<报告 ID>/` 及开源目录 `/open-source/`。已有论文和报告的深链接保持有效。旧首页锚点 `#technical-reports` 与 `#open-source` 会转到相应目录。
 

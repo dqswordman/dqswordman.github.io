@@ -59,7 +59,7 @@
         {
           "id": "trustworthy-ml",
           "title": "Trustworthy machine learning",
-          "description": "I’m interested in how to test model behavior, whether findings hold across conditions, and how to quantify uncertainty in evaluations.",
+          "description": "I’m interested in how to test model behavior, whether results hold across conditions, and how to quantify uncertainty in evaluations.",
           "tags": ["Model evaluation", "Robustness", "Uncertainty"],
           "icon": "chart"
         }

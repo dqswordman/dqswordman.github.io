@@ -31,7 +31,7 @@ export const ui = {
     openSource: 'Open source',
     reportsDescription: 'Read the methods, inspect the figures and follow each report to its evidence.',
     projectDirectory: 'Research projects', selectedResearch: 'Selected research', projectOverview: 'Project overview',
-    projectsDescription: 'Questions, findings and public materials for each research project.',
+    projectsDescription: 'Questions, results and public materials for each research project.',
     moreProjects: 'Other projects', researchProject: 'Research project', interpretation: 'Scope of the evidence',
     acceptedStatus: 'Accepted', publishedStatus: 'Published', calls: 'calls', orderBy: 'Sort by', documentType: 'Document type', allReports: 'All documents',
     sameConferenceDate: 'Conference reference date', keyResults: 'Selected results', sameReportDate: 'Published and updated',

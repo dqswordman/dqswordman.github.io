@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { loadContent, resolveProjects, projectPath, technicalReportPath, validateContent, citation } from '../src/content.mjs';
+import { loadContent, resolveProjects, projectPath, technicalReportPath, validateContent, citation, venueLabel } from '../src/content.mjs';
 import { renderPage } from '../src/render.mjs';
 import { projectRoot } from '../scripts/build.mjs';
 
@@ -25,7 +25,8 @@ test('selected projects have one canonical page per locale and keep the formal p
       assert.ok(page.includes('#paper-' + project.publication.id));
     }
     const wsdm = content.publications.find(p => p.id === 'decision-sufficiency');
-    assert.ok(citation(wsdm).includes('WSDM 2027 Findings. Accepted; forthcoming.'));
+    assert.equal(venueLabel(wsdm), 'WSDM 2027');
+    assert.equal(citation(wsdm), `${wsdm.authors.join(', ')}. ${wsdm.title}. WSDM 2027. Accepted; forthcoming.`);
     const hero = home.split('class="paper-spotlight"')[1].split('</article>')[0];
     for (const value of ['0.213','0.272','0.162','9.00','9.61','180']) assert.ok(hero.includes(value));
   }
