@@ -11,6 +11,59 @@
   min-height: 42px;
   margin-bottom: clamp(16px, 2.4vw, 30px);
 }
+.projects-list, .project-body {
+  padding-block: clamp(28px, 5vw, 64px);
+}
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(28px, 6vw, 80px);
+}
+.project-group-title {
+  margin-bottom: 14px;
+  font: 600 14px/1.5 var(--sans);
+  color: var(--muted);
+}
+.project-entry, .project-body > section {
+  padding-block: clamp(20px, 3vw, 34px);
+  border-top: 1px solid var(--line);
+}
+.project-entry h2, .project-body h2 {
+  margin-block: 4px 10px;
+  font: 500 clamp(25px, 3.2vw, 37px)/1.18 var(--serif);
+  letter-spacing: -.035em;
+}
+.project-entry > p:not(.research-kicker), .project-body p, .project-byline {
+  max-width: 66ch;
+  color: var(--muted);
+  line-height: 1.68;
+}
+.project-byline, .project-resource { margin-top: 16px; }
+.project-resource h3 { margin: 5px 0 8px; }
+.project-resource h3 .icon { margin-inline-start: 7px; width: 16px; }
+.project-body { max-width: 815px; }
+.project-body > section:first-child { border-top: 0; padding-top: 0; }
+.project-body > section > .text-link { margin-top: 10px; }
+.project-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(155px, 100%), 1fr));
+  gap: 14px 24px;
+  margin-block: 18px 4px;
+}
+.project-metrics dt { color: var(--muted); font-size: 13px; }
+.project-metrics dd { margin: 4px 0 0; font: 500 23px/1.22 var(--serif); }
+.catalog-dates, .catalog-tools {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px 16px;
+}
+.catalog-dates { margin-top: 8px; color: var(--muted); font: 12px/1.6 var(--mono); }
+.catalog-tools { justify-content: flex-end; padding-top: 20px; color: var(--muted); font-size: 14px; }
+.catalog-tools select { color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 6px 8px; font: inherit; }
+.catalog-tools[hidden], .research-entry[hidden] { display: none; }
+@media (max-width: 680px) { .project-grid { grid-template-columns: 1fr; } }
+@media print { .catalog-tools, .home-selected { display: none; } }
 .research-back .icon {
   transform: rotate(180deg);
 }

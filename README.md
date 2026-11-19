@@ -2,7 +2,7 @@
 
 [中文主页](https://dqswordman.github.io/zh/) · [English homepage](https://dqswordman.github.io/) · [GitHub 个人页](https://github.com/dqswordman)
 
-浏览[论文目录](https://dqswordman.github.io/zh/#publications)、阅读[双语技术报告](https://dqswordman.github.io/zh/technical-reports/)，或在[开源项目](https://dqswordman.github.io/zh/open-source/)中查找代码和复现版本。
+从[精选研究](https://dqswordman.github.io/zh/research/#selected)进入项目概览，浏览[论文目录](https://dqswordman.github.io/zh/#publications)、[双语技术报告](https://dqswordman.github.io/zh/technical-reports/)或[开源项目](https://dqswordman.github.io/zh/open-source/)。
 
 ## 本地运行
 
@@ -32,7 +32,8 @@ npm run dev -- --port 4174
 | 文件                        | 用途                                                       |
 | --------------------------- | ---------------------------------------------------------- |
 | `content/profile.json`      | 个人资料、中英文文案与 News 时间轴                          |
-| `content/publications.json` | 论文元数据、GitHub 仓库地址及技术报告开关                   |
+| `content/publications.json` | 正式论文元数据、录用日期来源与已公开入口                    |
+| `content/projects.json` | 项目稳定 ID、双语概览、适用范围与已公开的报告清单               |
 | `content/technical-reports/` | 双语报告正文、分节、图表、复现说明及证据链接               |
 | `src/render.mjs`            | 页面与组件组合、双语界面文字、SEO 与结构化数据             |
 | `src/components.mjs`        | 原创图标、WD 标识、数学球面图形                            |
@@ -45,7 +46,7 @@ npm run dev -- --port 4174
 | `scripts/`                  | 构建、开发服务器、输出校验和品牌素材工具                   |
 | `public/`                   | 原样复制到发布目录的静态资源                               |
 
-修改个人资料时，同时维护 `locales.en` 与 `locales.zh`，并更新 `updated`。当前资料更新于 **2026-11**，包括 WSDM 2027 和 PAIRSAFE 的录用信息。GPA 按本人要求简写为 **3.5/4**。
+修改个人资料时，同时维护 `locales.en` 与 `locales.zh`，并更新 `updated`。WSDM 记录了已录用稿，PAIRSAFE 条目链接到 ACL Anthology 长文及其页码。GPA 按本人要求简写为 **3.5/4**。
 
 首页首屏展示 `featured` 中第一篇有技术报告的论文。若要预览一张报告表格，可在表格中用 `previewColumn` 指定数值列（从 0 开始，第 0 列是行标签）。预览直接使用表内数据，并链接到报告对应小节。没有预览列时显示报告摘要。
 
@@ -73,9 +74,13 @@ npm run dev -- --port 4174
 
 已录用、尚未正式发表的论文使用 `"status": "accepted"`，已核实的首次通知接收日期填入 `acceptedDate`（必须为完整日期），正式发表后改为 `"status": "published"`。列表展示标题、会议与接收日期，完整作者和发表状态保留在可展开引用中。`affiliation` 可保存论文对应身份。PAIRSAFE 的录用日期为 **2026-09-08**，WSDM 的录用日期为 **2026-11-03**，会议届次为 [WSDM 2027](https://www.wsdm-conference.org/2027/)。
 
-从 WSDM 2027 Findings 起（录用日期 **2026-11-03** 及以后），在 `content/publications.json` 的论文条目填写指向公开 GitHub 仓库的 `codeUrl`，并设置 `"technicalReport": true`。将报告保存为 `content/technical-reports/<id>.json`。各语言的 `locales.*.title` 和 `summary` 用于报告和目录卡片，`article` 记录网页版本、发布日期、更新日期和对应稿件日期。`sections` 保存双语正文与稳定锚点，分节中的 `figure`、`table`、`steps`、`code` 和 `links` 可以通过 `afterParagraph` 放在相关段落后。`artifact` 可链接固定复现版本与指南，`metrics` 和 `sources` 保存关键指标与证据来源。沿用 [WSDM 报告数据](content/technical-reports/decision-sufficiency.json) 的字段即可。
+在 `content/projects.json` 登记稳定的项目 `id`、双语 `title` 和 `summary`。关联论文用 `publicationId`，独立项目则直接填写 `authors`。按展示顺序将已公开的文档放入 `reports`，每项填写 `id` 和 `type`。类型支持 `paper-companion`、`technical-report`、`research-note` 和 `replication-report`。独立报告可以先于论文发表，也可以只提供正文与来源。首页精选由 `profile.featured` 的项目 ID 与顺序决定。
 
-构建为两个语言版本分别生成技术报告目录 `/technical-reports/`、开源论文目录 `/open-source/` 和论文的 `/technical-reports/<id>/`。导航直达独立目录，论文条目直达对应报告和代码仓库。旧首页锚点 `#technical-reports` 与 `#open-source` 会转到相应目录。
+将双语正文保存为 `content/technical-reports/<报告 ID>.json`。沿用 [WSDM 报告](content/technical-reports/decision-sufficiency.json) 的 `locales`、`sections`、`metrics` 和 `sources` 结构。`article.version`、`published`、`updated` 记录网页文档本身的版本、首发和最近实质更新；对应稿件的日期可另填 `manuscriptDate`。`artifact` 可链接固定软件版本。每次发布按公开报告清单构建，报告目录默认按首发日期倒序，`?sort=updated` 切换到更新时间。
+
+正式论文继续遵循从 WSDM 2027 Findings 起的配套约定。录用日期为 **2026-11-03** 及以后的论文同时提供公开 `codeUrl` 和登记为 `paper-companion` 的双语伴读。论文目录、复制引用和搜索均读取同一份 track 字段。
+
+构建为两种语言分别生成项目目录 `/research/`、项目页 `/research/<项目 ID>/`、报告目录 `/technical-reports/`、报告页 `/technical-reports/<报告 ID>/` 及开源目录 `/open-source/`。已有论文和报告的深链接保持有效。旧首页锚点 `#technical-reports` 与 `#open-source` 会转到相应目录。
 
 WSDM 的三张网页图和六张数据表来自公开的 `v1.0.0` 复现归档。使用有 NumPy 和 Matplotlib 的 Python 3.9 或更新环境，在站点仓库运行 `python scripts/render-wsdm-figures.py --artifact ../rag-decision-sufficiency` 可重新生成。脚本固定读取该版本的 Git 对象，核对归档 P1 掩码、策略对比与选例。站点构建直接使用提交的图片和表格数据。论文各表的原始设置与输出对应关系见 [复现指南](https://github.com/dqswordman/rag-decision-sufficiency/blob/main/docs/reproduction.md)。
 

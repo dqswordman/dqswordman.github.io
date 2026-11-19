@@ -10,8 +10,7 @@
     "status": "accepted",
     "topics": ["evaluation"],
     "track": "Findings",
-    "codeUrl": "https://github.com/dqswordman/rag-decision-sufficiency",
-    "technicalReport": true
+    "codeUrl": "https://github.com/dqswordman/rag-decision-sufficiency"
   },
   {
     "id": "pairsafe",
@@ -26,7 +25,6 @@
     "publicationUrl": "https://aclanthology.org/2026.aacl-long.124/",
     "pages": "2720–2731",
     "codeUrl": "https://github.com/dqswordman/pairsafe",
-    "technicalReport": true,
     "topics": ["evaluation"]
   },
   {

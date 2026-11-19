@@ -108,6 +108,7 @@ function updateLanguageLink() {
   languageLink.href = next.href;
 }
 window.addEventListener('hashchange', updateLanguageLink);
+window.addEventListener('popstate', updateLanguageLink);
 updateLanguageLink();
 
 const news = document.querySelector('[data-news]');
@@ -325,4 +326,43 @@ for (const button of document.querySelectorAll('[data-copy]')) {
 for (const button of document.querySelectorAll('[data-print]')) {
   button.hidden = false;
   button.addEventListener('click', () => window.print());
+}
+
+const catalogTools = document.querySelector('[data-catalog-tools]');
+if (catalogTools) {
+  const list = document.querySelector('[data-report-list]');
+  const order = catalogTools.querySelector('[data-report-order]');
+  const kind = catalogTools.querySelector('[data-report-kind]');
+  const entries = Array.from(list.querySelectorAll('[data-doc]'));
+  function arrange() {
+    const field = order.value;
+    const sorted = [...entries].sort((a, b) => b.dataset[field].localeCompare(a.dataset[field]) ||
+      a.dataset.doc.localeCompare(b.dataset.doc));
+    for (const entry of sorted) {
+      entry.hidden = Boolean(kind?.value && entry.dataset.kind !== kind.value);
+      list.append(entry);
+    }
+  }
+  function restoreCatalog() {
+    const query = new URLSearchParams(location.search);
+    order.value = query.get('sort') === 'updated' ? 'updated' : 'published';
+    if (kind) {
+      const requested = query.get('type');
+      kind.value = [...kind.options].some(option => option.value === requested) ? requested : '';
+    }
+    arrange();
+  }
+  catalogTools.addEventListener('change', () => {
+    const url = new URL(location.href);
+    if (order.value === 'updated') url.searchParams.set('sort', order.value);
+    else url.searchParams.delete('sort');
+    if (kind?.value) url.searchParams.set('type', kind.value);
+    else url.searchParams.delete('type');
+    history.pushState(null, '', url);
+    updateLanguageLink();
+    arrange();
+  });
+  addEventListener('popstate', restoreCatalog);
+  restoreCatalog();
+  catalogTools.hidden = false;
 }

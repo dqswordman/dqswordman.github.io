@@ -1,0 +1,70 @@
+[
+  {
+    "id": "decision-sufficiency",
+    "publicationId": "decision-sufficiency",
+    "title": {
+      "en": "Evidence selection in RAG",
+      "zh": "RAG 证据选择"
+    },
+    "summary": {
+      "en": "When a model proposes a set of passages, is it worth measuring that set once before returning it? The study compares that check with choosing the best context already measured.",
+      "zh": "模型推算出一组候选段落后，值得再测一次吗？研究将这种核验与直接采用已测最优上下文作对照。"
+    },
+    "scope": {
+      "en": "The offline score requires a reference answer. Against the best measured nine-call baseline, the paired 95% interval for the change in answer F1 includes zero.",
+      "zh": "离线评分需要参考答案。与九次测量下的已测最优策略相比，答案 F1 差值的配对 95% 区间包含零。"
+    },
+    "reports": [
+      {
+        "id": "decision-sufficiency",
+        "type": "paper-companion"
+      }
+    ]
+  },
+  {
+    "id": "pairsafe",
+    "publicationId": "pairsafe",
+    "title": {
+      "en": "PAIRSAFE",
+      "zh": "PAIRSAFE"
+    },
+    "summary": {
+      "en": "A refusal score can rank two prompts correctly and still misclassify the safe one. PAIRSAFE follows both decisions across 150 matched pairs, comparing scores, held-out thresholds and generated responses.",
+      "zh": "拒答分数可以把两个提示排对，却仍然误拒良性一侧。PAIRSAFE 沿着 150 对匹配样本，分别检查分数排序、留出阈值和实际生成。"
+    },
+    "scope": {
+      "en": "The generation check covers Qwen and uses archived rule-based labels. The release reproduces the main table from scores and identifies the final nested metadata audit as a transcription from the paper.",
+      "zh": "生成检查只覆盖 Qwen，采用归档的规则标签。发布包可从逐例分数复算主表，并标出了定稿嵌套元数据审计的转录来源。"
+    },
+    "reports": [
+      {
+        "id": "pairsafe",
+        "type": "paper-companion"
+      }
+    ]
+  },
+  {
+    "id": "paired-bootstrap",
+    "publicationId": "paired-bootstrap",
+    "title": {
+      "en": "Paired bootstrap for small improvements",
+      "zh": "用配对自助法评估小幅改进"
+    },
+    "summary": {
+      "en": "A paired bootstrap protocol for evaluating small reported improvements.",
+      "zh": "用配对自助法评估小幅提升，研究对象是常见的微小性能差异。"
+    }
+  },
+  {
+    "id": "arc-ctrl",
+    "publicationId": "arc-ctrl",
+    "title": {
+      "en": "ARC-CTRL",
+      "zh": "ARC-CTRL"
+    },
+    "summary": {
+      "en": "Audit-guided trust control in surrogate-assisted evolutionary hyperparameter optimization.",
+      "zh": "研究如何在代理辅助的进化式超参数优化中，利用审计反馈调整信任程度。"
+    }
+  }
+]

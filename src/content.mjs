@@ -63,10 +63,11 @@ function validReportBlock(block) {
         Array.isArray(block.rows) && block.rows.length > 0 &&
         block.rows.every((row) => Array.isArray(row) && row.length === block.columns.length &&
           row.every((cell) => hasText(cell) || Number.isFinite(cell) || isBilingual(cell))) &&
-        (block.previewColumn === undefined ||
-          (Number.isInteger(block.previewColumn) && block.previewColumn > 0 &&
-            block.previewColumn < block.columns.length && block.rows.every((row) => {
-              const value = Number(row[block.previewColumn]);
+        (block.previewNote === undefined || isBilingual(block.previewNote)) &&
+        [block.previewColumn, block.previewCostColumn].every(column => column === undefined ||
+          (Number.isInteger(column) && column > 0 &&
+            column < block.columns.length && block.rows.every((row) => {
+              const value = Number(row[column]);
               return Number.isFinite(value) && value >= 0;
             })));
     case 'steps':
@@ -123,8 +124,9 @@ function validateReport(report, id) {
   }
   if (report.article !== undefined) {
     const { version, published, updated, manuscriptDate, updateNote } = report.article ?? {};
-    if (!hasText(version) || ![published, updated, manuscriptDate].every((date) =>
-      validDate(date) && date.length === 10) || updated < published || updated < manuscriptDate ||
+    if (!hasText(version) || ![published, updated].every((date) =>
+      validDate(date) && date.length === 10) || updated < published ||
+      (manuscriptDate !== undefined && (!validDate(manuscriptDate) || manuscriptDate.length !== 10 || updated < manuscriptDate)) ||
       (updateNote !== undefined && !isBilingual(updateNote)))
       throw new Error(`Invalid technical report article metadata: ${id}`);
   }
@@ -163,7 +165,7 @@ export function newsItems(profile, publications) {
   return [...acceptances, ...profile.news].sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export function validateContent(profile, publications) {
+export function validateContent(profile, publications, projects = []) {
   for (const key of ['url', 'github', 'scholar']) safeHttps(profile[key]);
   if (profile.huggingFace !== undefined) safeHttps(profile.huggingFace);
   if (profile.url !== new URL(profile.url).origin)
@@ -216,7 +218,8 @@ export function validateContent(profile, publications) {
     if (paper.technicalReport) validateReport(paper.technicalReport, paper.id);
   }
   for (const id of profile.featured)
-    if (!ids.has(id)) throw new Error(`Featured publication does not exist: ${id}`);
+    if (!ids.has(id) && !projects.some(project => project.id === id))
+      throw new Error(`Featured research does not exist: ${id}`);
   const newsIds = new Set();
   if (!Array.isArray(profile.news)) throw new Error('News must be an array');
   for (const item of profile.news) {
@@ -245,22 +248,76 @@ export function validateContent(profile, publications) {
     )
       throw new Error(`Incomplete ${locale} content`);
   }
-  return { profile, publications };
+  return { profile, publications, projects };
+}
+
+export const reportKinds = {
+  'paper-companion': { en: 'Paper companion', zh: '论文伴读' },
+  'technical-report': { en: 'Technical report', zh: '技术报告' },
+  'research-note': { en: 'Research note', zh: '研究笔记' },
+  'replication-report': { en: 'Replication report', zh: '复现报告' },
+};
+
+export async function resolveProjects(definitions, publications, readReport) {
+  const papers = new Map(publications.map(p => [p.id, p]));
+  const declared = new Set(definitions.map(p => p.publicationId));
+  const legacyReports = new Map();
+  const allProjects = [...definitions];
+  for (const paper of publications.filter(p => p.technicalReport === true && !declared.has(p.id))) {
+    if (!validId(paper.id)) throw new Error(`Invalid legacy report ID: ${paper.id}`);
+    const body = await readReport(paper.id);
+    validateReport(body, paper.id);
+    legacyReports.set(paper.id, body);
+    allProjects.push({ id: paper.id, publicationId: paper.id, title: { en: paper.title, zh: paper.title },
+      summary: Object.fromEntries(supportedLocales.map(locale => [locale, body.locales[locale].summary])),
+      reports: [{ id: paper.id, type: 'paper-companion' }] });
+  }
+  const ids = new Set();
+  const linkedPapers = new Set();
+  const reportIds = new Set();
+  const companions = new Map();
+  const projects = [];
+  for (const entry of allProjects) {
+    const { id, publicationId, title, summary, scope } = entry;
+    if (!validId(id) || ids.has(id) || !isBilingual(title) || !isBilingual(summary) || (scope && !isBilingual(scope)))
+      throw new Error(`Invalid or duplicate research project: ${id}`);
+    ids.add(id);
+    const publication = papers.get(publicationId);
+    if (publicationId && (!publication || linkedPapers.has(publicationId)))
+      throw new Error(`Invalid project publication: ${id}/${publicationId}`);
+    if (publication) linkedPapers.add(publicationId);
+    const authors = entry.authors ?? publication?.authors;
+    if (!textList(authors)) throw new Error(`Missing project authors: ${id}`);
+    const codeUrl = entry.codeUrl ?? publication?.codeUrl;
+    if (codeUrl) validateGitHubRepository(codeUrl);
+    const reports = [];
+    const listed = entry.reports ?? (publication?.technicalReport === true ? [{ id: publicationId, type: 'paper-companion' }] : []);
+    for (const descriptor of listed) {
+      const { id: reportId, type } = descriptor;
+      if (!validId(reportId) || reportIds.has(reportId) || !Object.hasOwn(reportKinds, type))
+        throw new Error(`Invalid or duplicate public report: ${id}/${reportId}`);
+      const companion = type === 'paper-companion';
+      if (companion && (!publication || companions.has(publicationId)))
+        throw new Error(`Expected one linked publication for companion: ${reportId}`);
+      reportIds.add(reportId);
+      const body = legacyReports.get(reportId) ?? await readReport(reportId);
+      validateReport(body, reportId);
+      if (!body.article) throw new Error(`Public report needs a version and dates: ${reportId}`);
+      reports.push({ ...(companion ? publication : {}), id: reportId, projectId: id, projectTitle: title,
+        publicationId: companion ? publicationId : null, documentType: type, authors, codeUrl,
+        title: companion ? publication.title : title.en, technicalReport: body });
+      if (companion) companions.set(publicationId, { reportId, technicalReport: body });
+    }
+    projects.push({ id, title, summary, scope, authors, publication, codeUrl, reports });
+  }
+  return { projects, publications: publications.map(p => ({ ...p, ...companions.get(p.id) })) };
 }
 
 export async function loadContent(root) {
-  const [profile, publications] = await Promise.all(
-    ['profile', 'publications'].map(async (name) =>
-      JSON.parse(await readFile(new URL(`content/${name}.json`, root), 'utf8')),
-    ),
-  );
-  const withReports = await Promise.all(publications.map(async (paper) => {
-    if (paper.technicalReport !== true) return paper;
-    if (!validId(paper.id)) throw new Error(`Invalid publication ID: ${paper.id}`);
-    const file = new URL(`content/technical-reports/${paper.id}.json`, root);
-    return { ...paper, technicalReport: JSON.parse(await readFile(file, 'utf8')) };
-  }));
-  return validateContent(profile, withReports);
+  const readJson = async (name) => JSON.parse(await readFile(new URL(`content/${name}.json`, root), 'utf8'));
+  const [profile, papers, definitions] = await Promise.all(['profile', 'publications', 'projects'].map(readJson));
+  const { projects, publications } = await resolveProjects(definitions, papers, id => readJson(`technical-reports/${id}`));
+  return validateContent(profile, publications, projects);
 }
 
 export function normalizeBasePath(value = '') {
@@ -279,6 +336,10 @@ export function technicalReportPath(id, locale, basePath = '') {
   return `${researchIndexPath('technical-reports', locale, basePath)}${id}/`;
 }
 
+export function projectPath(id, locale, basePath = '') {
+  return `${researchIndexPath('research', locale, basePath)}${id}/`;
+}
+
 export function venueLabel(paper) {
   return `${paper.venue} ${paper.year}${paper.track ? ` ${paper.track}` : ''}`;
 }
@@ -290,5 +351,5 @@ export function paperUrl(paper) {
 }
 
 export function citation(paper) {
-  return `${paper.authors.join(', ')}. ${paper.title}. ${paper.venue} ${paper.year}${paper.pages ? `, pp. ${paper.pages}` : ''}.${paper.status === 'accepted' ? ' Accepted; forthcoming.' : ''}`;
+  return `${paper.authors.join(', ')}. ${paper.title}. ${venueLabel(paper)}${paper.pages ? `, pp. ${paper.pages}` : ''}.${paper.status === 'accepted' ? ' Accepted; forthcoming.' : ''}`;
 }

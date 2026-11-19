@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve, relative, sep } from 'node:path';
 import {
   loadContent, normalizeBasePath, escapeHtml as h, supportedLocales,
-  researchIndexes, researchIndexPath, technicalReportPath,
+  researchIndexes, researchIndexPath, technicalReportPath, projectPath,
 } from '../src/content.mjs';
 import { renderPage } from '../src/render.mjs';
 import { renderMiscPage, historyRoutes } from '../src/misc-render.mjs';
@@ -16,7 +16,7 @@ const hash = (value) => createHash('sha256').update(value).digest('hex').slice(0
 
 export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {}) {
   basePath = normalizeBasePath(basePath);
-  const { profile, publications } = await loadContent(projectRoot);
+  const { profile, publications, projects } = await loadContent(projectRoot);
   validateHistory();
   validateHistory(localizedHistory('en'));
   if (historyCensus().hanCharacters < 200_000) throw new Error('The Full edition requires at least 200,000 unique Chinese narrative characters.');
@@ -96,20 +96,21 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     writeFile(new URL('assets/history-catalog.en.json', outputRoot), JSON.stringify(catalogFor('en'), null, 2)),
   ]);
 
-  const reportPapers = publications.filter((paper) => paper.technicalReport);
+  const reportPapers = projects.flatMap(project => project.reports);
+  const indexes = ['research', ...researchIndexes];
   for (const locale of supportedLocales) {
     const folder = locale === 'en' ? outputRoot : new URL('zh/', outputRoot);
     await mkdir(folder, { recursive: true });
     await writeFile(
       new URL('index.html', folder),
-      renderPage({ profile, publications, locale, basePath, assets }),
+      renderPage({ profile, publications, projects, locale, basePath, assets }),
     );
-    for (const index of researchIndexes) {
+    for (const index of indexes) {
       const indexFolder = new URL(researchIndexPath(index, locale).slice(1), outputRoot);
       await mkdir(indexFolder, { recursive: true });
       await writeFile(
         new URL('index.html', indexFolder),
-        renderPage({ profile, publications, locale, basePath, assets, index }),
+        renderPage({ profile, publications, projects, locale, basePath, assets, index }),
       );
     }
     for (const report of reportPapers) {
@@ -117,8 +118,13 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
       await mkdir(reportFolder, { recursive: true });
       await writeFile(
         new URL('index.html', reportFolder),
-        renderPage({ profile, publications, locale, basePath, assets, report }),
+        renderPage({ profile, publications, projects, locale, basePath, assets, report }),
       );
+    }
+    for (const project of projects) {
+      const destination = new URL(projectPath(project.id, locale).slice(1), outputRoot);
+      await mkdir(destination, { recursive: true });
+      await writeFile(new URL('index.html', destination), renderPage({ profile, publications, projects, project, locale, basePath, assets }));
     }
   }
   await writeFile(
@@ -156,13 +162,17 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   );
   const publicRoutePairs = [
     [`${basePath}/`, `${basePath}/zh/`],
-    ...researchIndexes.map((index) => supportedLocales.map((locale) => researchIndexPath(index, locale, basePath))),
+    ...indexes.map((index) => supportedLocales.map((locale) => researchIndexPath(index, locale, basePath))),
+    ...projects.map(project => supportedLocales.map(locale => projectPath(project.id, locale, basePath))),
     ...reportPapers.map((paper) => supportedLocales.map((locale) => technicalReportPath(paper.id, locale, basePath))),
   ];
+  const modified = new Map(reportPapers.map(doc =>
+    [technicalReportPath(doc.id, 'en', basePath), doc.technicalReport.article.updated]));
   const publicSitemap = publicRoutePairs.map(([english, chinese]) => {
     const urls = [english, chinese].map((route) => profile.url + route);
     const alternates = `<xhtml:link rel="alternate" hreflang="en" href="${h(urls[0])}"/><xhtml:link rel="alternate" hreflang="zh-CN" href="${h(urls[1])}"/>`;
-    return urls.map((url) => `<url><loc>${h(url)}</loc>${alternates}</url>`).join('');
+    const lastmod = modified.has(english) ? `<lastmod>${h(modified.get(english))}</lastmod>` : '';
+    return urls.map((url) => `<url><loc>${h(url)}</loc>${lastmod}${alternates}</url>`).join('');
   }).join('');
   const miscSitemap = miscRoutes.map(route => {
     const pair = ['zh-CN', 'en'].map(locale => [locale, `${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}${route}`]);

@@ -1,13 +1,13 @@
 import {
   escapeHtml as h, paperUrl, citation, publicationGroups, acceptanceYear, newsItems,
-  researchIndexes, researchIndexPath, technicalReportPath, venueLabel,
+  researchIndexes, researchIndexPath, technicalReportPath, projectPath, venueLabel,
 } from './content.mjs';
 import { icon, monogram } from './components.mjs';
-import { paperSpotlight, renderResearchIndex, renderReport, reportPreview } from './research.mjs';
+import { paperSpotlight, renderResearchIndex, renderReport, reportPreview, selectedResearch, renderProjects, renderProject } from './research.mjs';
 
 export const ui = {
   en: {
-    nav: ['About', 'Research', 'Publications', 'Reports', 'Open source', 'Experience'],
+    nav: ['About', 'Projects', 'Publications', 'Reports', 'Open source', 'Experience'],
     contact: 'Contact',
     skip: 'Skip to content',
     home: 'Wenzhang Du — home',
@@ -29,7 +29,12 @@ export const ui = {
     reports: 'Technical reports',
     report: 'Technical report',
     openSource: 'Open source',
-    reportsDescription: 'Methods, figures, and evidence behind the publications.',
+    reportsDescription: 'Read the methods, inspect the figures and follow each report to its evidence.',
+    projectDirectory: 'Research projects', selectedResearch: 'Selected research', projectOverview: 'Project overview',
+    projectsDescription: 'Questions, findings and public materials for each research project.',
+    moreProjects: 'Other projects', researchProject: 'Research project', interpretation: 'Scope of the evidence',
+    acceptedStatus: 'Accepted', publishedStatus: 'Published', calls: 'calls', orderBy: 'Sort by', documentType: 'Document type', allReports: 'All documents',
+    sameConferenceDate: 'Conference reference date', keyResults: 'Selected results', sameReportDate: 'Published and updated',
     codeDescription: 'Public code and versioned reproducibility releases for the publications.',
     emptyResearch: 'No entries are available yet.',
     readReport: 'Read the report',
@@ -119,7 +124,7 @@ export const ui = {
     openPaper: 'Find this publication on Google Scholar',
   },
   zh: {
-    nav: ['关于', '研究兴趣', '论文', '技术报告', '开源项目', '经历'],
+    nav: ['关于', '研究项目', '论文', '技术报告', '开源项目', '经历'],
     contact: '联系我',
     skip: '跳至正文',
     home: 'Wenzhang Du — 首页',
@@ -141,7 +146,12 @@ export const ui = {
     reports: '技术报告',
     report: '技术报告',
     openSource: '开源项目',
-    reportsDescription: '阅读论文背后的方法、图表与实验证据。',
+    reportsDescription: '阅读研究方法、图表和局限，并从每份报告追溯到对应证据。',
+    projectDirectory: '研究项目', selectedResearch: '精选研究', projectOverview: '项目概览',
+    projectsDescription: '按项目查找研究问题、结果，以及已经公开的论文、报告和代码。',
+    moreProjects: '其他项目', researchProject: '研究项目', interpretation: '结果适用于什么范围',
+    acceptedStatus: '已录用', publishedStatus: '已发表', calls: '次测量', orderBy: '排序依据', documentType: '文档类型', allReports: '全部文档',
+    sameConferenceDate: '同届会议参考日期', keyResults: '主要结果', sameReportDate: '首发及更新',
     codeDescription: '查看已公开的论文代码、实验归档与复现版本。',
     emptyResearch: '暂无条目。',
     readReport: '阅读技术报告',
@@ -231,7 +241,7 @@ export const ui = {
   },
 };
 
-const navigationIds = ['about-me', 'research-profile', 'publications', ...researchIndexes, 'experience'];
+const navigationIds = ['about-me', 'research', 'publications', ...researchIndexes, 'experience'];
 const external = 'target="_blank" rel="noopener noreferrer"';
 
 function dateLabel(value, locale) {
@@ -251,7 +261,7 @@ function header(profile, t, locale, basePath, { away, alternate, currentIndex, o
   const anchor = (id) => `${away ? home : ''}#${id}`;
   const links = navigationIds.map((id, i) => {
     const label = h(t.nav[i]);
-    if (researchIndexes.includes(id)) {
+    if (id === 'research' || researchIndexes.includes(id)) {
       const href = researchIndexPath(id, locale, basePath);
       return `<a href="${h(href)}"${currentIndex === id ? ` aria-current="${onReport ? 'location' : 'page'}"` : ''}>${label}</a>`;
     }
@@ -278,22 +288,24 @@ function newsPanel(profile, publications, t, locale, basePath) {
       const label = paper && item.kind !== 'update'
         ? `${item.kind === 'acceptance' ? t.acceptedAt : t.bestPaper} · ${venueLabel(paper)}`
         : t.newsKinds[item.kind];
-      const report = paper?.technicalReport && item.kind === 'update' && technicalReportPath(paper.id, locale, basePath);
+      const report = paper?.technicalReport && item.kind === 'update' && technicalReportPath(paper.reportId ?? paper.id, locale, basePath);
       const link = report ? `<a href="${h(report)}">${h(title)} ${icon('arrow')}</a>` : paper
         ? `<a href="#paper-${h(paper.id)}" data-paper-jump>${h(title)} ${icon('arrow')}</a>` : h(title);
-      return `<li class="news-item" data-news-item data-news-year="${h(item.date.slice(0, 4))}"><div class="news-date"><time datetime="${h(item.date)}">${h(item.date)}</time><span>${h(label)}</span></div><h3>${link}</h3>${item.text ? `<p class="news-detail">${h(item.text[locale])}</p>` : ''}</li>`;
+      const basis = item.kind === 'acceptance' && paper?.acceptedDateBasis === 'same-conference' ? ` · ${h(t.sameConferenceDate)}` : '';
+      return `<li class="news-item" data-news-item data-news-year="${h(item.date.slice(0, 4))}"><div class="news-date"><time datetime="${h(item.date)}">${h(item.date)}</time><span>${h(label)}${basis}</span></div><h3>${link}</h3>${item.text ? `<p class="news-detail">${h(item.text[locale])}</p>` : ''}</li>`;
     }).join('')}</ol>
     <footer class="news-footer"><p data-news-count data-template="${h(t.newsCount)}" role="status" aria-live="polite" aria-atomic="true">${h(t.newsCount.replace('{count}', items.length).replace('{total}', items.length))}</p><button type="button" class="news-toggle" data-news-toggle data-expand-label="${h(t.newsExpand)}" data-collapse-label="${h(t.newsCollapse)}" aria-controls="news-list" aria-expanded="false" hidden><span>${h(t.newsExpand)}</span>${icon('down')}</button></footer>
   </aside>`;
 }
 
 function paperRow(paper, t, locale, basePath) {
-  const report = paper.technicalReport && technicalReportPath(paper.id, locale, basePath);
+  const report = paper.technicalReport && technicalReportPath(paper.reportId ?? paper.id, locale, basePath);
   const scholar = paperUrl(paper);
+  const dateBasis = paper.acceptedDateBasis === 'same-conference' ? t.sameConferenceDate : t.acceptedOn;
   const search = [
     paper.title,
     ...paper.authors,
-    paper.venue,
+    venueLabel(paper),
     paper.year,
     paper.acceptedDate || '',
     paper.affiliation || '',
@@ -303,8 +315,8 @@ function paperRow(paper, t, locale, basePath) {
   ].join(' ');
   return `<li class="publication" id="paper-${h(paper.id)}" data-publication data-year="${h(acceptanceYear(paper))}" data-topics="${h(paper.topics.join(' '))}" data-search="${h(search)}">
     <article class="paper-content" aria-labelledby="title-${h(paper.id)}">
-      <div class="paper-meta"><span>${h(paper.venue)} ${paper.year}</span>${paper.acceptedDate ? `<time datetime="${h(paper.acceptedDate)}" aria-label="${h(t.acceptedOn)} ${h(paper.acceptedDate)}">${h(paper.acceptedDate)}</time>` : `<span class="paper-date-pending">${h(t.datePending)}</span>`}</div>
-      <h3 id="title-${h(paper.id)}"><a href="${h(report || scholar)}"${report ? '' : ' ' + external}>${h(paper.title)} ${icon(report ? 'arrow' : 'external')}</a></h3>
+      <div class="paper-meta"><span>${h(venueLabel(paper))}</span>${paper.status ? `<span>${h(paper.status === 'published' ? t.publishedStatus : t.accepted)}</span>` : ''}${paper.acceptedDate ? `<time datetime="${h(paper.acceptedDate)}" aria-label="${h(dateBasis)} ${h(paper.acceptedDate)}">${h(paper.acceptedDate)}${paper.acceptedDateBasis === 'same-conference' ? ` · ${h(dateBasis)}` : ''}</time>` : `<span class="paper-date-pending">${h(t.datePending)}</span>`}</div>
+      <h3 id="title-${h(paper.id)}"><a href="${h(report || paper.publicationUrl || scholar)}"${report ? '' : ' ' + external}>${h(paper.title)} ${icon(report ? 'arrow' : 'external')}</a></h3>
       <div class="paper-bottom">
         ${paper.publicationUrl ? `<a class="resource-link" href="${h(paper.publicationUrl)}" ${external}>${h(t.publishedPaper)}${icon('external')}</a>` : ''}
         ${report ? `<a class="resource-link" href="${h(report)}">${icon('book')}${h(t.report)}</a>` : ''}
@@ -326,36 +338,45 @@ function footer(profile, t, notFound) {
 export function renderPage({
   profile,
   publications,
+  projects = [],
   locale = 'en',
   basePath = '',
   assets,
   notFound = false,
   report,
   index,
+  project,
 }) {
   const copy = profile.locales[locale];
   const t = ui[locale];
   const home = `${basePath}/${locale === 'zh' ? 'zh/' : ''}`;
   const localizedPath = (language) => {
+    if (project) return projectPath(project.id, language, basePath);
     if (report) return technicalReportPath(report.id, language, basePath);
     if (index) return researchIndexPath(index, language, basePath);
     return `${basePath}/${language === 'zh' ? 'zh/' : ''}`;
   };
   const routes = { en: localizedPath('en'), zh: localizedPath('zh') };
   const canonical = profile.url + routes[locale];
-  const indexTitle = index === 'technical-reports' ? t.reports : t.openSource;
-  const indexDescription = index === 'technical-reports' ? t.reportsDescription : t.codeDescription;
+  const indexTitle = index === 'research' ? t.projectDirectory : index === 'technical-reports' ? t.reports : t.openSource;
+  const indexDescription = index === 'research' ? t.projectsDescription : index === 'technical-reports' ? t.reportsDescription : t.codeDescription;
   const reportCopy = report?.technicalReport.locales[locale];
-  const title = report ? `${reportCopy.title ?? report.title} · ${t.report}`
+  const title = project ? `${project.title[locale]} · ${profile.name}` : report ? `${reportCopy.title ?? report.title} · ${t.report}`
     : index ? `${indexTitle} · ${profile.name}` : `${profile.name} · ${copy.role}`;
-  const description = report ? reportCopy.summary
+  const description = project ? project.summary[locale] : report ? reportCopy.summary
     : index ? indexDescription : copy.description;
   const article = report?.technicalReport.article;
   const figure = reportPreview(report?.technicalReport)?.figure;
   const shareImage = figure ?? { file: 'assets/social-card.png', width: 1200, height: 630 };
   const shareAlt = figure?.alt[locale] ?? `${profile.name} · ${profile.locales.en.heroStatement.join(' ')}`;
   const orderedPapers = [...publications].sort((a, b) => (b.acceptedDate || '').localeCompare(a.acceptedDate || ''));
-  const featuredReport = profile.featured.map(id => publications.find(paper => paper.id === id))
+  const documents = projects.flatMap(p => p.reports);
+  const codeEntries = projects.filter(p => p.codeUrl).map(p => p.reports.find(d => d.documentType === 'paper-companion') ??
+    p.reports[0] ?? { ...p.publication, id: p.id, title: p.publication?.title ?? p.title[locale], codeUrl: p.codeUrl });
+  const linkedCode = new Set(codeEntries.map(p => p.codeUrl));
+  codeEntries.push(...publications.filter(p => p.codeUrl && !linkedCode.has(p.codeUrl)));
+  const featuredReport = profile.featured.map(id => publications.find(paper => paper.id === id && paper.technicalReport)
+    ?? projects.find(p => p.id === id)?.reports[0])
     .find(paper => paper?.technicalReport);
   const years = [...new Set(publications.map(acceptanceYear).filter(year => year !== 'undated'))].sort((a, b) => b - a);
   const yearGroups = [...years, ...(publications.some(paper => !paper.acceptedDate) ? ['undated'] : [])];
@@ -377,10 +398,23 @@ export function renderPage({
       knowsAbout: copy.research.flatMap((item) => item.tags),
     },
   };
+  const name = report ? reportCopy.title ?? report.title : project ? project.title[locale] : indexTitle;
+  const structured = report ? {
+    '@context': 'https://schema.org', '@type': report.documentType === 'paper-companion' || report.venue ? 'Article' : 'Report',
+    '@id': canonical, headline: name, inLanguage: localeCode, description, version: article?.version,
+    datePublished: article?.published, dateModified: article?.updated,
+    author: report.authors.map(name => ({ '@type': 'Person', name })),
+    ...(report.venue ? { about: { '@type': 'ScholarlyArticle', name: report.title,
+      ...(report.publicationUrl ? { url: report.publicationUrl } : {}) } } : {}),
+    ...(report.projectId ? { isPartOf: { '@type': 'WebPage', '@id': profile.url + projectPath(report.projectId, locale, basePath) } } : {}),
+  } : project || index ? { '@context': 'https://schema.org', '@type': project ? 'WebPage' : 'CollectionPage',
+    '@id': canonical, name, inLanguage: localeCode, description } : person;
   const main = notFound
     ? `<main id="main" class="error-page container" tabindex="-1"><p class="eyebrow">404 / ${h(profile.name)}</p><h1>${h(t.notFound)}</h1><p>${h(t.notFoundText)}</p><a class="button button-dark" href="${home}">${h(t.returnHome)}${icon('arrow')}</a></main>`
+    : project ? renderProject(project, t, locale, home, basePath)
     : report ? renderReport(report, t, locale, home, basePath)
-      : index ? renderResearchIndex(index, orderedPapers, t, locale, home, basePath) : `
+    : index === 'research' ? renderProjects(projects, profile.featured, t, locale, home, basePath)
+    : index ? renderResearchIndex(index, index === 'technical-reports' ? (projects.length ? documents : orderedPapers) : codeEntries, t, locale, home, basePath) : `
   <main id="main" tabindex="-1">
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">
@@ -390,8 +424,9 @@ export function renderPage({
           <p class="hero-role">${h(copy.role)}</p>
           <p class="hero-statement">${h(copy.heroStatement[0])} <em>${h(copy.heroStatement[1])}</em></p>
           <div class="hero-actions">
-            <a class="button button-dark" href="#publications">${h(t.publications)}${icon('down')}</a>
+            <a class="button button-dark" href="${h(researchIndexPath('research', locale, basePath))}">${h(t.selectedResearch)}${icon('arrow')}</a>
             <a class="hero-route" id="technical-reports" data-research-index href="${h(researchIndexPath('technical-reports', locale, basePath))}">${h(t.reports)}${icon('arrow')}</a>
+            <a class="hero-route" href="#publications">${h(t.publications)}${icon('down')}</a>
             <a class="hero-route" id="open-source" data-research-index href="${h(researchIndexPath('open-source', locale, basePath))}">${h(t.openSource)}${icon('arrow')}</a>
           </div>
         </div>
@@ -406,6 +441,7 @@ export function renderPage({
         </div>
       </div>
     </section>
+    ${selectedResearch(projects, profile.featured, t, locale, basePath)}
     <div class="container news-strip">${newsPanel(profile, publications, t, locale, basePath)}</div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>
@@ -419,13 +455,6 @@ export function renderPage({
           <h3 id="recent-research-title">${h(t.recentResearch)}</h3>
           ${copy.recentResearch.map((paragraph) => `<p>${h(paragraph)}</p>`).join('')}
         </section>
-      <div class="selected-heading"><h3>${h(t.selected)}</h3><a class="text-link" href="#publications">${h(t.allPapers)}${icon('arrow')}</a></div>
-      <div class="selected-grid">${profile.featured
-        .map((id) => {
-          const paper = publications.find((item) => item.id === id);
-          return `<a class="selected-paper" href="#paper-${h(id)}" data-featured="${h(id)}"><div><span class="selected-venue">${h(venueLabel(paper))}${paper.acceptedDate ? ` · <time datetime="${h(paper.acceptedDate)}">${h(paper.acceptedDate)}</time>` : ''}</span><span class="selected-title">${h(paper.title)}</span></div>${icon('arrow')}</a>`;
-        })
-        .join('')}</div>
     </div></section>
     <section class="section publications-section container" id="publications" aria-labelledby="publications-title" data-section><div class="section-heading section-heading-row"><h2 id="publications-title">${h(t.publications)}</h2><div class="publication-heading-note"><p>${h(copy.publicationIntro)}</p><a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)}${icon('external')}</a></div></div>
       <div class="publication-tools" data-filter-tools hidden><div class="search-wrap">${icon('search')}<label class="sr-only" for="publication-search">${h(t.search)}</label><input id="publication-search" type="search" placeholder="${h(t.searchPlaceholder)}" autocomplete="off" maxlength="200" aria-controls="publication-list"><button class="search-clear" type="button" data-clear-search aria-label="${h(t.clearSearch)}" hidden>${icon('close')}</button></div><div class="year-filters" role="group" aria-label="${h(t.years)}"><button type="button" data-year-filter="all" aria-pressed="true">${h(t.allYears)}</button>${yearGroups.map((year) => `<button type="button" data-year-filter="${year}" aria-pressed="false">${h(yearLabel(year))}</button>`).join('')}</div><label class="sr-only" for="publication-topic">${h(t.topic)}</label><select id="publication-topic" aria-controls="publication-list"><option value="all">${h(t.allTopics)}</option>${Object.entries(
@@ -474,18 +503,21 @@ export function renderPage({
   <link rel="apple-touch-icon" href="${basePath}/assets/apple-touch-icon.png">
   <link rel="manifest" href="${basePath}/site.webmanifest">
   <link rel="stylesheet" href="${basePath}/assets/${assets.css}">
-  ${(report || index) && assets.researchCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.researchCss}">` : ''}
+  ${(project || report || index) && assets.researchCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.researchCss}">` : ''}
   ${assets.experienceCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.experienceCss}">` : ''}
-  ${notFound || report || index ? '' : `<script type="application/ld+json">${JSON.stringify(person).replace(/</g, '\\u003c')}</script>`}
+  ${report && !report.venue && article ? `<meta name="citation_title" content="${h(name)}">
+  ${report.authors.map(author => `<meta name="citation_author" content="${h(author)}">`).join('\n  ')}
+  <meta name="citation_publication_date" content="${h(article.published)}">` : ''}
+  ${notFound ? '' : `<script type="application/ld+json">${JSON.stringify(structured).replace(/</g, '\\u003c')}</script>`}
   <script type="module" src="${basePath}/assets/${assets.js}"></script>
 </head>
 <body id="top" data-locale="${locale}" data-copy-success="${h(t.copied)}" data-copy-failed="${h(t.copyFailed)}">
   <a class="skip-link" href="#main">${h(t.skip)}</a>
   ${header(profile, t, locale, basePath, {
-    away: Boolean(notFound || report || index),
+    away: Boolean(notFound || project || report || index),
     alternate: routes[locale === 'en' ? 'zh' : 'en'],
-    currentIndex: report ? 'technical-reports' : index,
-    onReport: Boolean(report),
+    currentIndex: project ? 'research' : report ? 'technical-reports' : index,
+    onReport: Boolean(report || project),
   })}
   ${main}
   ${footer(profile, t, notFound)}

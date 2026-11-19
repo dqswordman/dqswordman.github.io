@@ -6,12 +6,12 @@ import assert from 'node:assert/strict';
 import { outputRoot, projectRoot } from './build.mjs';
 import {
   loadContent, legacyAnchors, normalizeBasePath, supportedLocales,
-  researchIndexes, researchIndexPath, technicalReportPath,
+  researchIndexes, researchIndexPath, technicalReportPath, projectPath,
 } from '../src/content.mjs';
 import { history, localizedHistory, historyRoutes, validateHistory } from '../src/history.mjs';
 
 const root = fileURLToPath(outputRoot);
-const { profile, publications } = await loadContent(projectRoot);
+const { profile, publications, projects } = await loadContent(projectRoot);
 const basePath = normalizeBasePath(process.env.BASE_PATH || '');
 const errors = [];
 validateHistory();
@@ -155,15 +155,21 @@ check(files.has(resolve(root, '.nojekyll')), 'Missing .nojekyll');
 const sitemap = await readFile(resolve(root, 'sitemap.xml'), 'utf8');
 check(sitemap.includes(`${profile.url}${basePath}/zh/`), 'Chinese page missing from sitemap');
 check(!sitemap.includes('404.html'), '404 should not be indexed');
-for (const index of researchIndexes)
+for (const index of ['research', ...researchIndexes])
   for (const locale of supportedLocales) {
     const route = researchIndexPath(index, locale, basePath);
     check(sitemap.includes(`<loc>${profile.url}${route}</loc>`), `Missing research index in sitemap: ${route}`);
   }
-for (const paper of publications.filter((item) => item.technicalReport))
+for (const project of projects)
+  for (const locale of supportedLocales) {
+    const route = projectPath(project.id, locale, basePath);
+    check(sitemap.includes(`<loc>${profile.url}${route}</loc>`), `Missing project in sitemap: ${route}`);
+  }
+for (const paper of projects.flatMap(project => project.reports))
   for (const locale of supportedLocales) {
     const route = technicalReportPath(paper.id, locale, basePath);
-    check(sitemap.includes(`<loc>${profile.url}${route}</loc>`), `Missing technical report in sitemap: ${route}`);
+    check(sitemap.includes(`<loc>${profile.url}${route}</loc><lastmod>${paper.technicalReport.article.updated}</lastmod>`),
+      `Missing technical report or revision date in sitemap: ${route}`);
   }
 for (const locale of ['zh', 'en']) for (const route of historyRoutes()) check(sitemap.includes(`${profile.url}${basePath}/${locale === 'en' ? 'en/' : ''}${route}`), `Miscellany page missing from sitemap: ${locale}/${route}`);
 const pngSignature = '89504e470d0a1a0a';

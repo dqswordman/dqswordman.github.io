@@ -172,6 +172,11 @@
         {
           "type": "table",
           "key": "policies",
+          "previewCostColumn": 1,
+          "previewNote": {
+            "en": "180 questions × 2 retrieval pools × 4 generators. Utility scoring uses a reference answer.",
+            "zh": "180 道题 × 2 种检索池 × 4 个生成器。离线效用评分需要参考答案。"
+          },
           "previewColumn": 2,
           "caption": {
             "en": "Primary-budget results across 1,440 cases",
