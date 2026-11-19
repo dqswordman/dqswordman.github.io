@@ -22,7 +22,11 @@
     "year": 2026,
     "acceptedDate": "2026-09-08",
     "group": "major",
-    "status": "accepted",
+    "status": "published",
+    "publicationUrl": "https://aclanthology.org/2026.aacl-long.124/",
+    "pages": "2720–2731",
+    "codeUrl": "https://github.com/dqswordman/pairsafe",
+    "technicalReport": true,
     "topics": ["evaluation"]
   },
   {

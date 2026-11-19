@@ -70,8 +70,8 @@ test('PAIRSAFE retains its authorship and acceptance record in the bilingual new
   assert.deepEqual(paper.authors, [profile.name]);
   assert.equal(paper.affiliation, 'Independent Researcher');
   assert.equal(paper.venue, 'AACL-IJCNLP');
-  assert.equal(paper.status, 'accepted');
-  assert.ok(citation(paper).endsWith('Accepted; forthcoming.'));
+  assert.equal(paper.status, 'published');
+  assert.ok(citation(paper).endsWith('AACL-IJCNLP 2026, pp. 2720–2731.'));
   for (const [locale, label] of [
     ['en', 'Accepted at · AACL-IJCNLP 2026'],
     ['zh', '录用于 · AACL-IJCNLP 2026'],
@@ -79,6 +79,11 @@ test('PAIRSAFE retains its authorship and acceptance record in the bilingual new
     const html = renderPage({ profile, publications, locale, assets });
     assert.ok(html.includes(label));
     assert.ok(html.includes('datetime="2026-09-08"'));
+    const report = technicalReportPath(paper.id, locale);
+    const row = html.split('id="paper-pairsafe"')[1].split('</article>')[0];
+    for (const href of [paper.codeUrl, paper.publicationUrl, report]) assert.ok(row.includes(`href="${href}"`));
+    const news = html.split('id="news-list"')[1].split('</ol>')[0];
+    assert.ok(news.includes(`href="${report}"`) && news.includes('datetime="2026-11-19"'));
   }
 });
 
@@ -217,7 +222,7 @@ test('acceptance dates determine news and publication years without using the co
   const dated = publications.filter(p => p.acceptedDate);
   assert.equal(news.filter(n => n.kind === 'acceptance').length, dated.length);
   for (const paper of dated) {
-    const item = news.find(n => n.publication === paper.id);
+    const item = news.find(n => n.publication === paper.id && n.kind === 'acceptance');
     assert.equal(item.date, paper.acceptedDate);
     assert.match(item.date, /^\d{4}-\d{2}-\d{2}$/);
   }

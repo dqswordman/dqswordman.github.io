@@ -18,7 +18,18 @@
   },
   "internshipStart": "2025-07",
   "featured": ["decision-sufficiency", "pairsafe", "paired-bootstrap", "arc-ctrl"],
-  "news": [],
+  "news": [
+    {
+      "id": "pairsafe-release",
+      "date": "2026-11-19",
+      "kind": "update",
+      "publication": "pairsafe",
+      "title": {
+        "en": "PAIRSAFE data, CPU reproduction and technical report",
+        "zh": "PAIRSAFE 脱敏数据、CPU 复现与双语技术报告已公开"
+      }
+    }
+  ],
   "locales": {
     "en": {
       "description": "Wenzhang Du is an independent researcher interested in data mining, retrieval-augmented generation, and trustworthy machine learning.",

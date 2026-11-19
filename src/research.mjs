@@ -205,6 +205,7 @@ export function renderReport(paper, t, locale, home, basePath) {
             <span>${h(t.authorFinal)} <time datetime="${h(article.manuscriptDate)}">${h(article.manuscriptDate)}</time></span>
           </p>` : ''}
           <div class="research-actions">
+            ${paper.publicationUrl ? `<a class="text-link" href="${h(paper.publicationUrl)}" ${external}>${h(t.publishedPaper)} ${icon('external')}</a>` : ''}
             ${paper.codeUrl ? `<a class="button button-dark" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub ${icon('external')}</a>` : ''}
             ${spaceBadge(artifact, t)}
             ${artifact ? `<a class="text-link" href="${h(artifact.url)}" ${external}>${h(t.release)} ${h(artifact.version)}${icon('external')}</a>` : ''}

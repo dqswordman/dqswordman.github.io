@@ -210,6 +210,9 @@ export function validateContent(profile, publications) {
     )
       throw new Error(`Technical report and GitHub repository required: ${paper.id}`);
     if (paper.codeUrl) validateGitHubRepository(paper.codeUrl);
+    if (paper.publicationUrl) safeHttps(paper.publicationUrl);
+    if (paper.pages !== undefined && !/^\d+–\d+$/.test(paper.pages))
+      throw new Error(`Invalid publication pages: ${paper.id}`);
     if (paper.technicalReport) validateReport(paper.technicalReport, paper.id);
   }
   for (const id of profile.featured)
@@ -225,6 +228,8 @@ export function validateContent(profile, publications) {
       throw new Error(`Invalid news kind: ${item.id}`);
     if (item.publication && !ids.has(item.publication))
       throw new Error(`News publication does not exist: ${item.id}`);
+    if (item.title !== undefined && !isBilingual(item.title))
+      throw new Error(`Incomplete news title: ${item.id}`);
     if (!item.publication && supportedLocales.some(locale => !item.title?.[locale] || !item.text?.[locale]))
       throw new Error(`Incomplete bilingual news: ${item.id}`);
   }
@@ -285,5 +290,5 @@ export function paperUrl(paper) {
 }
 
 export function citation(paper) {
-  return `${paper.authors.join(', ')}. ${paper.title}. ${paper.venue} ${paper.year}.${paper.status === 'accepted' ? ' Accepted; forthcoming.' : ''}`;
+  return `${paper.authors.join(', ')}. ${paper.title}. ${paper.venue} ${paper.year}${paper.pages ? `, pp. ${paper.pages}` : ''}.${paper.status === 'accepted' ? ' Accepted; forthcoming.' : ''}`;
 }

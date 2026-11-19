@@ -39,6 +39,7 @@ export const ui = {
     reproductionGuide: 'Reproduction guide',
     release: 'Release',
     publicationEntry: 'Publication entry',
+    publishedPaper: 'Published paper',
     paperCompanion: 'Paper companion',
     firstPublished: 'First published',
     lastUpdated: 'Updated',
@@ -150,6 +151,7 @@ export const ui = {
     reproductionGuide: '复现指南',
     release: '复现版本',
     publicationEntry: '论文条目',
+    publishedPaper: '正式论文',
     paperCompanion: '论文伴读',
     firstPublished: '首次发布',
     lastUpdated: '更新',
@@ -264,7 +266,7 @@ function header(profile, t, locale, basePath, { away, alternate, currentIndex, o
   </header>`;
 }
 
-function newsPanel(profile, publications, t, locale) {
+function newsPanel(profile, publications, t, locale, basePath) {
   const items = newsItems(profile, publications);
   const years = [...new Set(items.map(item => item.date.slice(0, 4)))];
   return `<aside class="news-panel" id="news" aria-labelledby="news-title" data-news data-section>
@@ -272,11 +274,14 @@ function newsPanel(profile, publications, t, locale) {
     <div class="news-tools" data-news-tools hidden><div class="news-years" role="group" aria-label="${h(t.newsYears)}"><button type="button" data-news-filter="all" aria-pressed="true" aria-controls="news-list">${h(t.newsAll)}</button>${years.map(year => `<button type="button" data-news-filter="${year}" aria-pressed="false" aria-controls="news-list">${year}</button>`).join('')}</div></div>
     <ol class="news-timeline" id="news-list" role="list">${items.map((item) => {
       const paper = item.publication ? publications.find(p => p.id === item.publication) : null;
-      const title = paper ? paper.title : item.title[locale];
-      const label = paper
+      const title = item.title?.[locale] ?? paper.title;
+      const label = paper && item.kind !== 'update'
         ? `${item.kind === 'acceptance' ? t.acceptedAt : t.bestPaper} · ${venueLabel(paper)}`
         : t.newsKinds[item.kind];
-      return `<li class="news-item" data-news-item data-news-year="${h(item.date.slice(0, 4))}"><div class="news-date"><time datetime="${h(item.date)}">${h(item.date)}</time><span>${h(label)}</span></div><h3>${paper ? `<a href="#paper-${h(paper.id)}" data-paper-jump>${h(title)} ${icon('arrow')}</a>` : h(title)}</h3>${paper ? '' : `<p class="news-detail">${h(item.text[locale])}</p>`}</li>`;
+      const report = paper?.technicalReport && item.kind === 'update' && technicalReportPath(paper.id, locale, basePath);
+      const link = report ? `<a href="${h(report)}">${h(title)} ${icon('arrow')}</a>` : paper
+        ? `<a href="#paper-${h(paper.id)}" data-paper-jump>${h(title)} ${icon('arrow')}</a>` : h(title);
+      return `<li class="news-item" data-news-item data-news-year="${h(item.date.slice(0, 4))}"><div class="news-date"><time datetime="${h(item.date)}">${h(item.date)}</time><span>${h(label)}</span></div><h3>${link}</h3>${item.text ? `<p class="news-detail">${h(item.text[locale])}</p>` : ''}</li>`;
     }).join('')}</ol>
     <footer class="news-footer"><p data-news-count data-template="${h(t.newsCount)}" role="status" aria-live="polite" aria-atomic="true">${h(t.newsCount.replace('{count}', items.length).replace('{total}', items.length))}</p><button type="button" class="news-toggle" data-news-toggle data-expand-label="${h(t.newsExpand)}" data-collapse-label="${h(t.newsCollapse)}" aria-controls="news-list" aria-expanded="false" hidden><span>${h(t.newsExpand)}</span>${icon('down')}</button></footer>
   </aside>`;
@@ -301,6 +306,7 @@ function paperRow(paper, t, locale, basePath) {
       <div class="paper-meta"><span>${h(paper.venue)} ${paper.year}</span>${paper.acceptedDate ? `<time datetime="${h(paper.acceptedDate)}" aria-label="${h(t.acceptedOn)} ${h(paper.acceptedDate)}">${h(paper.acceptedDate)}</time>` : `<span class="paper-date-pending">${h(t.datePending)}</span>`}</div>
       <h3 id="title-${h(paper.id)}"><a href="${h(report || scholar)}"${report ? '' : ' ' + external}>${h(paper.title)} ${icon(report ? 'arrow' : 'external')}</a></h3>
       <div class="paper-bottom">
+        ${paper.publicationUrl ? `<a class="resource-link" href="${h(paper.publicationUrl)}" ${external}>${h(t.publishedPaper)}${icon('external')}</a>` : ''}
         ${report ? `<a class="resource-link" href="${h(report)}">${icon('book')}${h(t.report)}</a>` : ''}
         ${paper.codeUrl ? `<a class="resource-link" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub${icon('external')}</a>` : ''}
         <details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button>${report ? `<a class="text-link" href="${h(scholar)}" ${external}>${h(t.findPaper)}${icon('external')}</a>` : ''}</div></details>
@@ -400,7 +406,7 @@ export function renderPage({
         </div>
       </div>
     </section>
-    <div class="container news-strip">${newsPanel(profile, publications, t, locale)}</div>
+    <div class="container news-strip">${newsPanel(profile, publications, t, locale, basePath)}</div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>
       <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p><p>${h(copy.heroIntro)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}<div class="about-links"><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div></div>
