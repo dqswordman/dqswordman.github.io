@@ -51,6 +51,23 @@ test('both locales render every paper, authors, and original anchors without Jav
   }
 });
 
+test('the internship ends when the current independent research role begins in both languages', () => {
+  for (const [locale, boundary, start, present] of [
+    ['en', 'Late April 2026', 'Jul 2025', 'Present'],
+    ['zh', '2026年4月底', '2025年7月', '至今'],
+  ]) {
+    const html = renderPage({ profile, publications, locale, assets });
+    const experience = html.split('id="experience"')[1].split('</section>')[0];
+    const articles = [...experience.matchAll(/<article class="timeline-item" id="([^"]+)">([\s\S]*?)<\/article>/g)];
+    assert.deepEqual(articles.map(([, id]) => id), ['independent-research', 'internships', 'education']);
+    const transition = `<time datetime="2026-04">${boundary}</time>`;
+    assert.ok(articles[0][2].includes(`${transition} — ${present}</p>`));
+    assert.ok(articles[0][2].includes(`<h3>${profile.locales[locale].identity}</h3>`));
+    assert.ok(articles[1][2].includes(`<time datetime="2025-07">${start}</time> — ${transition}</p>`));
+    assert.ok(articles[1][2].includes(`<h3>${profile.locales[locale].internshipRole}</h3>`));
+  }
+});
+
 test('publications retain one explicit Scholar URL and generate precise title searches for the others', () => {
   const explicit = publications.filter((paper) => paper.scholarUrl);
   assert.equal(explicit.length, 1);

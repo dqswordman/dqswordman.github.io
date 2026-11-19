@@ -57,7 +57,7 @@ export const ui = {
     copyCommand: 'Copy commands',
     scholar: 'Google Scholar',
     education: 'Education',
-    internship: 'Research experience',
+    researchExperience: 'Research experience',
     gpa: 'Cumulative GPA',
     news: 'News',
     newsYears: 'Filter news by year',
@@ -174,7 +174,7 @@ export const ui = {
     copyCommand: '复制命令',
     scholar: '谷歌学术',
     education: '教育背景',
-    internship: '研究经历',
+    researchExperience: '研究经历',
     gpa: '累计 GPA',
     news: '研究动态',
     newsYears: '按年份筛选动态',
@@ -382,6 +382,8 @@ export function renderPage({
   const yearGroups = [...years, ...(publications.some(paper => !paper.acceptedDate) ? ['undated'] : [])];
   const yearLabel = year => year === 'undated' ? t.datePending : year;
   const localeCode = locale === 'zh' ? 'zh-CN' : 'en';
+  const transition = profile.researchTransition;
+  const transitionTime = `<time datetime="${h(transition.month)}">${h(transition.label[locale])}</time>`;
   const person = {
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
@@ -470,7 +472,32 @@ export function renderPage({
       }).join('')}</div>
       <div class="empty-state" data-empty-state hidden>${icon('search')}<h3>${h(t.noResults)}</h3><p>${h(t.noResultsHint)}</p><button class="button button-dark" type="button" data-reset-filters>${h(t.reset)}${icon('arrow')}</button></div>
     </section>
-    <section class="experience-section" id="experience" aria-labelledby="experience-title" data-section><div class="container section"><div class="section-heading"><h2 id="experience-title">${h(t.experience)}</h2></div><div class="experience-body"><article class="timeline-item" id="internships"><div class="timeline-marker">${icon('globe')}</div><p class="eyebrow">${h(t.internship)}</p><p class="timeline-date"><time datetime="${profile.internshipStart}">${h(dateLabel(profile.internshipStart, locale))}</time> — ${h(copy.present)}</p><h3>${h(copy.internshipRole)}</h3><p class="timeline-team">${h(copy.internshipTeam)}</p></article><article class="timeline-item" id="education"><div class="timeline-marker">${icon('book')}</div><p class="eyebrow">${h(t.education)}</p><p class="timeline-date"><time datetime="${profile.education.start}">${h(dateLabel(profile.education.start, locale))}</time> — <time datetime="${profile.education.end}">${profile.education.end}</time><span class="graduated-label">${h(copy.graduate)}</span></p><h3>${h(copy.degree)}</h3><p class="gpa-line">${h(t.gpa)}<strong>${h(profile.education.gpa)}<span> / ${h(profile.education.gpaScale)}</span></strong></p></article></div></div></section>
+    <section class="experience-section" id="experience" aria-labelledby="experience-title" data-section>
+      <div class="container section">
+        <div class="section-heading"><h2 id="experience-title">${h(t.experience)}</h2></div>
+        <div class="experience-body">
+          <article class="timeline-item" id="independent-research">
+            <div class="timeline-marker">${icon('search')}</div>
+            <p class="eyebrow">${h(t.researchExperience)}</p>
+            <p class="timeline-date">${transitionTime} — ${h(copy.present)}</p>
+            <h3>${h(copy.identity)}</h3>
+          </article>
+          <article class="timeline-item" id="internships">
+            <div class="timeline-marker">${icon('globe')}</div>
+            <p class="timeline-date"><time datetime="${h(profile.internshipStart)}">${h(dateLabel(profile.internshipStart, locale))}</time> — ${transitionTime}</p>
+            <h3>${h(copy.internshipRole)}</h3>
+            <p class="timeline-team">${h(copy.internshipTeam)}</p>
+          </article>
+          <article class="timeline-item" id="education">
+            <div class="timeline-marker">${icon('book')}</div>
+            <p class="eyebrow">${h(t.education)}</p>
+            <p class="timeline-date"><time datetime="${profile.education.start}">${h(dateLabel(profile.education.start, locale))}</time> — <time datetime="${profile.education.end}">${profile.education.end}</time><span class="graduated-label">${h(copy.graduate)}</span></p>
+            <h3>${h(copy.degree)}</h3>
+            <p class="gpa-line">${h(t.gpa)}<strong>${h(profile.education.gpa)}<span> / ${h(profile.education.gpaScale)}</span></strong></p>
+          </article>
+        </div>
+      </div>
+    </section>
     <section class="section recognition-section container" id="honors-and-awards" aria-labelledby="awards-title" data-section><div class="section-heading"><h2 id="awards-title">${h(t.awards)}</h2></div><div class="awards-list">${copy.awards.map((award) => `<article class="award-item"><span class="award-icon">${icon(award.kind === 'grant' ? 'globe' : 'award')}</span><div><h3>${h(award.title)}</h3>${award.detail ? `<p>${h(award.detail)}</p>` : ''}</div>${award.date ? `<time datetime="${h(award.date)}">${h(dateLabel(award.date, locale))}</time>` : ''}</article>`).join('')}</div><div class="skills-section" id="skills"><div><p class="eyebrow">${h(copy.skillsTitle)}</p>${icon('code')}</div><dl class="skills-grid">${copy.skills.map((skill) => `<div><dt>${h(skill.title)}</dt><dd>${h(skill.text)}</dd></div>`).join('')}</dl></div></section>
     <section class="contact-section" id="contact" aria-labelledby="contact-title" data-section><div class="container contact-inner"><div><h2 id="contact-title">${h(t.contact)}</h2><p class="contact-intro">${h(copy.contactIntro)}</p></div><div class="contact-links"><a class="contact-email" href="mailto:${h(profile.email)}"><span id="contact-email">${h(profile.email)}</span>${icon('external')}</a><div class="contact-secondary"><button type="button" class="text-button" data-copy="contact-email" hidden>${icon('copy')}${h(t.copyEmail)}</button><a class="text-link" href="${h(profile.github)}" ${external}>GitHub${icon('external')}</a><a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)}${icon('external')}</a></div><p class="contact-location">${icon('pin')}${h(copy.location)}</p></div></div></section>
   </main>`;

@@ -17,6 +17,10 @@
     "gpaScale": "4"
   },
   "internshipStart": "2025-07",
+  "researchTransition": {
+    "month": "2026-04",
+    "label": { "en": "Late April 2026", "zh": "2026年4月底" }
+  },
   "featured": ["decision-sufficiency", "pairsafe", "paired-bootstrap", "arc-ctrl"],
   "news": [
     {
