@@ -44,7 +44,7 @@ export const ui = {
     reproductionGuide: 'Reproduction guide',
     release: 'Release',
     publicationEntry: 'Publication entry',
-    publishedPaper: 'Published paper',
+    publishedPaper: 'Published paper', preprint: 'Preprint', posted: 'Posted',
     paperCompanion: 'Paper companion',
     firstPublished: 'First published',
     lastUpdated: 'Updated',
@@ -68,7 +68,7 @@ export const ui = {
     newsKinds: { acceptance: 'Accepted', award: 'Recognition', update: 'Milestone' },
     acceptedAt: 'Accepted at',
     acceptedOn: 'Accepted',
-    groups: { major: 'Major publications', ei: 'EI conference papers' },
+    groups: { major: 'Major publications', preprint: 'Preprints', ei: 'EI conference papers' },
     groupCount: '{count} papers',
     based: 'Based in',
     focus: 'Research focus',
@@ -78,7 +78,7 @@ export const ui = {
     search: 'Search publications',
     searchPlaceholder: 'Search title, author, venue…',
     clearSearch: 'Clear search',
-    years: 'Filter by acceptance year',
+    years: 'Filter by year',
     allYears: 'All years',
     datePending: 'Date pending',
     topic: 'Research area',
@@ -161,7 +161,7 @@ export const ui = {
     reproductionGuide: '复现指南',
     release: '复现版本',
     publicationEntry: '论文条目',
-    publishedPaper: '正式论文',
+    publishedPaper: '正式论文', preprint: '预印本', posted: '上线',
     paperCompanion: '论文伴读',
     firstPublished: '首次发布',
     lastUpdated: '更新',
@@ -185,7 +185,7 @@ export const ui = {
     newsKinds: { acceptance: '论文录用', award: '荣誉', update: '近况' },
     acceptedAt: '录用于',
     acceptedOn: '录用',
-    groups: { major: '主要发表', ei: 'EI 会议论文' },
+    groups: { major: '主要发表', preprint: '预印本', ei: 'EI 会议论文' },
     groupCount: '{count} 篇论文',
     based: '所在地',
     focus: '研究重点',
@@ -195,7 +195,7 @@ export const ui = {
     search: '搜索论文',
     searchPlaceholder: '搜索标题、作者、会议…',
     clearSearch: '清空搜索',
-    years: '按录用年份筛选',
+    years: '按年份筛选',
     allYears: '全部年份',
     datePending: '日期待补',
     topic: '研究方向',
@@ -301,13 +301,14 @@ function newsPanel(profile, publications, t, locale, basePath) {
 function paperRow(paper, t, locale, basePath) {
   const report = paper.technicalReport && technicalReportPath(paper.reportId ?? paper.id, locale, basePath);
   const scholar = paperUrl(paper);
-  const dateBasis = paper.acceptedDateBasis === 'same-conference' ? t.sameConferenceDate : t.acceptedOn;
+  const recordDate = paper.acceptedDate || paper.postedDate;
+  const dateBasis = paper.status === 'preprint' ? t.posted : paper.acceptedDateBasis === 'same-conference' ? t.sameConferenceDate : t.acceptedOn;
   const search = [
     paper.title,
     ...paper.authors,
     venueLabel(paper),
     paper.year,
-    paper.acceptedDate || '',
+    recordDate || '', paper.preprintId || '',
     paper.affiliation || '',
     paper.status === 'accepted' ? `${ui.en.accepted} ${ui.zh.accepted}` : '',
     ...paper.topics,
@@ -315,10 +316,10 @@ function paperRow(paper, t, locale, basePath) {
   ].join(' ');
   return `<li class="publication" id="paper-${h(paper.id)}" data-publication data-year="${h(acceptanceYear(paper))}" data-topics="${h(paper.topics.join(' '))}" data-search="${h(search)}">
     <article class="paper-content" aria-labelledby="title-${h(paper.id)}">
-      <div class="paper-meta"><span>${h(venueLabel(paper))}</span>${paper.status ? `<span>${h(paper.status === 'published' ? t.publishedStatus : t.accepted)}</span>` : ''}${paper.acceptedDate ? `<time datetime="${h(paper.acceptedDate)}" aria-label="${h(dateBasis)} ${h(paper.acceptedDate)}">${h(paper.acceptedDate)}${paper.acceptedDateBasis === 'same-conference' ? ` · ${h(dateBasis)}` : ''}</time>` : `<span class="paper-date-pending">${h(t.datePending)}</span>`}</div>
+      <div class="paper-meta"><span>${h(venueLabel(paper))}</span>${paper.status ? `<span>${h(paper.status === 'preprint' ? t.preprint : paper.status === 'published' ? t.publishedStatus : t.accepted)}</span>` : ''}${recordDate ? `<time datetime="${h(recordDate)}" aria-label="${h(dateBasis)} ${h(recordDate)}">${h(recordDate)}${paper.acceptedDateBasis === 'same-conference' ? ` · ${h(dateBasis)}` : ''}</time>` : `<span class="paper-date-pending">${h(t.datePending)}</span>`}</div>
       <h3 id="title-${h(paper.id)}"><a href="${h(report || paper.publicationUrl || scholar)}"${report ? '' : ' ' + external}>${h(paper.title)} ${icon(report ? 'arrow' : 'external')}</a></h3>
       <div class="paper-bottom">
-        ${paper.publicationUrl ? `<a class="resource-link" href="${h(paper.publicationUrl)}" ${external}>${h(t.publishedPaper)}${icon('external')}</a>` : ''}
+        ${paper.publicationUrl ? `<a class="resource-link" href="${h(paper.publicationUrl)}" ${external}>${h(paper.status === 'preprint' ? t.preprint : t.publishedPaper)}${icon('external')}</a>` : ''}
         ${report ? `<a class="resource-link" href="${h(report)}">${icon('book')}${h(t.report)}</a>` : ''}
         ${paper.codeUrl ? `<a class="resource-link" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub${icon('external')}</a>` : ''}
         <details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button>${report ? `<a class="text-link" href="${h(scholar)}" ${external}>${h(t.findPaper)}${icon('external')}</a>` : ''}</div></details>
@@ -369,7 +370,7 @@ export function renderPage({
   const figure = reportPreview(report?.technicalReport)?.figure;
   const shareImage = figure ?? { file: 'assets/social-card.png', width: 1200, height: 630 };
   const shareAlt = figure?.alt[locale] ?? `${profile.name} · ${profile.locales.en.heroStatement.join(' ')}`;
-  const orderedPapers = [...publications].sort((a, b) => (b.acceptedDate || '').localeCompare(a.acceptedDate || ''));
+  const orderedPapers = [...publications].sort((a, b) => (b.acceptedDate || b.postedDate || '').localeCompare(a.acceptedDate || a.postedDate || ''));
   const documents = projects.flatMap(p => p.reports);
   const codeEntries = projects.filter(p => p.codeUrl).map(p => p.reports.find(d => d.documentType === 'paper-companion') ??
     p.reports[0] ?? { ...p.publication, id: p.id, title: p.publication?.title ?? p.title[locale], codeUrl: p.codeUrl });
@@ -379,7 +380,7 @@ export function renderPage({
     ?? projects.find(p => p.id === id)?.reports[0])
     .find(paper => paper?.technicalReport);
   const years = [...new Set(publications.map(acceptanceYear).filter(year => year !== 'undated'))].sort((a, b) => b - a);
-  const yearGroups = [...years, ...(publications.some(paper => !paper.acceptedDate) ? ['undated'] : [])];
+  const yearGroups = [...years, ...(publications.some(paper => acceptanceYear(paper) === 'undated') ? ['undated'] : [])];
   const yearLabel = year => year === 'undated' ? t.datePending : year;
   const localeCode = locale === 'zh' ? 'zh-CN' : 'en';
   const transition = profile.researchTransition;

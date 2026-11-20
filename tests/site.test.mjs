@@ -231,7 +231,7 @@ test('editorial validation rejects incomplete or impossible dates, dangling news
   const first = { id: 'fixture-news', date: '2026-11-03', kind: 'update', title: { en: 'Update', zh: '动态' }, text: { en: 'Research update.', zh: '研究近况。' } };
   for (const date of ['2026', '2026-11', '2026-02-30', '2026-13', 'November 3']) {
     assert.throws(() => validateContent({ ...profile, news: [{ ...first, date }] }, publications), /news date/);
-    assert.throws(() => validateContent(profile, publications.map((p, i) => i === 0 ? { ...p, acceptedDate: date } : p)), /acceptance date/);
+    assert.throws(() => validateContent(profile, publications.map(p => p.id === 'decision-sufficiency' ? { ...p, acceptedDate: date } : p)), /acceptance date/);
   }
   assert.throws(() => validateContent({ ...profile, news: [{ ...first, publication: 'missing' }] }, publications), /News publication/);
   assert.throws(() => validateContent(profile, publications.map((p, i) => i === 0 ? { ...p, group: 'unknown' } : p)), /publication group/);

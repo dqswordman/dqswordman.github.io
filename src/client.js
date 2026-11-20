@@ -330,39 +330,69 @@ for (const button of document.querySelectorAll('[data-print]')) {
 
 const catalogTools = document.querySelector('[data-catalog-tools]');
 if (catalogTools) {
-  const list = document.querySelector('[data-report-list]');
-  const order = catalogTools.querySelector('[data-report-order]');
-  const kind = catalogTools.querySelector('[data-report-kind]');
-  const entries = Array.from(list.querySelectorAll('[data-doc]'));
-  function arrange() {
-    const field = order.value;
-    const sorted = [...entries].sort((a, b) => b.dataset[field].localeCompare(a.dataset[field]) ||
-      a.dataset.doc.localeCompare(b.dataset.doc));
-    for (const entry of sorted) {
-      entry.hidden = Boolean(kind?.value && entry.dataset.kind !== kind.value);
-      list.append(entry);
+  const groups = Array.from(document.querySelectorAll('[data-report-list] [data-tier]'), section => ({
+    section,
+    body: section.querySelector('[data-group-entries]'),
+    entries: Array.from(section.querySelectorAll('[data-doc]')),
+  }));
+  const total = groups.reduce((n, group) => n + group.entries.length, 0);
+  const result = catalogTools.querySelector('[data-catalog-count]');
+  const fields = Array.from(catalogTools.querySelectorAll('[name]'));
+  const fold = text => text.normalize('NFKC').toLowerCase().replace(/[–—]/g, '-');
+  const index = new Map(groups.flatMap(g => g.entries.map(el => [el, fold(el.dataset.keywords)])));
+
+  function display() {
+    const { q, tier, venue, type, sort } = Object.fromEntries(new FormData(catalogTools));
+    const words = fold(q.trim()).split(/\s+/).filter(Boolean);
+    let count = 0;
+    for (const {section, body, entries} of groups) {
+      const ordered = [...entries].sort((a,b) => b.dataset[sort].localeCompare(a.dataset[sort]) || a.dataset.doc.localeCompare(b.dataset.doc));
+      let visible = 0;
+      ordered.forEach((entry, pos) => {
+        entry.hidden = Boolean((tier && tier !== section.dataset.tier) || (venue && venue !== entry.dataset.venue) ||
+          (type && type !== entry.dataset.kind) || !words.every(w => index.get(entry).includes(w)));
+        if (!entry.hidden) visible++;
+        if (body.children[pos] !== entry) body.insertBefore(entry, body.children[pos] || null);
+      });
+      section.hidden = visible === 0;
+      section.querySelector('[data-group-size]').textContent = String(visible);
+      count += visible;
     }
+    result.value = result.dataset.template.replace('{n}',count).replace('{total}',total);
+    document.querySelector('[data-catalog-empty]').hidden = count !== 0;
+    catalogTools.querySelector('[type="reset"]').disabled = fields.every(f => f.value === (f.name === 'sort' ? 'published' : ''));
   }
-  function restoreCatalog() {
-    const query = new URLSearchParams(location.search);
-    order.value = query.get('sort') === 'updated' ? 'updated' : 'published';
-    if (kind) {
-      const requested = query.get('type');
-      kind.value = [...kind.options].some(option => option.value === requested) ? requested : '';
+
+  function restore() {
+    const params = new URLSearchParams(location.search);
+    for (const field of fields) {
+      const value = params.get(field.name) ?? '';
+      if (field.name === 'q') field.value = value.slice(0,180);
+      else field.value = [...field.options].some(o => o.value === value) ? value : field.options[0].value;
     }
-    arrange();
-  }
-  catalogTools.addEventListener('change', () => {
-    const url = new URL(location.href);
-    if (order.value === 'updated') url.searchParams.set('sort', order.value);
-    else url.searchParams.delete('sort');
-    if (kind?.value) url.searchParams.set('type', kind.value);
-    else url.searchParams.delete('type');
-    history.pushState(null, '', url);
+    display();
     updateLanguageLink();
-    arrange();
+  }
+
+  function sync(replace = false) {
+    const url = new URL(location.href);
+    for (const field of fields) {
+      if (field.value && !(field.name === 'sort' && field.value === 'published')) url.searchParams.set(field.name,field.value);
+      else url.searchParams.delete(field.name);
+    }
+    if (url.href !== location.href) history[replace ? 'replaceState' : 'pushState'](null,'',url);
+    display();
+    updateLanguageLink();
+  }
+  catalogTools.elements.q.addEventListener('input', () => sync(true));
+  catalogTools.addEventListener('change', e => { if (e.target.tagName === 'SELECT') sync(); });
+  catalogTools.addEventListener('submit', e => { e.preventDefault(); sync(true); });
+  catalogTools.addEventListener('reset', e => {
+    e.preventDefault();
+    for (const field of fields) field.value = field.name === 'sort' ? 'published' : '';
+    sync();
   });
-  addEventListener('popstate', restoreCatalog);
-  restoreCatalog();
+  addEventListener('popstate',restore);
+  restore();
   catalogTools.hidden = false;
 }

@@ -1,9 +1,24 @@
 [
   {
+    "id": "program-structure-certificates",
+    "title": "When Is Program Structure Required? Certificate-Grounded Calibration of Program-Induction Difficulty",
+    "authors": ["Wenzhang Du"],
+    "venue": "arXiv",
+    "year": 2026,
+    "preprintId": "2611.24975",
+    "postedDate": "2026-11-17",
+    "group": "preprint",
+    "status": "preprint",
+    "topics": ["evaluation"],
+    "publicationUrl": "https://arxiv.org/abs/2611.24975",
+    "codeUrl": "https://github.com/dqswordman/program-structure-certificates"
+  },
+  {
     "id": "decision-sufficiency",
     "title": "Complex Utility, Simple Calibration: Decision Sufficiency in RAG Evidence Selection",
     "authors": ["Wenzhang Du"],
     "venue": "WSDM",
+    "venueRank": "B",
     "year": 2027,
     "acceptedDate": "2026-11-03",
     "group": "major",

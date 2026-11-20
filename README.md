@@ -70,13 +70,15 @@ npm run dev -- --port 4174
 }
 ```
 
-`id` 必须唯一且稳定，它同时用于论文深链接。`venue` 仅填会议名称，年份单独存入 `year`。`group` 使用 `major`（主要发表）或 `ei`（EI 会议论文），按本人指定的 CCF／CORE 会议排名标准维护；WCCI 下的 CEC、IJCNN 与 IGARSS 归入主要发表。`topics` 支持 `evaluation`、`earth`、`efficient`、`applied`。`profile.json` 中的 `featured` 指向需要展示的论文 ID。
+`id` 用于论文深链接，需保持唯一和稳定。会议名填在 `venue`，届次填在 `year`。`group` 可选 `major`（主要发表）、`ei`（EI 会议论文）或 `preprint`（预印本）。WCCI 下的 CEC、IJCNN 与 IGARSS 归入主要发表。`topics` 支持 `evaluation`、`earth`、`efficient`、`applied`。arXiv 条目使用 `status: "preprint"`、`preprintId`、首版 `postedDate` 和论文摘要页 `publicationUrl`。
 
 已录用、尚未正式发表的论文使用 `"status": "accepted"`，已核实的首次通知接收日期填入 `acceptedDate`（必须为完整日期），正式发表后改为 `"status": "published"`。列表展示标题、会议与接收日期，完整作者和发表状态保留在可展开引用中。`affiliation` 可保存论文对应身份。PAIRSAFE 的录用日期为 **2026-09-08**，WSDM 的录用日期为 **2026-11-03**，会议届次为 [WSDM 2027](https://www.wsdm-conference.org/2027/)。
 
 在 `content/projects.json` 登记稳定的项目 `id`、双语 `title` 和 `summary`。关联论文用 `publicationId`，独立项目则直接填写 `authors`。按展示顺序将已公开的文档放入 `reports`，每项填写 `id` 和 `type`。类型支持 `paper-companion`、`technical-report`、`research-note` 和 `replication-report`。独立报告可以先于论文发表，也可以只提供正文与来源。首页精选由 `profile.featured` 的项目 ID 与顺序决定。
 
-将双语正文保存为 `content/technical-reports/<报告 ID>.json`。沿用 [WSDM 报告](content/technical-reports/decision-sufficiency.json) 的 `locales`、`sections`、`metrics` 和 `sources` 结构。`article.version`、`published`、`updated` 记录网页文档本身的版本、首发和最近实质更新；对应稿件的日期可另填 `manuscriptDate`。`artifact` 可链接固定软件版本。每次发布按公开报告清单构建，报告目录默认按首发日期倒序，`?sort=updated` 切换到更新时间。
+将双语正文保存为 `content/technical-reports/<报告 ID>.json`，沿用 `locales`、`sections`、`metrics` 和 `sources`。网页报告的版本、首发与更新日期分别填在 `article.version`、`published`、`updated`。稿件日期可另填 `manuscriptDate`，`artifact` 链接固定软件版本。[WSDM 报告](content/technical-reports/decision-sufficiency.json)
+
+报告目录按会议分级、其他会议、预印本及独立报告分组。经 CCF 目录核实的会议在论文记录填写 `venueRank`（A、B 或 C），预印本按其发布身份归类。读者可组合 `q`（跨语言关键词）、`tier` 和 `venue` 筛选，在各组内按首发日期或更新日期排序。筛选地址可以分享，切换语言时保留当前条件。[中文报告目录](https://dqswordman.github.io/zh/technical-reports/)
 
 正式论文继续遵循从 WSDM 2027 起的配套约定。录用日期为 **2026-11-03** 及以后的论文同时提供公开 `codeUrl` 和登记为 `paper-companion` 的双语伴读。论文目录、复制引用和搜索共用同一会议名称。
 

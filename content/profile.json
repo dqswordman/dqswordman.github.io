@@ -21,8 +21,15 @@
     "month": "2026-04",
     "label": { "en": "Late April 2026", "zh": "2026年4月底" }
   },
-  "featured": ["decision-sufficiency", "pairsafe", "paired-bootstrap", "arc-ctrl"],
+  "featured": ["decision-sufficiency", "program-structure-certificates"],
   "news": [
+    {
+      "id": "program-structure-public-release",
+      "date": "2026-11-20",
+      "kind": "update",
+      "publication": "program-structure-certificates",
+      "title": { "en": "Program structure certificates · preprint, code and interactive replay", "zh": "程序结构证书预印本、开源代码与交互复现已公开" }
+    },
     {
       "id": "pairsafe-release",
       "date": "2026-11-19",
@@ -72,7 +79,7 @@
         "Since my WSDM work on evidence selection, I’ve used matched comparisons to understand which decisions explain changes in scores. I separate choices that usually change together and trace changes in individual examples that aggregate scores can hide.",
         "In retrieval, I test the effect of document layout while keeping facts and relevance fixed. In RAG, I separate the effects of evidence budget, subset search, and passage order. In factuality audits, I compare how claim pairing affects precision at the same verification budget. In reasoning evaluations, I check what the examples actually require before interpreting the model scores."
       ],
-      "publicationIntro": "Conference publications and accepted papers, spanning trustworthy learning, evaluation, and applied AI.",
+      "publicationIntro": "Conference papers and preprints on trustworthy learning, evaluation, and applied AI.",
       "awards": [
         { "date": "2025", "title": "Best Paper Award", "detail": "ICPEI 2025", "kind": "award" },
         {
@@ -145,7 +152,7 @@
         "从 WSDM 的证据选择研究到最近几项工作，我一直关心分数变化究竟来自哪一步。我用配对比较拆开通常一起变化的因素，再回到逐例结果，查看哪些差异被总体分数掩盖。",
         "在检索研究中，我固定事实和相关性标签，比较不同文档布局的影响。在 RAG 中，我区分证据预算、组合搜索和段落顺序各自的作用。在事实性审计中，我固定核验预算，比较事实陈述的配对方式如何影响估计精度。在推理评估中，我先检查样例实际要求什么，再解读模型分数。"
       ],
-      "publicationIntro": "会议论文与已录用论文，涵盖可信学习、实证评估与人工智能应用。",
+      "publicationIntro": "会议论文与预印本，涵盖可信学习、实证评估与人工智能应用。",
       "awards": [
         { "date": "2025", "title": "最佳论文奖", "detail": "ICPEI 2025", "kind": "award" },
         {

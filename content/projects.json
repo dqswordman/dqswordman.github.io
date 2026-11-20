@@ -1,5 +1,19 @@
 [
   {
+    "id": "program-structure-certificates",
+    "publicationId": "program-structure-certificates",
+    "title": { "en": "When is program structure required?", "zh": "何时需要更复杂的程序结构？" },
+    "summary": {
+      "en": "Change one demonstration and certify when the shortest legal solution grows from one rule to two. Follow the consequences across displayed tasks, hidden witnesses and new inputs.",
+      "zh": "改变一个展示样例，认证最短合法解何时从一条规则变成两条，再比较题面、隐藏见证与新输入上的模型表现。"
+    },
+    "scope": {
+      "en": "The certificates apply to a bounded string-replacement language. Witness gains coexist with low agreement on new inputs that activate both rules.",
+      "zh": "证书适用于有界字符串替换语言。隐藏见证成功率上升的同时，模型在实际触发两条规则的新输入上一致率仍然很低。"
+    },
+    "reports": [{ "id": "program-structure-certificates", "type": "paper-companion" }]
+  },
+  {
     "id": "decision-sufficiency",
     "publicationId": "decision-sufficiency",
     "title": {

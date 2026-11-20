@@ -1,3 +1,4 @@
+import { renderReportCatalog, reportSearchText } from './report-catalog.mjs';
 import { escapeHtml as h, projectPath, reportKinds, researchIndexPath, technicalReportPath, venueLabel } from './content.mjs';
 import { icon } from './components.mjs';
 
@@ -69,15 +70,9 @@ export function renderResearchIndex(index, papers, t, locale, home, basePath) {
         <p class="research-deck">${h(description)}</p>
       </div>
     </header>
-    ${reports && entries.length > 1 ? `<div class="container catalog-tools" data-catalog-tools hidden>
-      <label>${h(t.orderBy)} <select data-report-order><option value="published">${h(t.firstPublished)}</option><option value="updated">${h(t.lastUpdated)}</option></select></label>
-      ${new Set(entries.map(e => e.documentType)).size > 1 ? `<label>${h(t.documentType)} <select data-report-kind><option value="">${h(t.allReports)}</option>${[...new Set(entries.map(e => e.documentType))].map(kind => `<option value="${h(kind)}">${h(reportKinds[kind][locale])}</option>`).join('')}</select></label>` : ''}
-    </div>` : ''}
-    <div class="container research-list"${reports ? ' data-report-list' : ''}>
-      ${entries.length ? entries.map((paper) => reports
-        ? reportIndexCard(paper, t, locale, basePath)
-        : codeIndexCard(paper, t, locale, basePath)).join('') : `<p>${h(t.emptyResearch)}</p>`}
-    </div>
+    ${reports ? renderReportCatalog(entries, { ...t, kindLabels: reportKinds }, locale,
+      paper => reportIndexCard(paper, t, locale, basePath)) : `<div class="container research-list">
+      ${entries.length ? entries.map(paper => codeIndexCard(paper, t, locale, basePath)).join('') : `<p>${h(t.emptyResearch)}</p>`}</div>`}
   </main>`;
 }
 
@@ -88,10 +83,10 @@ function reportIndexCard(paper, t, locale, basePath) {
   const preview = reportPreview(report);
   const kind = reportKinds[paper.documentType ?? 'paper-companion'][locale];
   const { version, published, updated } = report.article;
-  return `<article class="research-entry${preview ? ' research-entry-preview' : ''}" data-doc="${h(paper.id)}" data-kind="${h(paper.documentType ?? 'paper-companion')}" data-published="${h(published)}" data-updated="${h(updated)}">
+  return `<article class="research-entry${preview ? ' research-entry-preview' : ''}" data-doc="${h(paper.id)}" data-venue="${h(paper.venue ?? '')}" data-keywords="${h(reportSearchText(paper))}" data-kind="${h(paper.documentType ?? 'paper-companion')}" data-published="${h(published)}" data-updated="${h(updated)}">
     <div>
       <p class="research-kicker">${h(kind)}${paper.venue ? ` · ${h(venueLabel(paper))}` : ''}</p>
-      <h2><a href="${h(href)}">${h(copy.title ?? paper.title)}</a></h2>
+      <h3><a href="${h(href)}">${h(copy.title ?? paper.title)}</a></h3>
       ${copy.title && paper.venue ? `<p class="research-entry-paper"><cite lang="en">${h(paper.title)}</cite></p>` : ''}
       <p class="catalog-dates"><span>v${h(version)}</span><span>${h(updated === published ? t.sameReportDate : t.firstPublished)} <time datetime="${h(published)}">${h(published)}</time></span>${updated !== published ? `<span>${h(t.lastUpdated)} <time datetime="${h(updated)}">${h(updated)}</time></span>` : ''}</p>
       <p class="research-entry-copy">${h(copy.summary)}</p>
@@ -133,7 +128,7 @@ function codeIndexCard(paper, t, locale, basePath) {
 function projectVenue(project, t) {
   const paper = project.publication;
   if (!paper) return t.researchProject;
-  const status = paper.status === 'accepted' ? t.acceptedStatus : paper.status === 'published' ? t.publishedStatus : '';
+  const status = paper.status === 'accepted' ? t.acceptedStatus : paper.status === 'published' ? t.publishedStatus : paper.status === 'preprint' ? t.preprint : '';
   return [venueLabel(paper), status].filter(Boolean).join(' · ');
 }
 
@@ -187,7 +182,7 @@ export function renderProject(project, t, locale, home, basePath) {
     <p class="research-deck">${h(project.summary[locale])}</p><p class="project-byline">${h(project.authors.join(', '))}</p>
     <div class="research-actions">${project.reports.map(doc => `<a class="button button-dark" href="${h(technicalReportPath(doc.id, locale, basePath))}">${h(t.readReport)}${icon('arrow')}</a>`).join('')}
     ${project.codeUrl ? `<a class="text-link" href="${h(project.codeUrl)}" ${external}>GitHub${icon('external')}</a>` : ''}
-    ${paper ? `<a class="text-link" href="${h(paper.publicationUrl ?? home + '#paper-' + paper.id)}" ${paper.publicationUrl ? external : ''}>${h(paper.publicationUrl ? t.publishedPaper : t.publicationEntry)}${icon(paper.publicationUrl ? 'external' : 'arrow')}</a>` : ''}</div></div></header>
+    ${paper ? `<a class="text-link" href="${h(paper.publicationUrl ?? home + '#paper-' + paper.id)}" ${paper.publicationUrl ? external : ''}>${h(paper.publicationUrl ? (paper.status === 'preprint' ? t.preprint : t.publishedPaper) : t.publicationEntry)}${icon(paper.publicationUrl ? 'external' : 'arrow')}</a>` : ''}</div></div></header>
     <div class="container project-body">
       ${evidence ? `<section><h2>${h(t.keyResults)}</h2><dl class="project-metrics">${evidence.technicalReport.metrics.map(m =>
         `<div><dt>${h(m.label[locale])}</dt><dd>${h(m.value)}</dd></div>`).join('')}</dl><a class="text-link" href="${h(evidenceUrl)}">${h(t.resultsPreview)}${icon('arrow')}</a></section>` : ''}
@@ -283,7 +278,7 @@ export function renderReport(paper, t, locale, home, basePath) {
             ${article.manuscriptDate ? `<span>${h(t.authorFinal)} <time datetime="${h(article.manuscriptDate)}">${h(article.manuscriptDate)}</time></span>` : ''}
           </p>` : ''}
           <div class="research-actions">
-            ${paper.publicationUrl ? `<a class="text-link" href="${h(paper.publicationUrl)}" ${external}>${h(t.publishedPaper)} ${icon('external')}</a>` : ''}
+            ${paper.publicationUrl ? `<a class="text-link" href="${h(paper.publicationUrl)}" ${external}>${h(paper.status === 'preprint' ? t.preprint : t.publishedPaper)} ${icon('external')}</a>` : ''}
             ${paper.codeUrl ? `<a class="button button-dark" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub ${icon('external')}</a>` : ''}
             ${spaceBadge(artifact, t)}
             ${artifact ? `<a class="text-link" href="${h(artifact.url)}" ${external}>${h(t.release)} ${h(artifact.version)}${icon('external')}</a>` : ''}

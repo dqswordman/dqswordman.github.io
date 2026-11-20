@@ -1,0 +1,282 @@
+{
+  "article": {
+    "version": "1.0",
+    "published": "2026-11-20",
+    "updated": "2026-11-20",
+    "updateNote": {
+      "en": "Companion to arXiv v1 and the v1.0.0 CPU artifact.",
+      "zh": "对应 arXiv v1 与 v1.0.0 CPU 复现归档。"
+    }
+  },
+  "locales": {
+    "en": {
+      "title": "When does an example force a second rule?",
+      "summary": "A model can explain every demonstration with a shortcut. One carefully chosen example lets us certify when that shortcut disappears, then measure what the model does on the task and on new strings."
+    },
+    "zh": {
+      "title": "什么样的样例会迫使程序使用第二条规则？",
+      "summary": "模型可能靠一条捷径解释题面上的所有样例。这项研究只替换一个样例，严格核验第二条规则何时成为必要条件，再分别检查模型对题面和新字符串的判断。"
+    }
+  },
+  "artifact": {
+    "version": "v1.0.0",
+    "url": "https://github.com/dqswordman/program-structure-certificates/releases/tag/v1.0.0",
+    "space": "https://huggingface.co/spaces/DQSWORDMAN/program-structure-certificates",
+    "guide": "https://github.com/dqswordman/program-structure-certificates/blob/main/docs/reproduction.md",
+    "description": {
+      "en": "Explore a certified task pair or replay 1,920 saved model trajectories on CPU from the versioned archive.",
+      "zh": "在线比较一对经过认证的任务，或从版本归档在 CPU 上重放 1,920 条模型轨迹。"
+    }
+  },
+  "metrics": [
+    {
+      "value": "120",
+      "label": {
+        "en": "Reference program families",
+        "zh": "参考程序家族"
+      }
+    },
+    {
+      "value": "960",
+      "label": {
+        "en": "Task certificates checked",
+        "zh": "经核验的任务证书"
+      }
+    },
+    {
+      "value": "1,920",
+      "label": {
+        "en": "Archived model trajectories",
+        "zh": "归档的模型轨迹"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "worked-example",
+      "title": {
+        "en": "Change one example, keep the reference program",
+        "zh": "同一个参考程序，只换一道样例"
+      },
+      "paragraphs": {
+        "en": [
+          "Imagine inferring a program from six input–output pairs. Five pairs are shared. In the control, the last pair maps iiiexa to iiiazy. The single replacement exa → azy fits all six. The same observations also admit a two-step explanation: replace ex with azw, then wa with y.",
+          "In the matched separation task the final pair becomes wbawex → wbayzw. The shortcut leaves wbawex unchanged. The two-step program produces wbawazw after its first rule and wbayzw after its second. All other demonstrations stay fixed. The figure traces both explanations on this archived task."
+        ],
+        "zh": [
+          "试着从六组输入输出中推断程序。两道题共享前五组。对照题的最后一组是 iiiexa → iiiazy，用一条 exa → azy 就能解释六组样例。另一个解释有两步：先把 ex 换成 azw，再把 wa 换成 y。",
+          "在配对的分离题中，把最后一组换成 wbawex → wbayzw。单规则捷径会原样保留输入；两步程序先得到 wbawazw，再得到 wbayzw。其余五组样例全部相同。下图给出了这对归档任务的完整构造。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "figure",
+          "file": "assets/reports/program-structure-certificates/construction.png",
+          "width": 1200,
+          "height": 900,
+          "alt": {
+            "en": "Worked example comparing the control and separation demonstrations and the one- and two-rule programs.",
+            "zh": "图中比较对照与分离样例，以及单规则捷径和双规则参考程序。"
+          },
+          "caption": {
+            "en": "Figure 1. Both tasks use the same two-rule reference. The final demonstration determines whether a one-rule solution remains possible.",
+            "zh": "图 1。两道题共用同一个双规则参考程序；最后一组样例决定单规则解是否仍然存在。"
+          },
+          "source": "https://github.com/dqswordman/program-structure-certificates/blob/v1.0.0/fixtures/end_to_end.json"
+        }
+      ]
+    },
+    {
+      "id": "certification",
+      "title": {
+        "en": "What the certificate proves",
+        "zh": "证书究竟证明了什么"
+      },
+      "paragraphs": {
+        "en": [
+          "Here a rule replaces every non-overlapping occurrence of a literal string. Rules run in sequence. The study fixes a finite alphabet, a left-hand side of one to three characters and a right-hand side of up to three. A changed output rules out the empty program. The verifier enumerates the legal one-rule explanations and executes a two-rule witness.",
+          "For this example one single-rule program survives in the control and none survives in separation. The successful witness gives an upper bound of two, so the minimum lengths are exactly one and two. Certification uses the displayed pairs before inference. This statement depends on the chosen language and rule lengths."
+        ],
+        "zh": [
+          "每条规则替换字符串中所有互不重叠的字面匹配，多条规则按顺序执行。研究固定有限字母表，左侧长度为一至三个字符，右侧长度最多三个字符。一组发生变化的输出即可排除空程序。验证器随后枚举全部合法单规则解释，并实际执行一个双规则解。",
+          "在图中，对照题恰好保留一个单规则解，分离题的单规则解数为零。双规则程序在两题均通过，因此最短长度分别精确为一与二。认证在模型推理之前完成，结论的范围由这套替换语言及规则长度界定。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "results",
+      "title": {
+        "en": "Solving the prompt and passing the hidden pair",
+        "zh": "题面完成率和隐藏配对的成功率"
+      },
+      "paragraphs": {
+        "en": [
+          "Each of the 120 reference families supplies matched control and separation tasks with three to six shared examples, plus one arm-specific example. The panel contains 1,440 new trajectories and 480 previously saved base-five trajectories for Qwen3-8B and Olmo-3-7B-Think. The certified comparison uses 119 families at bases three and four and all 120 at bases five and six.",
+          "With five shared examples, Qwen completes 67 of 120 control tasks and 12 separation tasks. Olmo completes 52 and 15. In both models, success on a separate witness pair hidden from both prompts increases. The table uses separation minus control in percentage points and paired, pointwise 95% intervals for this panel."
+        ],
+        "zh": [
+          "120 个参考程序家族在三至六个共享样例下各生成一对任务，并各加一个对照或分离样例。两种模型为 Qwen3-8B 和 Olmo-3-7B-Think，共有 1,440 条新轨迹和 480 条先前保存的五共享样例轨迹。三个、四个共享样例时各有 119 个家族通过配对认证，五个、六个时各有 120 个。",
+          "五个共享样例时，Qwen 在 120 道对照题中完成 67 道，在分离题中完成 12 道；Olmo 分别完成 52 和 15 道。两种模型通过另一对完全未展示的见证样例的概率均有上升。表中差值均为分离减对照，单位是百分点，区间为此面板按家族配对的逐项 95% 区间。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "columns": [
+            {
+              "en": "Model",
+              "zh": "模型"
+            },
+            {
+              "en": "Displayed, control → separation",
+              "zh": "题面，对照 → 分离"
+            },
+            {
+              "en": "Displayed Δ (pp)",
+              "zh": "题面差值（百分点）"
+            },
+            {
+              "en": "Hidden pair Δ (pp)",
+              "zh": "隐藏配对差值（百分点）"
+            }
+          ],
+          "rows": [
+            [
+              "Qwen3-8B",
+              "67 → 12 / 120",
+              "−45.83 [−55.00, −36.67]",
+              "+9.17 [+4.17, +15.00]"
+            ],
+            [
+              "Olmo-3-7B-Think",
+              "52 → 15 / 120",
+              "−30.83 [−40.83, −20.83]",
+              "+11.67 [+6.67, +17.50]"
+            ]
+          ],
+          "caption": {
+            "en": "Five shared examples plus the changed example. Across all eight model and base-count settings, the displayed effect ranges from −45.83 to −23.53 points and the hidden-pair effect from +8.40 to +13.45.",
+            "zh": "五个共享样例加上一个更换样例。全部八个模型与样例数设置下，题面差值为 −45.83 至 −23.53 个百分点，隐藏配对差值为 +8.40 至 +13.45 个百分点。"
+          },
+          "source": "https://github.com/dqswordman/program-structure-certificates/blob/v1.0.0/results/PRIMARY_PANEL_READABLE.csv"
+        }
+      ]
+    },
+    {
+      "id": "beyond-the-witness",
+      "title": {
+        "en": "What happens on other strings?",
+        "zh": "换到更广的字符串输入会怎样？"
+      },
+      "paragraphs": {
+        "en": [
+          "The hidden pair was chosen to distinguish programs. A second evaluation draws 32 uniform strings and 32 strings that activate both reference rules for each family. Uniform-input agreement falls in every model and base-count setting. Of the 3,840 uniform inputs, 3,325 map to themselves under the reference.",
+          "On the rule-active inputs the absolute agreement of separation programs is only 1.93–5.78%. At base five, Qwen reaches 2.76% and Olmo 2.01%. A gain on targeted witnesses therefore supports a narrower conclusion than recovering the reference transformation across inputs."
+        ],
+        "zh": [
+          "隐藏见证配对是为区分程序而选择的。第二组评估则为每个家族抽取 32 个均匀输入和 32 个能触发两条规则的输入。在全部模型和共享样例数设置下，均匀输入上的一致率都下降。3,840 个均匀输入中，有 3,325 个经过参考程序后保持原样。",
+          "在实际触发两条规则的新输入上，分离题程序的绝对一致率只有 1.93% 至 5.78%。五个共享样例时，Qwen 为 2.76%，Olmo 为 2.01%。定向见证上的进步说明模型行为发生了变化，广泛恢复参考变换仍很困难。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "identity",
+      "title": {
+        "en": "An unchanged output can rule out a shortcut",
+        "zh": "输出没变的样例也能排除捷径"
+      },
+      "paragraphs": {
+        "en": [
+          "In a separate archived family, the reference first replaces f with fdd and then db with c. The pair iyxbdc → iyxbdc looks uneventful. A competing rule b → dc predicts iyxdcdc. Keeping this identity example excludes that candidate; removing it at the smaller base counts lets a one-rule solution return. This family was selected from its certificate transition before inspecting the model outcomes."
+        ],
+        "zh": [
+          "另一组归档任务的参考规则是先把 f 换成 fdd，再把 db 换成 c。样例 iyxbdc → iyxbdc 看起来毫无变化，但候选规则 b → dc 会输出 iyxdcdc。保留这个恒等样例就能排除该候选，在较少共享样例的设置中去掉它，单规则解便重新出现。研究依据证书的变化选中这个家族，选择过程独立于模型表现。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "replay",
+      "title": {
+        "en": "Replay the evidence",
+        "zh": "复核证据"
+      },
+      "paragraphs": {
+        "en": [
+          "Extract the release, enter its top-level folder and run the first two commands with Python 3.11 or later. The third uses NumPy and writes to a new directory. It verifies 960 certificates, 7,680 reference labels and the saved programs, then compares the three reconstructed tables with their archived counterparts.",
+          "The release supplies normalized trajectories, task specifications and executable checks. Earlier discovery and timed-search studies have separate coverage in the result map. The historical sampling chain of the 1,008-task retrospective roster remains unresolved. The companion reports the scope of those records separately from the matched 120-family experiment."
+        ],
+        "zh": [
+          "解压版本包并进入顶层目录。用 Python 3.11 或更新版本运行前两条命令即可核对文件和图 1 实例。第三条使用 NumPy，将结果写入新目录；它复核 960 份证书、7,680 个参考标签与保存的程序，并把三张重建结果表逐一对照归档。",
+          "归档直接提供规范化轨迹、任务规格与可执行核验。早期探索与限时搜索等历史实验的材料覆盖范围列在结果映射中。另有 1,008 道回溯任务，其早期抽样链尚未确定；这部分记录与主要的 120 家族配对实验分别说明。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "code",
+          "code": "python -B verify_manifest.py\npython -B replay_fixture.py\npython -B reproduce.py --out replay"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "label": {
+        "en": "Paper and version history · arXiv",
+        "zh": "预印本与版本记录 · arXiv"
+      },
+      "url": "https://arxiv.org/abs/2611.24975"
+    },
+    {
+      "label": {
+        "en": "Version 1 with appendix · HTML",
+        "zh": "v1 全文与附录 · HTML"
+      },
+      "url": "https://arxiv.org/html/2611.24975v1"
+    },
+    {
+      "label": {
+        "en": "Figure 1 executable fixture",
+        "zh": "图 1 可执行实例"
+      },
+      "url": "https://github.com/dqswordman/program-structure-certificates/blob/v1.0.0/fixtures/end_to_end.json"
+    },
+    {
+      "label": {
+        "en": "Primary and witness effects",
+        "zh": "主面板与隐藏配对结果"
+      },
+      "url": "https://github.com/dqswordman/program-structure-certificates/blob/v1.0.0/results/PRIMARY_PANEL_READABLE.csv"
+    },
+    {
+      "label": {
+        "en": "Uniform and active input panel",
+        "zh": "均匀与规则激活输入结果"
+      },
+      "url": "https://github.com/dqswordman/program-structure-certificates/blob/v1.0.0/results/BROADER_PANEL_READABLE.csv"
+    },
+    {
+      "label": {
+        "en": "Identity-example certificate",
+        "zh": "恒等样例证书"
+      },
+      "url": "https://github.com/dqswordman/program-structure-certificates/blob/v1.0.0/worked_case.json"
+    },
+    {
+      "label": {
+        "en": "Paper-to-artifact result map",
+        "zh": "论文至归档的结果映射"
+      },
+      "url": "https://github.com/dqswordman/program-structure-certificates/blob/v1.0.0/docs/result-map.csv"
+    },
+    {
+      "label": {
+        "en": "Interactive certificate explorer",
+        "zh": "交互式证书示例"
+      },
+      "url": "https://huggingface.co/spaces/DQSWORDMAN/program-structure-certificates"
+    }
+  ]
+}

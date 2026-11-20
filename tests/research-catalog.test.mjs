@@ -34,8 +34,11 @@ test('selected projects have one canonical page per locale and keep the formal p
 
 test('the report index sorts by public date, labels versions and treats a companion as an article about the paper', () => {
   const html = renderPage({ ...content, assets, index: 'technical-reports' });
-  assert.ok(html.indexOf('data-doc="pairsafe"') < html.indexOf('data-doc="decision-sufficiency"'));
-  for (const id of ['decision-sufficiency', 'pairsafe']) {
+  for (const [tier, id] of [['ccf-b','decision-sufficiency'],['conference','pairsafe'],['preprint','program-structure-certificates']]) {
+    assert.ok(html.split(`data-tier="${tier}"`)[1].split('</section>')[0].includes(`data-doc="${id}"`));
+  }
+  assert.deepEqual(content.profile.featured, ['decision-sufficiency','program-structure-certificates']);
+  for (const id of ['decision-sufficiency', 'pairsafe', 'program-structure-certificates']) {
     const doc = content.projects.find(p => p.id === id).reports[0];
     assert.ok(html.includes('data-published="' + doc.technicalReport.article.published + '"'));
     const page = renderPage({ ...content, assets, report: doc });
@@ -45,6 +48,18 @@ test('the report index sorts by public date, labels versions and treats a compan
     assert.equal(metadata.dateModified, doc.technicalReport.article.updated);
     assert.ok(!page.includes('name="citation_title"'));
     assert.ok(page.includes(technicalReportPath(id, 'zh')));
+  }
+});
+
+test('arXiv records retain their posted date, cite the paper directly and never receive a venue rank', () => {
+  const paper = content.publications.find(paper => paper.id === 'program-structure-certificates');
+  assert.equal(paper.postedDate, '2026-11-17');
+  assert.equal(paper.acceptedDate, undefined);
+  assert.equal(citation(paper), paper.authors.join(', ') + '. ' + paper.title +
+    '. arXiv:2611.24975 (2026). https://arxiv.org/abs/2611.24975');
+  for (const changes of [{ acceptedDate: paper.postedDate }, { venueRank: 'A' }, { preprintId: '2611.12345' }]) {
+    const records = content.publications.map(p => p.id === paper.id ? { ...p, ...changes } : p);
+    assert.throws(() => validateContent(content.profile, records, content.projects), /preprint record|CCF venue category/);
   }
 });
 

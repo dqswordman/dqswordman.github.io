@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 
 export const supportedLocales = ['en', 'zh'];
 export const topicKeys = ['evaluation', 'earth', 'efficient', 'applied'];
-export const publicationGroups = ['major', 'ei'];
+export const publicationGroups = ['major', 'preprint', 'ei'];
 export const researchIndexes = ['technical-reports', 'open-source'];
 // WSDM 2027 acceptance date, in the site's acceptance time zone.
 const researchResourcesFrom = '2026-11-03';
@@ -152,7 +152,8 @@ export function validDate(value) {
 }
 
 export function acceptanceYear(paper) {
-  return paper.acceptedDate ? Number(paper.acceptedDate.slice(0, 4)) : 'undated';
+  const date = paper.acceptedDate || paper.postedDate;
+  return date ? Number(date.slice(0, 4)) : 'undated';
 }
 
 export function newsItems(profile, publications) {
@@ -198,14 +199,21 @@ export function validateContent(profile, publications, projects = []) {
     if (!paper.topics?.length || paper.topics.some((topic) => !topicKeys.includes(topic)))
       throw new Error(`Invalid topics: ${paper.id}`);
     if (paper.scholarUrl) safeHttps(paper.scholarUrl);
-    if (paper.status && !['accepted', 'published'].includes(paper.status))
+    if (paper.status && !['accepted', 'published', 'preprint'].includes(paper.status))
       throw new Error(`Invalid publication status: ${paper.id}`);
+    if ((paper.group === 'preprint' || paper.status === 'preprint') &&
+        (paper.group !== 'preprint' || paper.status !== 'preprint' || paper.acceptedDate ||
+         !/^\d{4}\.\d{4,5}$/.test(paper.preprintId) || !validDate(paper.postedDate) ||
+         paper.postedDate.length !== 10 || paper.publicationUrl !== `https://arxiv.org/abs/${paper.preprintId}`))
+      throw new Error(`Invalid preprint record: ${paper.id}`);
     if (paper.affiliation && typeof paper.affiliation !== 'string')
       throw new Error(`Invalid affiliation: ${paper.id}`);
     if (paper.acceptedDate && (!/^\d{4}-\d{2}-\d{2}$/.test(paper.acceptedDate) || !validDate(paper.acceptedDate)))
       throw new Error(`Invalid acceptance date: ${paper.id}`);
     if (paper.track !== undefined && !hasText(paper.track))
       throw new Error(`Invalid publication track: ${paper.id}`);
+    if (paper.venueRank !== undefined && (!['A','B','C'].includes(paper.venueRank) || paper.status === 'preprint'))
+      throw new Error(`Invalid CCF venue category: ${paper.id}`);
     if (
       (paper.id === 'decision-sufficiency' || (paper.acceptedDate ?? '') >= researchResourcesFrom) &&
       (!paper.technicalReport || !paper.codeUrl)
@@ -351,5 +359,7 @@ export function paperUrl(paper) {
 }
 
 export function citation(paper) {
+  if (paper.status === 'preprint')
+    return `${paper.authors.join(', ')}. ${paper.title}. arXiv:${paper.preprintId} (${paper.year}). ${paper.publicationUrl}`;
   return `${paper.authors.join(', ')}. ${paper.title}. ${venueLabel(paper)}${paper.pages ? `, pp. ${paper.pages}` : ''}.${paper.status === 'accepted' ? ' Accepted; forthcoming.' : ''}`;
 }
