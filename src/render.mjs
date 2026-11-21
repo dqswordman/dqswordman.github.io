@@ -450,7 +450,7 @@ export function renderPage({
       </div>
     </section>
     ${selectedResearch(projects, profile.featured, t, locale, basePath, arena)}
-    ${openReports(projects,t,locale,basePath,'home',arena)}
+    ${openReports(projects,t,locale,basePath,'home')}
     <div class="container news-strip">${newsPanel(profile, publications, t, locale, basePath)}</div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>

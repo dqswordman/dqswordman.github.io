@@ -166,7 +166,7 @@ function pdfLink(item, t, basePath) {
   return item.manuscriptPdf ? `<a class="text-link" href="${h(basePath + '/' + item.manuscriptPdf)}">${h(t.paperPdf)}${icon('arrow')}</a>` : '';
 }
 
-export function openReports(projects, t, locale, basePath, view, arena) {
+export function openReports(projects, t, locale, basePath, view) {
   const entries = projects.filter(p => p.collection === 'open-research');
   if (!entries.length) return '';
   const link = researchIndexPath('open-research', locale, basePath);
@@ -179,7 +179,7 @@ export function openReports(projects, t, locale, basePath, view, arena) {
     const title = view === 'directory' ? p.title[locale] : body.locales[locale].title;
     return `<article class="open-report-card"><${headingTag}><a href="${h(projectUrl)}">${h(title)}</a></${headingTag}>
       <p>${h(p.summary[locale])}</p><div class="research-actions"><a class="text-link" href="${h(reportUrl)}">${h(t.readReport)}${icon('arrow')}</a>
-      ${pdfLink(p,t,basePath)}${view === 'home' ? arenaMark(arena, p.id, locale, basePath) : ''}${view === 'page' ? `<a class="text-link" href="${h(p.codeUrl)}" ${external}>GitHub</a>${spaceBadge(body.artifact,t)}` : ''}</div></article>`;
+      ${pdfLink(p,t,basePath)}${view === 'page' ? `<a class="text-link" href="${h(p.codeUrl)}" ${external}>GitHub</a>${spaceBadge(body.artifact,t)}` : ''}</div></article>`;
   }).join('');
   if (view === 'page') return `<main id="main" class="research-index" tabindex="-1"><header class="research-banner"><div class="container research-banner-inner">
     <a class="text-link research-back" href="${h(researchIndexPath('research',locale,basePath))}">${icon('arrow')}${h(t.projectDirectory)}</a>

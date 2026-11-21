@@ -47,6 +47,33 @@ test('releasing an anonymous title preserves its arena link and merges the publi
   assert.ok(arenaMark(precise,paper.id,'en','').includes('8.25'));
 });
 
+test('EI and open research records stay out of scores, pending rows and badges while source ranks survive', () => {
+  const ei = content.publications.filter(paper => paper.group === 'ei');
+  const reports = content.projects.filter(project => project.collection === 'open-research');
+  const paper = content.publications.find(p => p.group === 'major');
+  const source = [
+    { id: ei[0].id, rank: 1, tier: 1, score: 9.5 },
+    { id: 'tbd-02', workId: reports[0].id, rank: 2, tier: 2, score: 8.5 },
+    { id: 'tbd-03', rank: 3, tier: 2, score: 8.0 },
+    { id: paper.id, rank: 4, tier: 5, score: null },
+  ];
+  const arena = resolveArena({ ...spec, reviews: source }, content.publications, content.projects);
+  assert.deepEqual(arena.reviews, source.slice(2));
+  assert.deepEqual(arena.rows.filter(r => r.rank).map(r => [r.id,r.rank]), [['tbd-03',3],[paper.id,4]]);
+  for (const locale of ['zh','en']) {
+    const options = { ...content, arena, locale, assets };
+    const board = renderPage({ ...options, index:'paper-arena' });
+    const home = renderPage(options);
+    assert.ok(!board.includes('id="entry-tbd-02"') && !board.includes('<option value="9.5">'));
+    for (const {id} of [...ei, ...reports]) {
+      assert.ok(!arena.byId.has(id) && !board.includes('id="entry-'+id+'"'));
+      assert.ok(!home.includes('/paper-arena/#entry-'+id+'"'));
+    }
+    for (const {id} of ei) assert.ok(home.includes('id="paper-'+id+'"'));
+    for (const {manuscriptPdf} of reports) assert.ok(home.includes('href="/'+manuscriptPdf+'"'));
+  }
+});
+
 test('arena rejects unknown works, duplicate identities, altered rank sequences and numerical qualitative ratings', () => {
   const row = {id:'tbd-10',rank:1,score:7.5,tier:3};
   const rejects = reviews => assert.throws(() => resolveArena({...spec, reviews},content.publications,content.projects),/arena/);

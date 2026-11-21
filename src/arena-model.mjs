@@ -2,6 +2,8 @@ const isoDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) &&
   !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
 const translated = copy => ['en','zh'].every(lang => typeof copy?.[lang] === 'string' && copy[lang].trim());
 const isAnonymousWork = id => /^tbd-\d+$/.test(id);
+// Unmatched reviews keep their original rank. A public match supplies the catalog classification.
+const inReviewScope = work => work?.paper?.group !== 'ei' && work?.project?.collection !== 'open-research';
 
 export function resolveArena(spec, publications, projects) {
   if (!/^\d+\.\d+\.\d+$/.test(spec.version) || !isoDate(spec.rubricDate) || !isoDate(spec.snapshotDate))
@@ -24,7 +26,9 @@ export function resolveArena(spec, publications, projects) {
       date: project.reports[0]?.technicalReport.article.published ?? '', dateKind: 'released' });
   }
   const matched = new Set(), entryIds = new Set();
-  const rows = spec.reviews.map(({id, workId, rank, score, tier}, i) => {
+  const reviews = [], rows = [];
+  spec.reviews.forEach((review, i) => {
+    const {id, workId, rank, score, tier} = review;
     const band = spec.tiers[tier - 1];
     if (!band || band.tier !== tier || rank !== i + 1 || entryIds.has(id) || typeof id !== 'string' ||
         (band.range ? !Number.isFinite(score) || score < band.range[0] || score > band.range[1] : score !== null))
@@ -35,10 +39,13 @@ export function resolveArena(spec, publications, projects) {
     if (work && matched.has(work.id)) throw new Error('Duplicate linked arena work: ' + work.id);
     if (work) matched.add(work.id);
     entryIds.add(id);
-    return { id, rank, score, tier, work };
+    if (inReviewScope(work)) {
+      reviews.push(review);
+      rows.push({ id, rank, score, tier, work });
+    }
   });
-  const pending = [...works.values()].filter(work => !matched.has(work.id))
+  const pending = [...works.values()].filter(work => inReviewScope(work) && !matched.has(work.id))
     .sort((a,b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id));
   rows.push(...pending.map(work => ({ id: work.id, work, rank: null, score: null, tier: null })));
-  return { ...spec, rows, byId: new Map(rows.filter(row => row.work).map(row => [row.work.id, row])) };
+  return { ...spec, reviews, rows, byId: new Map(rows.filter(row => row.work).map(row => [row.work.id, row])) };
 }

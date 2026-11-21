@@ -160,7 +160,7 @@ node scripts/brand-ico.mjs path/to/square-icon.png
 
 ## 论文竞技场
 
-论文竞技场从 `content/paper-arena.json` 读取评分标准、版本日期、评阅记录日期、原顺位与综合分。首页与中英文排行榜共用同一条记录。第 5、6 档的 `score` 为 `null`。尚待评分的公开作品自动显示 `under view`。匿名 `tbd-…` 条目只展示顺位、原评分和档位。以后取得公开题名并确认匹配时，可给原条目加上 `workId` 关联论文或开放报告，原锚点继续有效。榜单支持 `scope`、`score`、`tier`、`q` 和 `sort` 查询参数。[论文竞技场](https://dqswordman.github.io/zh/paper-arena/)
+论文竞技场从 `content/paper-arena.json` 读取评分标准、版本日期、评阅记录日期、原顺位与综合分。榜单、筛选统计和首页评分标记共用评审范围，按论文分组 `group: "ei"` 和项目栏目 `collection: "open-research"` 排除 EI 会议论文和开放研究报告。范围内待评分的论文显示 `under view`。第 5、6 档的 `score` 为 `null`。匿名 `tbd-…` 条目显示原顺位、评分和档位。确认题名时，用 `workId` 关联公开记录，由其分类决定是否展示。榜单支持 `scope`、`score`、`tier`、`q` 和 `sort` 查询参数。[论文竞技场](https://dqswordman.github.io/zh/paper-arena/)
 
 ## 开放研究报告
 
