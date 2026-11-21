@@ -1,8 +1,12 @@
 {
   "article": {
-    "version": "1.0",
+    "version": "1.0.1",
     "published": "2026-11-21",
-    "updated": "2026-11-21"
+    "updated": "2026-11-21",
+    "updateNote": {
+      "en": "Added the original method implementation and an independent CPU check.",
+      "zh": "补充原方法实现及独立 CPU 校验。"
+    }
   },
   "locales": {
     "en": {
@@ -75,7 +79,7 @@
             "en": "An inventory example, evidence-status readouts, and practice with or without attached documents.",
             "zh": "库存实例、证据状态读出和带文档或闭卷的复习方案。"
           },
-          "source": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/figures/design.pdf"
+          "source": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.1/figures/design.pdf"
         }
       ]
     },
@@ -156,7 +160,7 @@
               "+9.23"
             ]
           ],
-          "source": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/reference/paper_comparisons.csv"
+          "source": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.1/reference/paper_comparisons.csv"
         }
       ]
     },
@@ -186,16 +190,18 @@
       },
       "paragraphs": {
         "en": [
-          "The public package stores individual choices, world-level scores, frozen question plans and source attribution. CPU replay checks 435,456 readouts in the three follow-up studies, verifies 472 paired effects and writes 17 comparisons. Earlier synthetic analyses and the original WikiText comparison are identified separately in the result map."
+          "The public package stores individual choices, world-level scores, frozen question plans and source attribution. CPU replay checks 435,456 readouts in the three follow-up studies, verifies 472 paired effects and writes 17 comparisons. Earlier synthetic analyses and the original WikiText comparison are identified separately in the result map.",
+          "The released context schedule verifies 1,440 mixed slots per world across 32 worlds. Recombining the document and question losses also recovers all 7,680 logged training-step objectives in the mixed and new-world studies. The adapter and Adam routines are included."
         ],
         "zh": [
-          "公开包保存逐次作答、逐世界分数、冻结的问题配置及来源署名。CPU 回放在三项后续实验中核验 435,456 条作答，检查 472 项配对效应，导出 17 项比较。早期合成实验和原 WikiText 比较的证据层级在结果映射中单列。"
+          "公开包保存逐次作答、逐世界分数、冻结的问题配置及来源署名。CPU 回放在三项后续实验中核验 435,456 条作答，检查 472 项配对效应，导出 17 项比较。早期合成实验和原 WikiText 比较的证据层级在结果映射中单列。",
+          "训练调度记录覆盖 32 个世界，每个世界核对 1,440 个混合练习槽位。用文档损失和问答损失重组，还能核验混合续训与新世界研究的全部 7,680 条训练步骤目标。包内提供了适配器和 Adam 实现。"
         ]
       },
       "blocks": [
         {
           "type": "code",
-          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay"
+          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay\npython -B check_methods.py"
         }
       ]
     }
@@ -213,14 +219,14 @@
         "en": "Frozen release and checksums",
         "zh": "固定版本与校验值"
       },
-      "url": "https://github.com/dqswordman/document-replay-evidence-qa/releases/tag/v1.0.0"
+      "url": "https://github.com/dqswordman/document-replay-evidence-qa/releases/tag/v1.0.1"
     },
     {
       "label": {
         "en": "Result map and reproduction scope",
         "zh": "结果映射与复现范围"
       },
-      "url": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/docs/reproduction.md"
+      "url": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.1/docs/reproduction.md"
     },
     {
       "label": {
@@ -228,12 +234,19 @@
         "zh": "交互式证据浏览"
       },
       "url": "https://huggingface.co/spaces/DQSWORDMAN/document-replay-evidence-qa"
+    },
+    {
+      "label": {
+        "en": "Method implementation and worked checks",
+        "zh": "方法源码与核验说明"
+      },
+      "url": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.1/docs/methods.md"
     }
   ],
   "artifact": {
-    "version": "v1.0.0",
-    "url": "https://github.com/dqswordman/document-replay-evidence-qa/releases/tag/v1.0.0",
-    "guide": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/docs/reproduction.md",
+    "version": "v1.0.1",
+    "url": "https://github.com/dqswordman/document-replay-evidence-qa/releases/tag/v1.0.1",
+    "guide": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.1/docs/reproduction.md",
     "space": "https://huggingface.co/spaces/DQSWORDMAN/document-replay-evidence-qa",
     "description": {
       "en": "Adapters replay the same questions with or without supporting documents. Switching the unrelated attachment at test time reverses which specialist leads.",

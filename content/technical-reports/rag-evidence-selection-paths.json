@@ -1,8 +1,12 @@
 {
   "article": {
-    "version": "1.0",
+    "version": "1.0.1",
     "published": "2026-11-21",
-    "updated": "2026-11-21"
+    "updated": "2026-11-21",
+    "updateNote": {
+      "en": "Added the original method implementation and an independent CPU check.",
+      "zh": "补充原方法实现及独立 CPU 校验。"
+    }
   },
   "locales": {
     "en": {
@@ -75,7 +79,7 @@
             "en": "Three saved answers to the Devilment question across changes in order and membership.",
             "zh": "Devilment 问题在证据反序和重选前后的三次归档回答。"
           },
-          "source": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/figures/design.pdf"
+          "source": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.1/figures/design.pdf"
         }
       ]
     },
@@ -156,7 +160,7 @@
               "+5.91"
             ]
           ],
-          "source": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/data/analysis/A_bootstrap_summary.csv"
+          "source": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.1/data/analysis/A_bootstrap_summary.csv"
         }
       ]
     },
@@ -186,16 +190,18 @@
       },
       "paragraphs": {
         "en": [
-          "On CPU the release re-scores archived generations, checks 9,702 selected-answer records and recomputes 279 paired statistics. It includes passage identifiers and text hashes for joining the original benchmarks. Original benchmark sources supply the passage bodies."
+          "On CPU the release re-scores archived generations, checks 9,702 selected-answer records and recomputes 279 paired statistics. It includes passage identifiers and text hashes for joining the original benchmarks. Original benchmark sources supply the passage bodies.",
+          "The original selection code independently finds masks 5 and 33 on the two saved utility surfaces for the Figure 1 question. The archived model loader, likelihood scorer and greedy generation routines are provided alongside it."
         ],
         "zh": [
-          "CPU 回放重新计算归档回答的分数，核验 9,702 条选中答案，并重算 279 项配对统计。包内保存段落标识和文本哈希，可回到上游基准核对段落正文。"
+          "CPU 回放重新计算归档回答的分数，核验 9,702 条选中答案，并重算 279 项配对统计。包内保存段落标识和文本哈希，可回到上游基准核对段落正文。",
+          "用原始选择代码在图 1 问题的两个效用曲面上独立搜索，会分别得到掩码 5 和 33。包内同时提供当时的模型加载、似然评分与贪心生成实现。"
         ]
       },
       "blocks": [
         {
           "type": "code",
-          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay"
+          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay\npython -B check_methods.py"
         }
       ]
     }
@@ -213,14 +219,14 @@
         "en": "Frozen release and checksums",
         "zh": "固定版本与校验值"
       },
-      "url": "https://github.com/dqswordman/rag-evidence-selection-paths/releases/tag/v1.0.0"
+      "url": "https://github.com/dqswordman/rag-evidence-selection-paths/releases/tag/v1.0.1"
     },
     {
       "label": {
         "en": "Result map and reproduction scope",
         "zh": "结果映射与复现范围"
       },
-      "url": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/docs/reproduction.md"
+      "url": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.1/docs/reproduction.md"
     },
     {
       "label": {
@@ -228,12 +234,19 @@
         "zh": "交互式证据浏览"
       },
       "url": "https://huggingface.co/spaces/DQSWORDMAN/rag-evidence-selection-paths"
+    },
+    {
+      "label": {
+        "en": "Method implementation and worked checks",
+        "zh": "方法源码与核验说明"
+      },
+      "url": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.1/docs/methods.md"
     }
   ],
   "artifact": {
-    "version": "v1.0.0",
-    "url": "https://github.com/dqswordman/rag-evidence-selection-paths/releases/tag/v1.0.0",
-    "guide": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/docs/reproduction.md",
+    "version": "v1.0.1",
+    "url": "https://github.com/dqswordman/rag-evidence-selection-paths/releases/tag/v1.0.1",
+    "guide": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.1/docs/reproduction.md",
     "space": "https://huggingface.co/spaces/DQSWORDMAN/rag-evidence-selection-paths",
     "description": {
       "en": "Two selection paths separate passage budget, combination search and presentation order. A saved answer at each step shows where an apparent gain originates.",

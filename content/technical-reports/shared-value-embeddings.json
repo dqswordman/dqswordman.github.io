@@ -1,8 +1,12 @@
 {
   "article": {
-    "version": "1.0",
+    "version": "1.0.1",
     "published": "2026-11-21",
-    "updated": "2026-11-21"
+    "updated": "2026-11-21",
+    "updateNote": {
+      "en": "Added the original method implementation and an independent CPU check.",
+      "zh": "补充原方法实现及独立 CPU 校验。"
+    }
   },
   "locales": {
     "en": {
@@ -75,7 +79,7 @@
             "en": "City swaps sharing one value compared with a cycle of pairwise-shared cities.",
             "zh": "三条边共享一座城市与每两条边共享不同城市的对照。"
           },
-          "source": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/figures/design.pdf"
+          "source": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.1/figures/design.pdf"
         }
       ]
     },
@@ -154,7 +158,7 @@
               "93.63 / 77.83"
             ]
           ],
-          "source": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/reference/primary_contrasts.csv"
+          "source": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.1/reference/primary_contrasts.csv"
         }
       ]
     },
@@ -184,16 +188,18 @@
       },
       "paragraphs": {
         "en": [
-          "The CPU entry decodes frozen scalar measurements, averages six conditions within each world and verifies the eight primary contrasts. It also reconstructs the paired 512-world Qwen interval with the original 10,000 draws. The archive includes synthetic inputs, observation designs, calibration choices and worked ranking records. Encoding new text requires the upstream encoders."
+          "The CPU entry decodes frozen scalar measurements, averages six conditions within each world and verifies the eight primary contrasts. It also reconstructs the paired 512-world Qwen interval with the original 10,000 draws. The archive includes synthetic inputs, observation designs, calibration choices and worked ranking records. Encoding new text requires the upstream encoders.",
+          "Using the original inference code and shared bootstrap draws, the 2,048 paired worlds also reproduce all eight simultaneous 95% intervals. The family-wise critical value is 2.70526."
         ],
         "zh": [
-          "CPU 入口解码冻结的标量，先在每个世界内平均六个条件，再核验八项主比较，并以原来的 10,000 次配对抽样恢复 Qwen 的 512 世界区间。包内提供合成输入、观测方案、校准选择和排序实例。编码新的文本需要另外取得上游编码器。"
+          "CPU 入口解码冻结的标量，先在每个世界内平均六个条件，再核验八项主比较，并以原来的 10,000 次配对抽样恢复 Qwen 的 512 世界区间。包内提供合成输入、观测方案、校准选择和排序实例。编码新的文本需要另外取得上游编码器。",
+          "用原统计实现对 2,048 个配对世界做同一组自助抽样，可以恢复全部八项同时 95% 区间；整组的临界值为 2.70526。"
         ]
       },
       "blocks": [
         {
           "type": "code",
-          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay"
+          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay\npython -B check_methods.py"
         }
       ]
     }
@@ -211,14 +217,14 @@
         "en": "Frozen release and checksums",
         "zh": "固定版本与校验值"
       },
-      "url": "https://github.com/dqswordman/shared-value-embeddings/releases/tag/v1.0.0"
+      "url": "https://github.com/dqswordman/shared-value-embeddings/releases/tag/v1.0.1"
     },
     {
       "label": {
         "en": "Result map and reproduction scope",
         "zh": "结果映射与复现范围"
       },
-      "url": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/docs/reproduction.md"
+      "url": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.1/docs/reproduction.md"
     },
     {
       "label": {
@@ -226,12 +232,19 @@
         "zh": "交互式证据浏览"
       },
       "url": "https://huggingface.co/spaces/DQSWORDMAN/shared-value-embeddings"
+    },
+    {
+      "label": {
+        "en": "Method implementation and worked checks",
+        "zh": "方法源码与核验说明"
+      },
+      "url": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.1/docs/methods.md"
     }
   ],
   "artifact": {
-    "version": "v1.0.0",
-    "url": "https://github.com/dqswordman/shared-value-embeddings/releases/tag/v1.0.0",
-    "guide": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/docs/reproduction.md",
+    "version": "v1.0.1",
+    "url": "https://github.com/dqswordman/shared-value-embeddings/releases/tag/v1.0.1",
+    "guide": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.1/docs/reproduction.md",
     "space": "https://huggingface.co/spaces/DQSWORDMAN/shared-value-embeddings",
     "description": {
       "en": "Two sets of 23 observations see the same pairwise overlap pattern. Following the identity of the shared city changes how well they reconstruct a held-out directory.",
