@@ -3,7 +3,7 @@ import { escapeHtml as h } from './content.mjs';
 const categories = {
   'ccf-a': ['CCF A venues', 'CCF A 类会议'], 'ccf-b': ['CCF B venues', 'CCF B 类会议'],
   'ccf-c': ['CCF C venues', 'CCF C 类会议'], conference: ['Other conferences', '其他会议'],
-  preprint: ['Preprints', '预印本'], independent: ['Independent reports', '独立报告'],
+  preprint: ['Preprints', '预印本'], 'open-research': ['Open research reports', '开放研究报告'], independent: ['Independent reports', '独立报告'],
 };
 const labels = {
   en: { search:'Search reports', example:'Title, topic, author or keyword', tier:'Venue category', venue:'Venue or archive',
@@ -15,6 +15,7 @@ const labels = {
 };
 
 export function reportCategory(paper) {
+  if (paper.collection === 'open-research') return 'open-research';
   if (paper.status === 'preprint') return 'preprint';
   if (paper.venueRank) return 'ccf-' + paper.venueRank.toLowerCase();
   return paper.venue ? 'conference' : 'independent';

@@ -1,0 +1,241 @@
+{
+  "article": {
+    "version": "1.0",
+    "published": "2026-11-21",
+    "updated": "2026-11-21"
+  },
+  "locales": {
+    "en": {
+      "title": "Which 23 observations reveal an unseen embedding?",
+      "summary": "Two sets of 23 observations see the same pairwise overlap pattern. Following the identity of the shared city changes how well they reconstruct a held-out directory."
+    },
+    "zh": {
+      "title": "哪 23 个观测最能还原未见文本的嵌入？",
+      "summary": "两种方案各观察 23 个状态，编辑之间的两两重叠图相同。追踪重叠处是否指向同一座城市，会改变未见名录的嵌入重建误差。"
+    }
+  },
+  "keywords": [
+    "text embeddings",
+    "value incidence",
+    "reconstruction",
+    "dense retrieval",
+    "文本嵌入",
+    "共享值",
+    "组合编辑"
+  ],
+  "metrics": [
+    {
+      "value": "23 / 64",
+      "label": {
+        "en": "observed states per design",
+        "zh": "每种方案观测的状态数"
+      }
+    },
+    {
+      "value": "2,048",
+      "label": {
+        "en": "test worlds for BGE and E5",
+        "zh": "BGE 与 E5 的测试世界"
+      }
+    },
+    {
+      "value": "512",
+      "label": {
+        "en": "preselected Qwen worlds",
+        "zh": "Qwen 预选测试世界"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "worked-example",
+      "title": {
+        "en": "Follow the city shared by three edits",
+        "zh": "看三次编辑是否碰到同一座城市"
+      },
+      "paragraphs": {
+        "en": [
+          "Imagine swapping Dublin with Accra in the residence field, Dublin with Seoul in the work field and Dublin with Athens in the study field. Every pair of swaps overlaps and Dublin belongs to all three. Change the last swap to Accra and Seoul. Every pair still overlaps, yet the three overlaps now refer to different cities. A graph recording only whether pairs meet draws the same triangle in both cases."
+        ],
+        "zh": [
+          "设想把居住地里的都柏林与阿克拉互换，把工作地里的都柏林与首尔互换，再把求学地里的都柏林与雅典互换。每两次编辑都有交集，三次都涉及都柏林。现在把最后一次改为交换阿克拉与首尔，两两交集仍然存在，三个交点却分别指向不同城市。只标记两次编辑是否相交，得到的都是三角形。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "figure",
+          "file": "assets/reports/shared-value-embeddings/design.png",
+          "width": 1360,
+          "height": 952,
+          "caption": {
+            "en": "Figure 1 contrasts two edit triples with identical pairwise overlap and different shared-value structure.",
+            "zh": "图 1 展示两组编辑，具有相同的两两重叠图，但共享值结构不同。"
+          },
+          "alt": {
+            "en": "City swaps sharing one value compared with a cycle of pairwise-shared cities.",
+            "zh": "三条边共享一座城市与每两条边共享不同城市的对照。"
+          },
+          "source": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/figures/design.pdf"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "title": {
+        "en": "Spend the same observation budget",
+        "zh": "让两种方案使用相同的观测预算"
+      },
+      "paragraphs": {
+        "en": [
+          "Six binary edits define 64 versions of each four-person directory. Star23 and Cycle23 encode 23 states each and use the same quadratic reconstruction rule for the remaining states. The experiment varies which joint edits are observed while keeping the number of observations, target states and decoder fixed. Two renderings express the same facts as atomic sentences or compressed prose.",
+          "The primary test uses 2,048 synthetic worlds with BGE-small and E5-small. Normalized mean squared error measures approximation in the native representation space. R22 asks whether the reconstructed embedding retrieves the exact state in a 22-state candidate gallery. Balanced query ranking asks whether the representation helps retrieve facts; it can move differently from either geometry measure."
+        ],
+        "zh": [
+          "四人名录上的六个二元编辑产生 64 个状态。Star23 和 Cycle23 各编码 23 个状态，均用同一二次重建规则推算其他状态。实验改变联合观测的选择，同时固定观测数、目标状态和解码器。两种文本形式分别以原子句和压缩语句表述同一组事实。",
+          "主测试在 2,048 个合成世界上使用 BGE-small 和 E5-small。归一化均方误差衡量向量空间中的近似质量。R22 检查重建向量能否在 22 个候选状态中找回正确状态。平衡查询排序另行衡量能否检索到所需事实，它的变化方向可以与几何指标不同。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "results",
+      "title": {
+        "en": "Reconstruction and exact-state retrieval",
+        "zh": "重建误差与完整状态检索"
+      },
+      "paragraphs": {
+        "en": [
+          "Star23 has lower reconstruction error in all four encoder–rendering combinations. Relative reductions on atomic text are 53.4% for BGE and 36.0% for E5. On compressed records, exact-state retrieval improves by 15.45 and 15.80 percentage points, respectively. In the separate Qwen3-Embedding-0.6B atomic-text comparison, 512 preselected worlds yield a 6.58% relative error reduction."
+        ],
+        "zh": [
+          "四个编码器与文本形式组合中，Star23 的重建误差均较低。原子文本上，BGE 和 E5 的相对误差分别下降 53.4% 和 36.0%。压缩文本上，完整状态检索分别提升 15.45 和 15.80 个百分点。另用 Qwen3-Embedding-0.6B 对预选的 512 个世界测试，原子文本上的相对误差下降 6.58%。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "caption": {
+            "en": "Manuscript Table 1. Each pair gives Star23 / Cycle23. R22 is a percentage.",
+            "zh": "原稿表 1。每格依次为 Star23 / Cycle23，R22 单位为百分比。"
+          },
+          "columns": [
+            {
+              "en": "Encoder · text",
+              "zh": "编码器与文本"
+            },
+            {
+              "en": "NMSE",
+              "zh": "归一化误差"
+            },
+            {
+              "en": "R22 (%)",
+              "zh": "状态检索率 (%)"
+            }
+          ],
+          "rows": [
+            [
+              "BGE · Atomic",
+              "0.01238 / 0.02657",
+              "99.02 / 96.00"
+            ],
+            [
+              "BGE · Compressed",
+              "0.31746 / 0.72291",
+              "93.55 / 78.10"
+            ],
+            [
+              "E5 · Atomic",
+              "0.01514 / 0.02367",
+              "98.15 / 96.80"
+            ],
+            [
+              "E5 · Compressed",
+              "0.29736 / 0.69517",
+              "93.63 / 77.83"
+            ]
+          ],
+          "source": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/reference/primary_contrasts.csv"
+        }
+      ]
+    },
+    {
+      "id": "queries",
+      "title": {
+        "en": "What happens when somebody asks a question?",
+        "zh": "查询目标会怎样改变判断？"
+      },
+      "paragraphs": {
+        "en": [
+          "On atomic BGE text, same-entity queries gain 0.12424 percentage points of nDCG@5 and different-entity queries lose 0.03569. Compressed E5 provides a sharper example: state identity improves by 15.80 points while balanced query ranking falls by 0.03542 percentage points. Choosing observations for an indexing task therefore requires specifying what users will retrieve.",
+          "The 23-state design, four-person directories and fixed checkpoints define this evidence. The Qwen comparison reuses a subset of the same world pool. Natural documents, larger edit systems and additional independent pools would test how far the shared-value pattern extends."
+        ],
+        "zh": [
+          "在 BGE 原子文本上，同实体查询的 nDCG@5 增加 0.12424 个百分点，跨实体查询下降 0.03569 个百分点。E5 压缩文本的对照更鲜明：状态检索提升 15.80 点，平衡查询排序却下降 0.03542 个百分点。为索引选择观测状态之前，需要明确用户实际要检索什么。",
+          "证据来自固定检查点、四人名录和特定的 23 状态方案。Qwen 比较沿用了原测试池的子集。自然文档、更大的编辑空间及独立世界池将检验这一规律的外推范围。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "reproduction",
+      "title": {
+        "en": "Reconstruct the result on CPU",
+        "zh": "用 CPU 重建结果"
+      },
+      "paragraphs": {
+        "en": [
+          "The CPU entry decodes frozen scalar measurements, averages six conditions within each world and verifies the eight primary contrasts. It also reconstructs the paired 512-world Qwen interval with the original 10,000 draws. The archive includes synthetic inputs, observation designs, calibration choices and worked ranking records. Encoding new text requires the upstream encoders."
+        ],
+        "zh": [
+          "CPU 入口解码冻结的标量，先在每个世界内平均六个条件，再核验八项主比较，并以原来的 10,000 次配对抽样恢复 Qwen 的 512 世界区间。包内提供合成输入、观测方案、校准选择和排序实例。编码新的文本需要另外取得上游编码器。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "code",
+          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "label": {
+        "en": "Original manuscript · PDF",
+        "zh": "原版论文 · PDF"
+      },
+      "url": "https://dqswordman.github.io/assets/reports/shared-value-embeddings/manuscript.pdf"
+    },
+    {
+      "label": {
+        "en": "Frozen release and checksums",
+        "zh": "固定版本与校验值"
+      },
+      "url": "https://github.com/dqswordman/shared-value-embeddings/releases/tag/v1.0.0"
+    },
+    {
+      "label": {
+        "en": "Result map and reproduction scope",
+        "zh": "结果映射与复现范围"
+      },
+      "url": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/docs/reproduction.md"
+    },
+    {
+      "label": {
+        "en": "Interactive evidence explorer",
+        "zh": "交互式证据浏览"
+      },
+      "url": "https://huggingface.co/spaces/DQSWORDMAN/shared-value-embeddings"
+    }
+  ],
+  "artifact": {
+    "version": "v1.0.0",
+    "url": "https://github.com/dqswordman/shared-value-embeddings/releases/tag/v1.0.0",
+    "guide": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/docs/reproduction.md",
+    "space": "https://huggingface.co/spaces/DQSWORDMAN/shared-value-embeddings",
+    "description": {
+      "en": "Two sets of 23 observations see the same pairwise overlap pattern. Following the identity of the shared city changes how well they reconstruct a held-out directory.",
+      "zh": "两种方案各观察 23 个状态，编辑之间的两两重叠图相同。追踪重叠处是否指向同一座城市，会改变未见名录的嵌入重建误差。"
+    }
+  }
+}

@@ -286,7 +286,11 @@ export async function resolveProjects(definitions, publications, readReport) {
   const companions = new Map();
   const projects = [];
   for (const entry of allProjects) {
-    const { id, publicationId, title, summary, scope } = entry;
+    const { id, publicationId, title, summary, scope, collection, manuscriptPdf, anonymousManuscript, citationUrl } = entry;
+    if (collection !== undefined && collection !== 'open-research')
+      throw new Error(`Unknown project collection: ${collection}`);
+    if (manuscriptPdf !== undefined && manuscriptPdf !== `assets/reports/${id}/manuscript.pdf`)
+      throw new Error(`Invalid manuscript path for ${id}`);
     if (!validId(id) || ids.has(id) || !isBilingual(title) || !isBilingual(summary) || (scope && !isBilingual(scope)))
       throw new Error(`Invalid or duplicate research project: ${id}`);
     ids.add(id);
@@ -298,8 +302,12 @@ export async function resolveProjects(definitions, publications, readReport) {
     if (!textList(authors)) throw new Error(`Missing project authors: ${id}`);
     const codeUrl = entry.codeUrl ?? publication?.codeUrl;
     if (codeUrl) validateGitHubRepository(codeUrl);
+    if (citationUrl && (!codeUrl || !citationUrl.startsWith(codeUrl + '/blob/')))
+      throw new Error(`Citation file must belong to the project repository: ${id}`);
     const reports = [];
     const listed = entry.reports ?? (publication?.technicalReport === true ? [{ id: publicationId, type: 'paper-companion' }] : []);
+    if (collection === 'open-research' && (!listed.length || !manuscriptPdf || !codeUrl))
+      throw new Error(`Open report requires a companion, manuscript and repository: ${id}`);
     for (const descriptor of listed) {
       const { id: reportId, type } = descriptor;
       if (!validId(reportId) || reportIds.has(reportId) || !Object.hasOwn(reportKinds, type))
@@ -312,11 +320,11 @@ export async function resolveProjects(definitions, publications, readReport) {
       validateReport(body, reportId);
       if (!body.article) throw new Error(`Public report needs a version and dates: ${reportId}`);
       reports.push({ ...(companion ? publication : {}), id: reportId, projectId: id, projectTitle: title,
-        publicationId: companion ? publicationId : null, documentType: type, authors, codeUrl,
+        publicationId: companion ? publicationId : null, documentType: type, authors, codeUrl, collection, manuscriptPdf, anonymousManuscript, citationUrl,
         title: companion ? publication.title : title.en, technicalReport: body });
       if (companion) companions.set(publicationId, { reportId, technicalReport: body });
     }
-    projects.push({ id, title, summary, scope, authors, publication, codeUrl, reports });
+    projects.push({ id, title, summary, scope, authors, publication, codeUrl, reports, collection, manuscriptPdf, citationUrl });
   }
   return { projects, publications: publications.map(p => ({ ...p, ...companions.get(p.id) })) };
 }

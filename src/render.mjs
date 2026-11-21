@@ -3,7 +3,7 @@ import {
   researchIndexes, researchIndexPath, technicalReportPath, projectPath, venueLabel,
 } from './content.mjs';
 import { icon, monogram } from './components.mjs';
-import { paperSpotlight, renderResearchIndex, renderReport, reportPreview, selectedResearch, renderProjects, renderProject } from './research.mjs';
+import { paperSpotlight, renderResearchIndex, renderReport, reportPreview, selectedResearch, renderProjects, renderProject, openReports } from './research.mjs';
 
 export const ui = {
   en: {
@@ -30,7 +30,7 @@ export const ui = {
     report: 'Technical report',
     openSource: 'Open source',
     reportsDescription: 'Read the methods, inspect the figures and follow each report to its evidence.',
-    projectDirectory: 'Research projects', selectedResearch: 'Selected research', projectOverview: 'Project overview',
+    openReports: 'Open Research Reports', openReport: 'Open research report', openIntro: 'I share completed studies here when I consider their evidence too narrow for the conference I had in mind. The manuscripts, code and recorded results are available for others to inspect, reuse and build on.', browseReports: 'Browse the collection', paperPdf: 'Manuscript PDF', projectDirectory: 'Research projects', selectedResearch: 'Selected research', projectOverview: 'Project overview',
     projectsDescription: 'Questions, results and public materials for each research project.',
     moreProjects: 'Other projects', researchProject: 'Research project', interpretation: 'Scope of the evidence',
     acceptedStatus: 'Accepted', publishedStatus: 'Published', calls: 'calls', orderBy: 'Sort by', documentType: 'Document type', allReports: 'All documents',
@@ -147,7 +147,7 @@ export const ui = {
     report: '技术报告',
     openSource: '开源项目',
     reportsDescription: '阅读研究方法、图表和局限，并从每份报告追溯到对应证据。',
-    projectDirectory: '研究项目', selectedResearch: '精选研究', projectOverview: '项目概览',
+    openReports: '开放研究报告', openReport: '开放研究报告', openIntro: '这里收录我已完成的研究。有些工作的证据范围还达不到我心中目标会议的投稿标准，但实验、代码和观察值得分享。我把论文与复现材料一并公开，供同行核查、复用，也方便后续工作从这里出发。', browseReports: '浏览本栏目', paperPdf: '论文 PDF', projectDirectory: '研究项目', selectedResearch: '精选研究', projectOverview: '项目概览',
     projectsDescription: '按项目查找研究问题、结果，以及已经公开的论文、报告和代码。',
     moreProjects: '其他项目', researchProject: '研究项目', interpretation: '结果适用于什么范围',
     acceptedStatus: '已录用', publishedStatus: '已发表', calls: '次测量', orderBy: '排序依据', documentType: '文档类型', allReports: '全部文档',
@@ -359,8 +359,8 @@ export function renderPage({
   };
   const routes = { en: localizedPath('en'), zh: localizedPath('zh') };
   const canonical = profile.url + routes[locale];
-  const indexTitle = index === 'research' ? t.projectDirectory : index === 'technical-reports' ? t.reports : t.openSource;
-  const indexDescription = index === 'research' ? t.projectsDescription : index === 'technical-reports' ? t.reportsDescription : t.codeDescription;
+  const indexTitle = index === 'open-research' ? t.openReports : index === 'research' ? t.projectDirectory : index === 'technical-reports' ? t.reports : t.openSource;
+  const indexDescription = index === 'open-research' ? t.openIntro : index === 'research' ? t.projectsDescription : index === 'technical-reports' ? t.reportsDescription : t.codeDescription;
   const reportCopy = report?.technicalReport.locales[locale];
   const title = project ? `${project.title[locale]} · ${profile.name}` : report ? `${reportCopy.title ?? report.title} · ${t.report}`
     : index ? `${indexTitle} · ${profile.name}` : `${profile.name} · ${copy.role}`;
@@ -407,6 +407,7 @@ export function renderPage({
     '@id': canonical, headline: name, inLanguage: localeCode, description, version: article?.version,
     datePublished: article?.published, dateModified: article?.updated,
     author: report.authors.map(name => ({ '@type': 'Person', name })),
+    ...(report.manuscriptPdf ? { about: { '@type': 'ScholarlyArticle', name: report.title, url: profile.url + basePath + '/' + report.manuscriptPdf } } : {}),
     ...(report.venue ? { about: { '@type': 'ScholarlyArticle', name: report.title,
       ...(report.publicationUrl ? { url: report.publicationUrl } : {}) } } : {}),
     ...(report.projectId ? { isPartOf: { '@type': 'WebPage', '@id': profile.url + projectPath(report.projectId, locale, basePath) } } : {}),
@@ -416,6 +417,7 @@ export function renderPage({
     ? `<main id="main" class="error-page container" tabindex="-1"><p class="eyebrow">404 / ${h(profile.name)}</p><h1>${h(t.notFound)}</h1><p>${h(t.notFoundText)}</p><a class="button button-dark" href="${home}">${h(t.returnHome)}${icon('arrow')}</a></main>`
     : project ? renderProject(project, t, locale, home, basePath)
     : report ? renderReport(report, t, locale, home, basePath)
+    : index === 'open-research' ? openReports(projects,t,locale,basePath,'page')
     : index === 'research' ? renderProjects(projects, profile.featured, t, locale, home, basePath)
     : index ? renderResearchIndex(index, index === 'technical-reports' ? (projects.length ? documents : orderedPapers) : codeEntries, t, locale, home, basePath) : `
   <main id="main" tabindex="-1">
@@ -445,6 +447,7 @@ export function renderPage({
       </div>
     </section>
     ${selectedResearch(projects, profile.featured, t, locale, basePath)}
+    ${openReports(projects,t,locale,basePath,'home')}
     <div class="container news-strip">${newsPanel(profile, publications, t, locale, basePath)}</div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>
@@ -533,7 +536,8 @@ export function renderPage({
   <link rel="stylesheet" href="${basePath}/assets/${assets.css}">
   ${(project || report || index) && assets.researchCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.researchCss}">` : ''}
   ${assets.experienceCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.experienceCss}">` : ''}
-  ${report && !report.venue && article ? `<meta name="citation_title" content="${h(name)}">
+  ${report && !report.venue && article ? `<meta name="citation_title" content="${h(report.manuscriptPdf ? report.title : name)}">
+  ${report.manuscriptPdf ? `<meta name="citation_pdf_url" content="${h(profile.url + basePath + '/' + report.manuscriptPdf)}">` : ''}
   ${report.authors.map(author => `<meta name="citation_author" content="${h(author)}">`).join('\n  ')}
   <meta name="citation_publication_date" content="${h(article.published)}">` : ''}
   ${notFound ? '' : `<script type="application/ld+json">${JSON.stringify(structured).replace(/</g, '\\u003c')}</script>`}

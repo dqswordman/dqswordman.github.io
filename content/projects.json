@@ -2,7 +2,10 @@
   {
     "id": "program-structure-certificates",
     "publicationId": "program-structure-certificates",
-    "title": { "en": "When is program structure required?", "zh": "何时需要更复杂的程序结构？" },
+    "title": {
+      "en": "When is program structure required?",
+      "zh": "何时需要更复杂的程序结构？"
+    },
     "summary": {
       "en": "Change one demonstration and certify when the shortest legal solution grows from one rule to two. Follow the consequences across displayed tasks, hidden witnesses and new inputs.",
       "zh": "改变一个展示样例，认证最短合法解何时从一条规则变成两条，再比较题面、隐藏见证与新输入上的模型表现。"
@@ -11,7 +14,12 @@
       "en": "The certificates apply to a bounded string-replacement language. Witness gains coexist with low agreement on new inputs that activate both rules.",
       "zh": "证书适用于有界字符串替换语言。隐藏见证成功率上升的同时，模型在实际触发两条规则的新输入上一致率仍然很低。"
     },
-    "reports": [{ "id": "program-structure-certificates", "type": "paper-companion" }]
+    "reports": [
+      {
+        "id": "program-structure-certificates",
+        "type": "paper-companion"
+      }
+    ]
   },
   {
     "id": "decision-sufficiency",
@@ -80,5 +88,92 @@
       "en": "Audit-guided trust control in surrogate-assisted evolutionary hyperparameter optimization.",
       "zh": "研究如何在代理辅助的进化式超参数优化中，利用审计反馈调整信任程度。"
     }
+  },
+  {
+    "id": "rag-evidence-selection-paths",
+    "collection": "open-research",
+    "authors": [
+      "Wenzhang Du"
+    ],
+    "title": {
+      "en": "From Evidence Scores to RAG Answers: Budget, Search, and Presentation",
+      "zh": "从证据评分到 RAG 回答：预算、搜索与呈现"
+    },
+    "summary": {
+      "en": "Two selection paths separate passage budget, combination search and presentation order. A saved answer at each step shows where an apparent gain originates.",
+      "zh": "沿两条配对路径，分别改变段落预算、组合搜索和呈现顺序。每一步都有已保存的回答，可以追查最终得分从哪里来。"
+    },
+    "scope": {
+      "en": "Six passages, short-answer multi-hop QA and one global reversal define the experiment. Reference-answer likelihood is an offline selection objective.",
+      "zh": "实验覆盖六段候选、短答案多跳问答和一次整体反序。使用参考答案计算的似然属于离线选择目标。"
+    },
+    "codeUrl": "https://github.com/dqswordman/rag-evidence-selection-paths",
+    "manuscriptPdf": "assets/reports/rag-evidence-selection-paths/manuscript.pdf",
+    "reports": [
+      {
+        "id": "rag-evidence-selection-paths",
+        "type": "technical-report"
+      }
+    ],
+    "anonymousManuscript": true,
+    "citationUrl": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/citation.bib"
+  },
+  {
+    "id": "shared-value-embeddings",
+    "collection": "open-research",
+    "authors": [
+      "Wenzhang Du"
+    ],
+    "title": {
+      "en": "Beyond Pairwise Overlap: Shared-Value Observations for Compositional Text Embeddings",
+      "zh": "超越两两重叠：组合文本嵌入的共享值观测"
+    },
+    "summary": {
+      "en": "Two sets of 23 observations see the same pairwise overlap pattern. Following the identity of the shared city changes how well they reconstruct a held-out directory.",
+      "zh": "两种方案各观察 23 个状态，编辑之间的两两重叠图相同。追踪重叠处是否指向同一座城市，会改变未见名录的嵌入重建误差。"
+    },
+    "scope": {
+      "en": "The study concerns a finite synthetic directory and fixed encoders. Qwen uses a preselected subset of the original test pool.",
+      "zh": "结论来自有限的合成名录和固定编码器。Qwen 实验使用原测试池中预先选定的子集。"
+    },
+    "codeUrl": "https://github.com/dqswordman/shared-value-embeddings",
+    "manuscriptPdf": "assets/reports/shared-value-embeddings/manuscript.pdf",
+    "reports": [
+      {
+        "id": "shared-value-embeddings",
+        "type": "technical-report"
+      }
+    ],
+    "anonymousManuscript": true,
+    "citationUrl": "https://github.com/dqswordman/shared-value-embeddings/blob/v1.0.0/citation.bib"
+  },
+  {
+    "id": "document-replay-evidence-qa",
+    "collection": "open-research",
+    "authors": [
+      "Wenzhang Du"
+    ],
+    "title": {
+      "en": "When Does Document Replay Help Evidence-State Question Answering?",
+      "zh": "文档回放何时有助于证据状态问答？"
+    },
+    "summary": {
+      "en": "Adapters replay the same questions with or without supporting documents. Switching the unrelated attachment at test time reverses which specialist leads.",
+      "zh": "两组适配器复习相同的问题与答案，一组带文档，一组闭卷。测试时更换一份与问题无关的附件，两组的领先顺序随之翻转。"
+    },
+    "scope": {
+      "en": "The evaluation uses a single 1.7B backbone, synthetic inventory worlds and multiple-choice readouts. The mixed continuation matches updates and supervised answers while reading different token counts.",
+      "zh": "评估使用一个 1.7B 基座、合成库存世界和选项式读出。混合续训对齐了更新次数与监督答案数，各分支读取的 token 数仍有差别。"
+    },
+    "codeUrl": "https://github.com/dqswordman/document-replay-evidence-qa",
+    "manuscriptPdf": "assets/reports/document-replay-evidence-qa/manuscript.pdf",
+    "reports": [
+      {
+        "id": "document-replay-evidence-qa",
+        "type": "technical-report"
+      }
+    ],
+    "anonymousManuscript": true,
+    "citationUrl": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/citation.bib"
   }
 ]

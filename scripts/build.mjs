@@ -97,7 +97,7 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   ]);
 
   const reportPapers = projects.flatMap(project => project.reports);
-  const indexes = ['research', ...researchIndexes];
+  const indexes = ['research', 'open-research', ...researchIndexes];
   for (const locale of supportedLocales) {
     const folder = locale === 'en' ? outputRoot : new URL('zh/', outputRoot);
     await mkdir(folder, { recursive: true });

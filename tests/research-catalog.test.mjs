@@ -85,3 +85,29 @@ test('a selected standalone report can have no conference, manuscript date or co
   await assert.rejects(resolveProjects([descriptor,{...descriptor,id:'second-project'}], [], async () => body), /duplicate public report/);
   await assert.rejects(resolveProjects([{...descriptor,reports:[{id:'first-note',type:'paper-companion'}]}], [], async () => body), /linked publication/);
 });
+
+test('the open collection keeps its papers separate from the two selected works and links the original PDFs', () => {
+  const batch = content.projects.filter(p => p.collection === 'open-research');
+  assert.deepEqual([...content.profile.featured].sort(), ['decision-sufficiency', 'program-structure-certificates']);
+  for (const id of ['rag-evidence-selection-paths', 'shared-value-embeddings', 'document-replay-evidence-qa'])
+    assert.ok(batch.some(p => p.id === id));
+  for (const locale of ['en','zh']) {
+    const opts = { ...content, assets, locale, basePath };
+    const home = renderPage(opts);
+    const selected = home.split('id="selected-research"')[1].split('</section>')[0];
+    const collection = renderPage({ ...opts, index: 'open-research' });
+    const catalogue = renderPage({ ...opts, index: 'technical-reports' });
+    assert.ok(catalogue.includes('data-tier="open-research"'));
+    for (const project of batch) {
+      const report = project.reports[0];
+      assert.ok(!selected.includes(project.id));
+      assert.ok(collection.includes(technicalReportPath(report.id,locale,basePath)));
+      assert.ok(collection.includes(project.codeUrl));
+      assert.ok(collection.includes(report.technicalReport.artifact.space));
+      const attachment = '/' + project.manuscriptPdf;
+      assert.ok(collection.includes('href="' + basePath + attachment + '"'));
+      const article = renderPage({ ...opts, report });
+      assert.ok(article.includes('name="citation_pdf_url" content="' + content.profile.url + basePath + attachment + '"'));
+    }
+  }
+});

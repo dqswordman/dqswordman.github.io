@@ -1,0 +1,243 @@
+{
+  "article": {
+    "version": "1.0",
+    "published": "2026-11-21",
+    "updated": "2026-11-21"
+  },
+  "locales": {
+    "en": {
+      "title": "Which evidence decision changed the answer?",
+      "summary": "Two selection paths separate passage budget, combination search and presentation order. A saved answer at each step shows where an apparent gain originates."
+    },
+    "zh": {
+      "title": "哪一步证据选择改变了 RAG 的答案？",
+      "summary": "沿两条配对路径，分别改变段落预算、组合搜索和呈现顺序。每一步都有已保存的回答，可以追查最终得分从哪里来。"
+    }
+  },
+  "keywords": [
+    "RAG",
+    "context construction",
+    "passage order",
+    "multi-hop question answering",
+    "检索增强生成",
+    "证据顺序",
+    "段落预算"
+  ],
+  "metrics": [
+    {
+      "value": "539",
+      "label": {
+        "en": "questions with a budget and search path",
+        "zh": "预算与搜索路径中的问题"
+      }
+    },
+    {
+      "value": "89",
+      "label": {
+        "en": "questions with complete canonical answers",
+        "zh": "有完整常规顺序答案的问题"
+      }
+    },
+    {
+      "value": "30",
+      "label": {
+        "en": "questions with both orders",
+        "zh": "同时测量两种顺序的问题"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "worked-example",
+      "title": {
+        "en": "One question, three answers",
+        "zh": "一道问题的三次作答"
+      },
+      "paragraphs": {
+        "en": [
+          "The question asks which band was founded by Devilment’s eventual vocalist. With the selected passages in their original order, Qwen answers “Cradle of Filth.” Present the same two passages in reverse and its answer becomes “Falling in Reverse.” Select again under the reversed scoring order and the answer returns to “Cradle of Filth.” Comparing the first and last answers alone hides both transitions."
+        ],
+        "zh": [
+          "题目问的是，后来担任 Devilment 主唱的人创立过哪支乐队。Qwen 按原顺序读取选中的两段材料，答出 Cradle of Filth。把相同材料倒过来，答案变成 Falling in Reverse。按反序下的评分重新选择材料，答案又回到 Cradle of Filth。只比较起点与终点，看不到中间发生的两次变化。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "figure",
+          "file": "assets/reports/rag-evidence-selection-paths/design.png",
+          "width": 1360,
+          "height": 1141,
+          "caption": {
+            "en": "Figure 1 follows the same question across the original, reversed and reselected evidence. Passage identities travel with the selected set.",
+            "zh": "图 1 沿同一道题跟踪原顺序、反序及重选。段落编号标明每一步实际使用的证据。"
+          },
+          "alt": {
+            "en": "Three saved answers to the Devilment question across changes in order and membership.",
+            "zh": "Devilment 问题在证据反序和重选前后的三次归档回答。"
+          },
+          "source": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/figures/design.pdf"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "title": {
+        "en": "Hold the passage pool fixed",
+        "zh": "先固定候选段落"
+      },
+      "paragraphs": {
+        "en": [
+          "Each pool contains six passages. Greedy selection adds a passage three times. Exact search tries all three-passage combinations. Relaxing the budget then permits zero, one or two passages as well. The two differences isolate the contribution of search at a fixed size and the contribution of size flexibility. Scoring uses the likelihood of the reference answer; saved generations give a separate token-F1 readout.",
+          "The 539-question panel spans HotpotQA, 2WikiMultiHopQA and MuSiQue, with two pool constructions for each question. The analysis averages the two tracks within question before estimating uncertainty. A nested panel of 89 questions has all 64 canonical subset answers for Qwen and Gemma. On 30 matched questions, each of the 42 sets of size at most three has an answer in both orders."
+        ],
+        "zh": [
+          "每个池固定六段候选。贪心方案逐次加入一段，共选三次。精确搜索遍历所有三段组合。随后放宽预算，允许使用零段、一段或两段。两个相邻差值分别衡量固定长度时的搜索变化，以及允许更短上下文带来的变化。选择依据是参考答案的似然，另用已生成答案计算 token F1。",
+          "539 道题来自三个多跳问答基准，每题有两种候选池构造。统计先在同一问题内平均两条轨道，再估计不确定性。嵌套的 89 道题保存了 Qwen 和 Gemma 对全部 64 个子集的常规顺序回答。另有 30 道配对题，最多三段的 42 种组合均有两种顺序的回答。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "results",
+      "title": {
+        "en": "Budget flexibility helps one generator most",
+        "zh": "放宽预算对哪种模型帮助最大"
+      },
+      "paragraphs": {
+        "en": [
+          "Mistral gains 5.91 token-F1 points along the full path. Allowing shorter contexts contributes 4.79 points, with a paired 95% interval from 3.12 to 6.53. Searching more thoroughly while keeping three passages contributes 1.11 points. For Qwen and Gemma the intervals for budget flexibility include zero. Each component below is rounded independently."
+        ],
+        "zh": [
+          "Mistral 在整条路径上提高 5.91 个 token-F1 点。其中，允许用更短的上下文贡献 4.79 点，配对 95% 区间为 3.12 至 6.53。保持三段、加强搜索贡献 1.11 点。Qwen 和 Gemma 的预算效应区间都覆盖零。下表各项分别取整。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "caption": {
+            "en": "Table 2 of the manuscript. Paired changes in token-F1 points on 539 questions.",
+            "zh": "原稿表 2。539 道题上的配对 token-F1 点数变化。"
+          },
+          "columns": [
+            {
+              "en": "Generator",
+              "zh": "生成器"
+            },
+            {
+              "en": "Budget",
+              "zh": "预算"
+            },
+            {
+              "en": "Search",
+              "zh": "搜索"
+            },
+            {
+              "en": "Total",
+              "zh": "总变化"
+            }
+          ],
+          "rows": [
+            [
+              "Qwen",
+              "−1.46",
+              "−0.35",
+              "−1.81"
+            ],
+            [
+              "Gemma",
+              "+0.95",
+              "+0.65",
+              "+1.60"
+            ],
+            [
+              "Mistral",
+              "+4.79",
+              "+1.11",
+              "+5.91"
+            ]
+          ],
+          "source": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/data/analysis/A_bootstrap_summary.csv"
+        }
+      ]
+    },
+    {
+      "id": "order",
+      "title": {
+        "en": "The same membership change can switch sign",
+        "zh": "同一组替换，顺序不同，效应会反向"
+      },
+      "paragraphs": {
+        "en": [
+          "On the 30-question exact-three panel, reversing Gemma’s original set costs 20.56 points. Reselecting under reverse order recovers 16.54. Placing that newly selected membership in canonical order instead costs 23.35 points relative to the original set. The four crossed readouts reveal an interaction between membership and order.",
+          "An answer-blind cross-encoder offers a check on a different selection objective. On the 89 retrieval-built pools, greedy and exact three-passage search choose identical sets in 75 cases. The observed answer changes still differ by generator. The size of the pool, the short-answer format and the single reversal bound the interpretation."
+        ],
+        "zh": [
+          "在 30 道题、精确选三段的设置下，直接反转 Gemma 原来的集合使 F1 下降 20.56 点。按反序重新选择可回升 16.54 点；把重选集合放回常规顺序，相对原集合却下降 23.35 点。四种交叉读数显示，成员替换的效果取决于排列顺序。",
+          "另用无需参考答案的交叉编码器检查不同选择目标。在 89 个检索构造的池中，贪心与精确搜索有 75 次选中相同三段，实际答案变化仍因生成器而异。候选池大小、短答案形式及单一反序限定了结论的范围。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "reproduction",
+      "title": {
+        "en": "Reconstruct the result on CPU",
+        "zh": "用 CPU 重建结果"
+      },
+      "paragraphs": {
+        "en": [
+          "On CPU the release re-scores archived generations, checks 9,702 selected-answer records and recomputes 279 paired statistics. It includes passage identifiers and text hashes for joining the original benchmarks. Original benchmark sources supply the passage bodies."
+        ],
+        "zh": [
+          "CPU 回放重新计算归档回答的分数，核验 9,702 条选中答案，并重算 279 项配对统计。包内保存段落标识和文本哈希，可回到上游基准核对段落正文。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "code",
+          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "label": {
+        "en": "Original manuscript · PDF",
+        "zh": "原版论文 · PDF"
+      },
+      "url": "https://dqswordman.github.io/assets/reports/rag-evidence-selection-paths/manuscript.pdf"
+    },
+    {
+      "label": {
+        "en": "Frozen release and checksums",
+        "zh": "固定版本与校验值"
+      },
+      "url": "https://github.com/dqswordman/rag-evidence-selection-paths/releases/tag/v1.0.0"
+    },
+    {
+      "label": {
+        "en": "Result map and reproduction scope",
+        "zh": "结果映射与复现范围"
+      },
+      "url": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/docs/reproduction.md"
+    },
+    {
+      "label": {
+        "en": "Interactive evidence explorer",
+        "zh": "交互式证据浏览"
+      },
+      "url": "https://huggingface.co/spaces/DQSWORDMAN/rag-evidence-selection-paths"
+    }
+  ],
+  "artifact": {
+    "version": "v1.0.0",
+    "url": "https://github.com/dqswordman/rag-evidence-selection-paths/releases/tag/v1.0.0",
+    "guide": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.0/docs/reproduction.md",
+    "space": "https://huggingface.co/spaces/DQSWORDMAN/rag-evidence-selection-paths",
+    "description": {
+      "en": "Two selection paths separate passage budget, combination search and presentation order. A saved answer at each step shows where an apparent gain originates.",
+      "zh": "沿两条配对路径，分别改变段落预算、组合搜索和呈现顺序。每一步都有已保存的回答，可以追查最终得分从哪里来。"
+    }
+  }
+}

@@ -155,7 +155,7 @@ check(files.has(resolve(root, '.nojekyll')), 'Missing .nojekyll');
 const sitemap = await readFile(resolve(root, 'sitemap.xml'), 'utf8');
 check(sitemap.includes(`${profile.url}${basePath}/zh/`), 'Chinese page missing from sitemap');
 check(!sitemap.includes('404.html'), '404 should not be indexed');
-for (const index of ['research', ...researchIndexes])
+for (const index of ['research', 'open-research', ...researchIndexes])
   for (const locale of supportedLocales) {
     const route = researchIndexPath(index, locale, basePath);
     check(sitemap.includes(`<loc>${profile.url}${route}</loc>`), `Missing research index in sitemap: ${route}`);

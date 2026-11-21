@@ -92,6 +92,7 @@ function reportIndexCard(paper, t, locale, basePath) {
       <p class="research-entry-copy">${h(copy.summary)}</p>
       <div class="research-actions">
         <a class="button button-dark" href="${h(href)}">${h(t.readReport)}${icon('arrow')}</a>
+        ${pdfLink(paper,t,basePath)}
         ${paper.codeUrl ? `<a class="text-link" href="${h(paper.codeUrl)}" ${external}>GitHub${icon('external')}</a>` : ''}
         ${spaceBadge(report.artifact, t)}
       </div>
@@ -127,7 +128,7 @@ function codeIndexCard(paper, t, locale, basePath) {
 
 function projectVenue(project, t) {
   const paper = project.publication;
-  if (!paper) return t.researchProject;
+  if (!paper) return project.collection === 'open-research' ? t.openReport : t.researchProject;
   const status = paper.status === 'accepted' ? t.acceptedStatus : paper.status === 'published' ? t.publishedStatus : paper.status === 'preprint' ? t.preprint : '';
   return [venueLabel(paper), status].filter(Boolean).join(' · ');
 }
@@ -141,9 +142,38 @@ export function selectedResearch(projects, featured, t, locale, basePath) {
   </section>`;
 }
 
+
+function pdfLink(item, t, basePath) {
+  return item.manuscriptPdf ? `<a class="text-link" href="${h(basePath + '/' + item.manuscriptPdf)}">${h(t.paperPdf)}${icon('arrow')}</a>` : '';
+}
+
+export function openReports(projects, t, locale, basePath, view) {
+  const entries = projects.filter(p => p.collection === 'open-research');
+  if (!entries.length) return '';
+  const link = researchIndexPath('open-research', locale, basePath);
+  const heading = `<div class="open-heading"><h2>${h(t.openReports)}</h2><a class="text-link" href="${h(link)}">${h(t.browseReports)} ${icon('arrow')}</a></div>`;
+  const cards = entries.map(p => {
+    const doc = p.reports[0], body = doc.technicalReport;
+    const reportUrl = technicalReportPath(doc.id, locale, basePath);
+    const projectUrl = projectPath(p.id, locale, basePath);
+    const headingTag = view === 'page' ? 'h2' : 'h3';
+    return `<article class="open-report-card"><${headingTag}><a href="${h(projectUrl)}">${h(body.locales[locale].title)}</a></${headingTag}>
+      <p>${h(p.summary[locale])}</p><div class="research-actions"><a class="text-link" href="${h(reportUrl)}">${h(t.readReport)}${icon('arrow')}</a>
+      ${pdfLink(p,t,basePath)}${view === 'page' ? `<a class="text-link" href="${h(p.codeUrl)}" ${external}>GitHub</a>${spaceBadge(body.artifact,t)}` : ''}</div></article>`;
+  }).join('');
+  if (view === 'page') return `<main id="main" class="research-index" tabindex="-1"><header class="research-banner"><div class="container research-banner-inner">
+    <a class="text-link research-back" href="${h(researchIndexPath('research',locale,basePath))}">${icon('arrow')}${h(t.projectDirectory)}</a>
+    <h1>${h(t.openReports)}</h1><p class="research-deck">${h(t.openIntro)}</p>
+    <div class="research-actions"><a class="text-link" href="${h(researchIndexPath('technical-reports',locale,basePath) + '?tier=open-research')}">${h(locale === 'zh' ? '检索本栏报告' : 'Search these reports')} ${icon('arrow')}</a>
+      <a class="text-link" href="https://huggingface.co/collections/DQSWORDMAN/open-research-reports-6b019707aeffeec0b0f43136" ${external}>${h(locale === 'zh' ? 'Hugging Face 合集' : 'Hugging Face collection')} ${icon('external')}</a></div></div></header>
+    <div class="container open-report-grid open-collection-cards">${cards}</div></main>`;
+  return `<section class="${view==='home'?'container ':''}open-reports" id="open-research">${heading}
+    <p class="open-intro">${h(t.openIntro)}</p><div class="open-report-grid">${cards}</div></section>`;
+}
+
 export function renderProjects(projects, featured, t, locale, home, basePath) {
   const selected = featured.map(id => projects.find(project => project.id === id)).filter(Boolean);
-  const rest = projects.filter(p => !featured.includes(p.id));
+  const rest = projects.filter(p => !featured.includes(p.id) && p.collection !== 'open-research');
   const cards = list => list.map(project => `<article class="project-entry">
     <p class="research-kicker">${h(projectVenue(project, t))}</p>
     <h2><a href="${h(projectPath(project.id, locale, basePath))}">${h(project.title[locale])}</a></h2>
@@ -157,6 +187,7 @@ export function renderProjects(projects, featured, t, locale, home, basePath) {
     <h1>${h(t.projectDirectory)}</h1><p class="research-deck">${h(t.projectsDescription)}</p>
     </div></header><div class="container projects-list">
     ${selected.length ? `<section id="selected" aria-label="${h(t.selectedResearch)}">${rest.length ? `<h2 class="project-group-title">${h(t.selectedResearch)}</h2>` : ''}<div class="project-grid">${cards(selected)}</div></section>` : ''}
+    ${openReports(projects,t,locale,basePath,'directory')}
     ${rest.length ? `<section aria-label="${h(t.moreProjects)}"><h2 class="project-group-title">${h(t.moreProjects)}</h2><div class="project-grid">${cards(rest)}</div></section>` : ''}
     </div></main>`;
 }
@@ -182,6 +213,7 @@ export function renderProject(project, t, locale, home, basePath) {
     <p class="research-deck">${h(project.summary[locale])}</p><p class="project-byline">${h(project.authors.join(', '))}</p>
     <div class="research-actions">${project.reports.map(doc => `<a class="button button-dark" href="${h(technicalReportPath(doc.id, locale, basePath))}">${h(t.readReport)}${icon('arrow')}</a>`).join('')}
     ${project.codeUrl ? `<a class="text-link" href="${h(project.codeUrl)}" ${external}>GitHub${icon('external')}</a>` : ''}
+    ${pdfLink(project,t,basePath)}
     ${paper ? `<a class="text-link" href="${h(paper.publicationUrl ?? home + '#paper-' + paper.id)}" ${paper.publicationUrl ? external : ''}>${h(paper.publicationUrl ? (paper.status === 'preprint' ? t.preprint : t.publishedPaper) : t.publicationEntry)}${icon(paper.publicationUrl ? 'external' : 'arrow')}</a>` : ''}</div></div></header>
     <div class="container project-body">
       ${evidence ? `<section><h2>${h(t.keyResults)}</h2><dl class="project-metrics">${evidence.technicalReport.metrics.map(m =>
@@ -256,6 +288,7 @@ export function renderReport(paper, t, locale, home, basePath) {
   const contents = sources?.length ? [...sections, { id: 'sources', title: t.reportSources }] : sections;
   const index = researchIndexPath('technical-reports', locale, basePath);
   const publication = paper.venue ? `${home}#paper-${paper.publicationId ?? paper.id}` : null;
+  const manuscript = paper.manuscriptPdf ? basePath + '/' + paper.manuscriptPdf : null;
   const kind = reportKinds[paper.documentType ?? 'paper-companion'][locale];
   return `<main id="main" class="report-page" tabindex="-1">
     <article aria-labelledby="report-title">
@@ -273,11 +306,12 @@ export function renderReport(paper, t, locale, home, basePath) {
               <li>${h(t.lastUpdated)} <time datetime="${h(article.updated)}">${h(article.updated)}</time></li>
             </ul>` : ''}
           </div>
-          ${article && publication ? `<p class="report-paper">
-            <a href="${h(publication)}"><cite lang="en">${h(paper.title)}</cite> ${icon('arrow')}</a>
+          ${article && (publication || manuscript) ? `<p class="report-paper">
+            <a href="${h(publication || manuscript)}"><cite lang="en">${h(paper.title)}</cite> ${icon('arrow')}</a>
             ${article.manuscriptDate ? `<span>${h(t.authorFinal)} <time datetime="${h(article.manuscriptDate)}">${h(article.manuscriptDate)}</time></span>` : ''}
           </p>` : ''}
           <div class="research-actions">
+            ${pdfLink(paper,t,basePath)}
             ${paper.publicationUrl ? `<a class="text-link" href="${h(paper.publicationUrl)}" ${external}>${h(paper.status === 'preprint' ? t.preprint : t.publishedPaper)} ${icon('external')}</a>` : ''}
             ${paper.codeUrl ? `<a class="button button-dark" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub ${icon('external')}</a>` : ''}
             ${spaceBadge(artifact, t)}
@@ -298,6 +332,8 @@ export function renderReport(paper, t, locale, home, basePath) {
           ${sources?.length ? `<section class="report-sources" id="sources" aria-labelledby="heading-sources">
             <h2 id="heading-sources">${h(t.reportSources)}</h2>
             ${renderBlock({ type: 'links', items: sources }, t, locale, basePath)}
+            ${paper.anonymousManuscript ? `<p>${h(locale === 'zh' ? '本报告署名与公开引用一致。PDF 保留了原稿的匿名排版。' : 'This report uses the public author attribution. The PDF preserves the anonymous manuscript title page.')}</p>` : ''}
+            ${paper.citationUrl ? `<a class="text-link" href="${h(paper.citationUrl)}" ${external}>BibTeX ${icon('external')}</a>` : ''}
             ${article?.updateNote ? `<p class="report-update"><strong>${h(t.updateNote)} ${h(article.version)}</strong> · ${h(article.updateNote[locale])}</p>` : ''}
           </section>` : ''}
         </div>

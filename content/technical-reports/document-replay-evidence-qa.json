@@ -1,0 +1,243 @@
+{
+  "article": {
+    "version": "1.0",
+    "published": "2026-11-21",
+    "updated": "2026-11-21"
+  },
+  "locales": {
+    "en": {
+      "title": "When should practice questions keep their documents?",
+      "summary": "Adapters replay the same questions with or without supporting documents. Switching the unrelated attachment at test time reverses which specialist leads."
+    },
+    "zh": {
+      "title": "复习同一道题时，什么时候该保留文档？",
+      "summary": "两组适配器复习相同的问题与答案，一组带文档，一组闭卷。测试时更换一份与问题无关的附件，两组的领先顺序随之翻转。"
+    }
+  },
+  "keywords": [
+    "evidence state",
+    "document replay",
+    "closed book",
+    "synthetic worlds",
+    "证据状态",
+    "文档回放",
+    "混合续训"
+  ],
+  "metrics": [
+    {
+      "value": "32",
+      "label": {
+        "en": "original paired test worlds",
+        "zh": "原始配对测试世界"
+      }
+    },
+    {
+      "value": "16",
+      "label": {
+        "en": "newly trained paired worlds",
+        "zh": "重新训练的配对世界"
+      }
+    },
+    {
+      "value": "435,456",
+      "label": {
+        "en": "verified individual readouts in three follow-up studies",
+        "zh": "三项后续实验中核验的逐次作答"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "worked-example",
+      "title": {
+        "en": "What did the inventory say, and what can be entered?",
+        "zh": "库存记了什么，目录又能录入什么？"
+      },
+      "paragraphs": {
+        "en": [
+          "An inventory records Pihene as Zubiru’s storage bay. An audit later rules out that assignment. Asked what the inventory reported, the answer remains Pihene. Asked what to enter in a verified catalogue, the value must remain unspecified. Scoring just the first answer would miss whether the system respected the audit."
+        ],
+        "zh": [
+          "一份库存记录把 Pihene 写成 Zubiru 的储位，随后审计否定了这项归属。若问原报告写了什么，答案仍是 Pihene；若问经核验的目录应录入什么，答案应当留空。只评第一问，就无法知道系统是否遵循审计结果。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "figure",
+          "file": "assets/reports/document-replay-evidence-qa/design.png",
+          "width": 1360,
+          "height": 993,
+          "caption": {
+            "en": "Figure 1 traces one inventory fact through the three questions and the two replay policies.",
+            "zh": "图 1 沿一条库存事实展示三类问题和两种回放策略。"
+          },
+          "alt": {
+            "en": "An inventory example, evidence-status readouts, and practice with or without attached documents.",
+            "zh": "库存实例、证据状态读出和带文档或闭卷的复习方案。"
+          },
+          "source": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/figures/design.pdf"
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "title": {
+        "en": "Change the attachment while keeping the questions paired",
+        "zh": "让问题配对，只改变附件与复习策略"
+      },
+      "paragraphs": {
+        "en": [
+          "Both specialists start from the same mixed-practice checkpoint and receive 40 further updates on the same questions and answers. A rehearses closed book; B retains documents. At test time an attachment can be an unrelated synthetic verification record or a length-matched WikiText excerpt. Joint accuracy requires three correct readouts for one fact: the reported value, its verification state and the value permitted by that state.",
+          "A third branch continues mixed practice. It matches the number of updates and supervised answers. Its later training mix and token count differ. The paired world is the uncertainty unit. The original specialist comparison uses 32 worlds; a fresh study trains new adapters on 16 new worlds."
+        ],
+        "zh": [
+          "两个专门分支从同一混合练习检查点出发，使用相同的问答再更新 40 步。A 闭卷复习，B 保留文档。测试附件可以是与题目无关的合成核验记录，或长度匹配的 WikiText 摘录。对一条事实，报告值、核验状态及允许录入的值三项全对，才计为联合正确。",
+          "第三个分支继续混合练习，更新次数与监督答案数相同，后段训练内容和 token 数量有所差异。区间以配对世界为统计单位。原专门分支比较使用 32 个世界，独立复验在 16 个新世界上重新训练适配器。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "results",
+      "title": {
+        "en": "The better specialist depends on the test document",
+        "zh": "附件类型决定哪种专门分支领先"
+      },
+      "paragraphs": {
+        "en": [
+          "On the original 32 worlds, B exceeds A by 19.25 percentage points with synthetic records. With WikiText, the difference is −7.92 points; its paired 95% interval is −12.53 to −3.55. The new-world comparison preserves both directions. On the original worlds, continued mixed practice also beats the stronger specialist on both attachment types."
+        ],
+        "zh": [
+          "在原始 32 个世界上，使用合成附件时 B 比 A 高 19.25 个百分点。换为 WikiText，差值为 −7.92 点，配对 95% 区间为 −12.53 至 −3.55。新世界复验保留了两个方向。在原世界中，混合续训在两种附件上也都超过较强的专门分支。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "table",
+          "caption": {
+            "en": "Paired joint-accuracy differences, in percentage points. Positive B−A favors document replay.",
+            "zh": "配对联合正确率之差，单位为百分点。B−A 为正表示带文档回放领先。"
+          },
+          "columns": [
+            {
+              "en": "Comparison",
+              "zh": "比较"
+            },
+            {
+              "en": "Worlds",
+              "zh": "世界数"
+            },
+            {
+              "en": "Synthetic",
+              "zh": "合成附件"
+            },
+            {
+              "en": "WikiText",
+              "zh": "WikiText 附件"
+            }
+          ],
+          "rows": [
+            [
+              "B − A",
+              "32",
+              "+19.25",
+              "−7.92"
+            ],
+            [
+              "B − A",
+              "16",
+              "+17.16",
+              "−6.89"
+            ],
+            [
+              "MIX120 − stronger specialist",
+              "32",
+              "+5.58",
+              "+9.23"
+            ]
+          ],
+          "source": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/reference/paper_comparisons.csv"
+        }
+      ]
+    },
+    {
+      "id": "same-facts",
+      "title": {
+        "en": "Keep the donor facts and rewrite their presentation",
+        "zh": "保留供体事实，改变它们的写法"
+      },
+      "paragraphs": {
+        "en": [
+          "Rewriting the same synthetic donor facts as prose under explicit verdict cues narrows B’s advantage by 3.20 points. All four combinations of form and review cue still favor B. The larger WikiText reversal therefore cannot be assigned to prose formatting alone from this comparison.",
+          "The experiments use one Qwen3-1.7B backbone, synthetic worlds and multiple-choice outputs. Length matching leaves differences in vocabulary, discourse and familiarity. Real catalogues also require open-ended answers, source credibility and a cost model for incorrect entries. Those decisions lie beyond these readouts."
+        ],
+        "zh": [
+          "保留相同的合成供体事实和明确的核验提示，仅改写为散文，B 的领先幅度缩小 3.20 点。四种呈现形式与提示组合中，B 仍然领先。这一配对结果限制了对 WikiText 反转的解释：仅凭改写后的表现，无法把整个反转归因于文体。",
+          "实验使用一个 Qwen3-1.7B 基座、合成世界和选项式输出。长度匹配后，词汇、篇章结构和熟悉度依然可能不同。真实目录还要处理开放回答、来源可信度以及错误录入的成本，这些问题超出了本实验的读出范围。"
+        ]
+      },
+      "blocks": []
+    },
+    {
+      "id": "reproduction",
+      "title": {
+        "en": "Reconstruct the result on CPU",
+        "zh": "用 CPU 重建结果"
+      },
+      "paragraphs": {
+        "en": [
+          "The public package stores individual choices, world-level scores, frozen question plans and source attribution. CPU replay checks 435,456 readouts in the three follow-up studies, verifies 472 paired effects and writes 17 comparisons. Earlier synthetic analyses and the original WikiText comparison are identified separately in the result map."
+        ],
+        "zh": [
+          "公开包保存逐次作答、逐世界分数、冻结的问题配置及来源署名。CPU 回放在三项后续实验中核验 435,456 条作答，检查 472 项配对效应，导出 17 项比较。早期合成实验和原 WikiText 比较的证据层级在结果映射中单列。"
+        ]
+      },
+      "blocks": [
+        {
+          "type": "code",
+          "code": "python -B verify_manifest.py\npython -B reproduce.py --out replay"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "label": {
+        "en": "Original manuscript · PDF",
+        "zh": "原版论文 · PDF"
+      },
+      "url": "https://dqswordman.github.io/assets/reports/document-replay-evidence-qa/manuscript.pdf"
+    },
+    {
+      "label": {
+        "en": "Frozen release and checksums",
+        "zh": "固定版本与校验值"
+      },
+      "url": "https://github.com/dqswordman/document-replay-evidence-qa/releases/tag/v1.0.0"
+    },
+    {
+      "label": {
+        "en": "Result map and reproduction scope",
+        "zh": "结果映射与复现范围"
+      },
+      "url": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/docs/reproduction.md"
+    },
+    {
+      "label": {
+        "en": "Interactive evidence explorer",
+        "zh": "交互式证据浏览"
+      },
+      "url": "https://huggingface.co/spaces/DQSWORDMAN/document-replay-evidence-qa"
+    }
+  ],
+  "artifact": {
+    "version": "v1.0.0",
+    "url": "https://github.com/dqswordman/document-replay-evidence-qa/releases/tag/v1.0.0",
+    "guide": "https://github.com/dqswordman/document-replay-evidence-qa/blob/v1.0.0/docs/reproduction.md",
+    "space": "https://huggingface.co/spaces/DQSWORDMAN/document-replay-evidence-qa",
+    "description": {
+      "en": "Adapters replay the same questions with or without supporting documents. Switching the unrelated attachment at test time reverses which specialist leads.",
+      "zh": "两组适配器复习相同的问题与答案，一组带文档，一组闭卷。测试时更换一份与问题无关的附件，两组的领先顺序随之翻转。"
+    }
+  }
+}
