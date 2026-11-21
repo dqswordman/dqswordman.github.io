@@ -18,7 +18,7 @@ initExperience();
 const header = document.querySelector('[data-header]');
 const menuButton = document.querySelector('[data-menu]');
 const nav = document.querySelector('#main-nav');
-const mobile = window.matchMedia('(max-width: 820px)');
+const mobile = window.matchMedia('(max-width: 960px)');
 
 function setMenu(open, restoreFocus = false) {
   header.toggleAttribute('data-menu-open', open);

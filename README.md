@@ -158,6 +158,10 @@ node scripts/brand-ico.mjs path/to/square-icon.png
 
 本次重构移除了旧主题的模板、SCSS、jQuery 及插件、图标字体、赞助配置、旧文档与抓取工作流。保留的是个人资料、论文记录、头像，以及项目原有 MIT 许可证。Git 历史仍保留，方便追溯资料来源；当前页面实现独立于旧主题。详见 [重构说明](docs/rebuild-notes.md)。
 
+## 论文竞技场
+
+论文竞技场从 `content/paper-arena.json` 读取评分标准、版本日期、评阅记录日期、原顺位与综合分。首页与中英文排行榜共用同一条记录。第 5、6 档的 `score` 为 `null`。尚待评分的公开作品自动显示 `under view`。匿名 `tbd-…` 条目只展示顺位、原评分和档位。以后取得公开题名并确认匹配时，可给原条目加上 `workId` 关联论文或开放报告，原锚点继续有效。榜单支持 `scope`、`score`、`tier`、`q` 和 `sort` 查询参数。[论文竞技场](https://dqswordman.github.io/zh/paper-arena/)
+
 ## 开放研究报告
 
 完整的社区研究报告在 `content/projects.json` 使用 `collection: "open-research"`。原稿下载来自 `public/assets/reports/<项目>/manuscript.pdf`。中英文伴读共用 `content/technical-reports/<项目>.json`。两个语言目录、报告检索和主页栏目都从这些记录生成。首页精选由 `content/profile.json` 的 `featured` 明确指定。[公开目录](https://dqswordman.github.io/open-research/)

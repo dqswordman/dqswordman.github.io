@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { resolveArena } from './arena-model.mjs';
 
 export const supportedLocales = ['en', 'zh'];
 export const topicKeys = ['evaluation', 'earth', 'efficient', 'applied'];
@@ -331,9 +332,10 @@ export async function resolveProjects(definitions, publications, readReport) {
 
 export async function loadContent(root) {
   const readJson = async (name) => JSON.parse(await readFile(new URL(`content/${name}.json`, root), 'utf8'));
-  const [profile, papers, definitions] = await Promise.all(['profile', 'publications', 'projects'].map(readJson));
+  const [profile, papers, definitions, arenaSpec] = await Promise.all(['profile', 'publications', 'projects', 'paper-arena'].map(readJson));
   const { projects, publications } = await resolveProjects(definitions, papers, id => readJson(`technical-reports/${id}`));
-  return validateContent(profile, publications, projects);
+  const content = validateContent(profile, publications, projects);
+  return { ...content, arena: resolveArena(arenaSpec, publications, projects) };
 }
 
 export function normalizeBasePath(value = '') {

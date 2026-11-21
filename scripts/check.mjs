@@ -54,7 +54,11 @@ for (const [path, { html }] of pages) {
     if (target.origin !== new URL(profile.url).origin) continue;
     if (!['http:', 'https:'].includes(target.protocol)) continue;
     references++;
-    const pathname = decodeURIComponent(target.pathname).slice(basePath.length);
+    const absolutePath = decodeURIComponent(target.pathname);
+    const inMount = !basePath || absolutePath === basePath || absolutePath.startsWith(basePath + '/');
+    // A citation may use the full production URL of a manuscript hosted at the domain root.
+    check(inMount || /^https?:\/\//i.test(match[1]), `Local link outside configured base path in ${relative(root,path)}: ${match[1]}`);
+    const pathname = inMount ? absolutePath.slice(basePath.length) : absolutePath;
     const targetPath = resolve(root, `.${pathname}${pathname.endsWith('/') ? 'index.html' : ''}`);
     check(files.has(targetPath), `Broken local link in ${relative(root, path)}: ${match[1]}`);
     if (target.hash && pages.has(targetPath))
@@ -155,7 +159,7 @@ check(files.has(resolve(root, '.nojekyll')), 'Missing .nojekyll');
 const sitemap = await readFile(resolve(root, 'sitemap.xml'), 'utf8');
 check(sitemap.includes(`${profile.url}${basePath}/zh/`), 'Chinese page missing from sitemap');
 check(!sitemap.includes('404.html'), '404 should not be indexed');
-for (const index of ['research', 'open-research', ...researchIndexes])
+for (const index of ['research', 'open-research', ...researchIndexes, 'paper-arena'])
   for (const locale of supportedLocales) {
     const route = researchIndexPath(index, locale, basePath);
     check(sitemap.includes(`<loc>${profile.url}${route}</loc>`), `Missing research index in sitemap: ${route}`);

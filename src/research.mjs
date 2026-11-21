@@ -1,3 +1,4 @@
+import { arenaMark } from './arena.mjs';
 import { renderReportCatalog, reportCategory, reportSearchText } from './report-catalog.mjs';
 import { directoryGroups, directoryHeader, directorySection } from './research-directory.mjs';
 import { escapeHtml as h, projectPath, reportKinds, researchIndexPath, technicalReportPath, venueLabel } from './content.mjs';
@@ -151,12 +152,12 @@ function projectVenue(project, t) {
   return [venueLabel(paper), status].filter(Boolean).join(' · ');
 }
 
-export function selectedResearch(projects, featured, t, locale, basePath) {
+export function selectedResearch(projects, featured, t, locale, basePath, arena) {
   const selected = featured.map(id => projects.find(project => project.id === id)).filter(Boolean);
   if (!selected.length) return '';
   return `<section class="container home-selected" id="selected-research" aria-labelledby="selected-title">
     <div class="selected-heading"><h2 id="selected-title">${h(t.selectedResearch)}</h2><a class="text-link" href="${h(researchIndexPath('research', locale, basePath))}">${h(t.projectDirectory)} ${icon('arrow')}</a></div>
-    <div class="selected-grid">${selected.map(project => `<a class="selected-paper" href="${h(projectPath(project.id, locale, basePath))}"><div><span class="selected-venue">${h(projectVenue(project, t))}</span><span class="selected-title">${h(project.title[locale])}</span></div>${icon('arrow')}</a>`).join('')}</div>
+    <div class="selected-grid">${selected.map(project => `<div class="selected-item"><a class="selected-paper" href="${h(projectPath(project.id, locale, basePath))}"><div><span class="selected-venue">${h(projectVenue(project, t))}</span><span class="selected-title">${h(project.title[locale])}</span></div>${icon('arrow')}</a>${arenaMark(arena, project.publication?.id ?? project.id, locale, basePath)}</div>`).join('')}</div>
   </section>`;
 }
 
@@ -165,7 +166,7 @@ function pdfLink(item, t, basePath) {
   return item.manuscriptPdf ? `<a class="text-link" href="${h(basePath + '/' + item.manuscriptPdf)}">${h(t.paperPdf)}${icon('arrow')}</a>` : '';
 }
 
-export function openReports(projects, t, locale, basePath, view) {
+export function openReports(projects, t, locale, basePath, view, arena) {
   const entries = projects.filter(p => p.collection === 'open-research');
   if (!entries.length) return '';
   const link = researchIndexPath('open-research', locale, basePath);
@@ -178,7 +179,7 @@ export function openReports(projects, t, locale, basePath, view) {
     const title = view === 'directory' ? p.title[locale] : body.locales[locale].title;
     return `<article class="open-report-card"><${headingTag}><a href="${h(projectUrl)}">${h(title)}</a></${headingTag}>
       <p>${h(p.summary[locale])}</p><div class="research-actions"><a class="text-link" href="${h(reportUrl)}">${h(t.readReport)}${icon('arrow')}</a>
-      ${pdfLink(p,t,basePath)}${view === 'page' ? `<a class="text-link" href="${h(p.codeUrl)}" ${external}>GitHub</a>${spaceBadge(body.artifact,t)}` : ''}</div></article>`;
+      ${pdfLink(p,t,basePath)}${view === 'home' ? arenaMark(arena, p.id, locale, basePath) : ''}${view === 'page' ? `<a class="text-link" href="${h(p.codeUrl)}" ${external}>GitHub</a>${spaceBadge(body.artifact,t)}` : ''}</div></article>`;
   }).join('');
   if (view === 'page') return `<main id="main" class="research-index" tabindex="-1"><header class="research-banner"><div class="container research-banner-inner">
     <a class="text-link research-back" href="${h(researchIndexPath('research',locale,basePath))}">${icon('arrow')}${h(t.projectDirectory)}</a>

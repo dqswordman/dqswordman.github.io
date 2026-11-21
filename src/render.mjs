@@ -2,12 +2,13 @@ import {
   escapeHtml as h, paperUrl, citation, publicationGroups, acceptanceYear, newsItems,
   researchIndexes, researchIndexPath, technicalReportPath, projectPath, venueLabel,
 } from './content.mjs';
+import { arenaCopy, arenaMark, renderArena } from './arena.mjs';
 import { icon, monogram } from './components.mjs';
 import { paperSpotlight, renderReportIndex, renderCodeIndex, renderReport, reportPreview, selectedResearch, renderProjects, renderProject, openReports } from './research.mjs';
 
 export const ui = {
   en: {
-    nav: ['About', 'Projects', 'Publications', 'Reports', 'Open source', 'Experience'],
+    nav: ['About', 'Projects', 'Publications', 'Paper Arena', 'Reports', 'Open source', 'Experience'],
     contact: 'Contact',
     skip: 'Skip to content',
     home: 'Wenzhang Du — home',
@@ -125,7 +126,7 @@ export const ui = {
     openPaper: 'Find this publication on Google Scholar',
   },
   zh: {
-    nav: ['关于', '研究项目', '论文', '技术报告', '开源项目', '经历'],
+    nav: ['关于', '研究项目', '论文', '论文竞技场', '技术报告', '开源项目', '经历'],
     contact: '联系我',
     skip: '跳至正文',
     home: 'Wenzhang Du — 首页',
@@ -243,7 +244,7 @@ export const ui = {
   },
 };
 
-const navigationIds = ['about-me', 'research', 'publications', ...researchIndexes, 'experience'];
+const navigationIds = ['about-me', 'research', 'publications', 'paper-arena', ...researchIndexes, 'experience'];
 const external = 'target="_blank" rel="noopener noreferrer"';
 
 function dateLabel(value, locale) {
@@ -263,7 +264,7 @@ function header(profile, t, locale, basePath, { away, alternate, currentIndex, o
   const anchor = (id) => `${away ? home : ''}#${id}`;
   const links = navigationIds.map((id, i) => {
     const label = h(t.nav[i]);
-    if (id === 'research' || researchIndexes.includes(id)) {
+    if (id === 'research' || id === 'paper-arena' || researchIndexes.includes(id)) {
       const href = researchIndexPath(id, locale, basePath);
       return `<a href="${h(href)}"${currentIndex === id ? ` aria-current="${onReport ? 'location' : 'page'}"` : ''}>${label}</a>`;
     }
@@ -300,7 +301,7 @@ function newsPanel(profile, publications, t, locale, basePath) {
   </aside>`;
 }
 
-function paperRow(paper, t, locale, basePath) {
+function paperRow(paper, t, locale, basePath, arena) {
   const report = paper.technicalReport && technicalReportPath(paper.reportId ?? paper.id, locale, basePath);
   const scholar = paperUrl(paper);
   const recordDate = paper.acceptedDate || paper.postedDate;
@@ -324,6 +325,7 @@ function paperRow(paper, t, locale, basePath) {
         ${paper.publicationUrl ? `<a class="resource-link" href="${h(paper.publicationUrl)}" ${external}>${h(paper.status === 'preprint' ? t.preprint : t.publishedPaper)}${icon('external')}</a>` : ''}
         ${report ? `<a class="resource-link" href="${h(report)}">${icon('book')}${h(t.report)}</a>` : ''}
         ${paper.codeUrl ? `<a class="resource-link" href="${h(paper.codeUrl)}" ${external}>${icon('code')}GitHub${icon('external')}</a>` : ''}
+        ${arenaMark(arena, paper.id, locale, basePath)}
         <details class="citation-details"><summary>${h(t.citation)} <span aria-hidden="true">+</span></summary><div class="citation-body"><p id="citation-${h(paper.id)}">${h(citation(paper))}</p><button class="text-button" type="button" data-copy="citation-${h(paper.id)}" hidden>${icon('copy')}${h(t.copyCitation)}</button>${report ? `<a class="text-link" href="${h(scholar)}" ${external}>${h(t.findPaper)}${icon('external')}</a>` : ''}</div></details>
       </div>
     </article>
@@ -342,6 +344,7 @@ export function renderPage({
   profile,
   publications,
   projects = [],
+  arena,
   locale = 'en',
   basePath = '',
   assets,
@@ -361,8 +364,8 @@ export function renderPage({
   };
   const routes = { en: localizedPath('en'), zh: localizedPath('zh') };
   const canonical = profile.url + routes[locale];
-  const indexTitle = index === 'open-research' ? t.openReports : index === 'research' ? t.projectDirectory : index === 'technical-reports' ? t.reports : t.openSource;
-  const indexDescription = index === 'open-research' ? t.openIntro : index === 'research' ? t.projectsDescription : index === 'technical-reports' ? t.reportsDescription : t.codeDescription;
+  const indexTitle = index === 'paper-arena' ? arenaCopy[locale].title : index === 'open-research' ? t.openReports : index === 'research' ? t.projectDirectory : index === 'technical-reports' ? t.reports : t.openSource;
+  const indexDescription = index === 'paper-arena' ? arenaCopy[locale].description : index === 'open-research' ? t.openIntro : index === 'research' ? t.projectsDescription : index === 'technical-reports' ? t.reportsDescription : t.codeDescription;
   const reportCopy = report?.technicalReport.locales[locale];
   const title = project ? `${project.title[locale]} · ${profile.name}` : report ? `${reportCopy.title ?? report.title} · ${t.report}`
     : index ? `${indexTitle} · ${profile.name}` : `${profile.name} · ${copy.role}`;
@@ -415,6 +418,7 @@ export function renderPage({
     ? `<main id="main" class="error-page container" tabindex="-1"><p class="eyebrow">404 / ${h(profile.name)}</p><h1>${h(t.notFound)}</h1><p>${h(t.notFoundText)}</p><a class="button button-dark" href="${home}">${h(t.returnHome)}${icon('arrow')}</a></main>`
     : project ? renderProject(project, t, locale, home, basePath)
     : report ? renderReport(report, t, locale, home, basePath)
+    : index === 'paper-arena' ? renderArena(arena, locale, basePath)
     : index === 'open-research' ? openReports(projects,t,locale,basePath,'page')
     : index === 'research' ? renderProjects(projects, profile.featured, t, locale, home, basePath)
     : index === 'technical-reports' ? renderReportIndex(projects.length ? documents : orderedPapers, profile.featured, t, locale, basePath)
@@ -445,8 +449,8 @@ export function renderPage({
         </div>
       </div>
     </section>
-    ${selectedResearch(projects, profile.featured, t, locale, basePath)}
-    ${openReports(projects,t,locale,basePath,'home')}
+    ${selectedResearch(projects, profile.featured, t, locale, basePath, arena)}
+    ${openReports(projects,t,locale,basePath,'home',arena)}
     <div class="container news-strip">${newsPanel(profile, publications, t, locale, basePath)}</div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>
@@ -461,7 +465,7 @@ export function renderPage({
           ${copy.recentResearch.map((paragraph) => `<p>${h(paragraph)}</p>`).join('')}
         </section>
     </div></section>
-    <section class="section publications-section container" id="publications" aria-labelledby="publications-title" data-section><div class="section-heading section-heading-row"><h2 id="publications-title">${h(t.publications)}</h2><div class="publication-heading-note"><p>${h(copy.publicationIntro)}</p><a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)}${icon('external')}</a></div></div>
+    <section class="section publications-section container" id="publications" aria-labelledby="publications-title" data-section><div class="section-heading section-heading-row"><h2 id="publications-title">${h(t.publications)}</h2><div class="publication-heading-note"><p>${h(copy.publicationIntro)}</p><a class="text-link arena-home-link" href="${h(researchIndexPath('paper-arena', locale, basePath))}">${h(arenaCopy[locale].title)}${icon('arrow')}</a><a class="text-link" href="${h(profile.scholar)}" ${external}>${h(t.scholar)}${icon('external')}</a></div></div>
       <div class="publication-tools" data-filter-tools hidden><div class="search-wrap">${icon('search')}<label class="sr-only" for="publication-search">${h(t.search)}</label><input id="publication-search" type="search" placeholder="${h(t.searchPlaceholder)}" autocomplete="off" maxlength="200" aria-controls="publication-list"><button class="search-clear" type="button" data-clear-search aria-label="${h(t.clearSearch)}" hidden>${icon('close')}</button></div><div class="year-filters" role="group" aria-label="${h(t.years)}"><button type="button" data-year-filter="all" aria-pressed="true">${h(t.allYears)}</button>${yearGroups.map((year) => `<button type="button" data-year-filter="${year}" aria-pressed="false">${h(yearLabel(year))}</button>`).join('')}</div><label class="sr-only" for="publication-topic">${h(t.topic)}</label><select id="publication-topic" aria-controls="publication-list"><option value="all">${h(t.allTopics)}</option>${Object.entries(
         t.topics,
       )
@@ -471,7 +475,7 @@ export function renderPage({
       <div id="publication-list">${publicationGroups.map(group => {
         const papers = orderedPapers.filter(paper => paper.group === group);
         const groupYears = yearGroups.filter(year => papers.some(paper => acceptanceYear(paper) === year));
-        return `<section class="publication-group" id="${group}-publications" data-publication-group aria-labelledby="${group}-publications-title"><header class="publication-group-heading"><h3 id="${group}-publications-title">${h(t.groups[group])}</h3><p data-group-count data-template="${h(t.groupCount)}">${h(t.groupCount.replace('{count}', papers.length))}</p></header>${groupYears.map(year => `<section class="publication-year" data-year-group="${year}" aria-labelledby="${group}-year-${year}"><div class="year-heading"><h4 id="${group}-year-${year}">${h(yearLabel(year))}</h4><span data-year-count>${papers.filter(paper => acceptanceYear(paper) === year).length}</span><span class="year-rule" aria-hidden="true"></span></div><ol class="publication-list" role="list">${papers.filter(paper => acceptanceYear(paper) === year).map(paper => paperRow(paper, t, locale, basePath)).join('')}</ol></section>`).join('')}</section>`;
+        return `<section class="publication-group" id="${group}-publications" data-publication-group aria-labelledby="${group}-publications-title"><header class="publication-group-heading"><h3 id="${group}-publications-title">${h(t.groups[group])}</h3><p data-group-count data-template="${h(t.groupCount)}">${h(t.groupCount.replace('{count}', papers.length))}</p></header>${groupYears.map(year => `<section class="publication-year" data-year-group="${year}" aria-labelledby="${group}-year-${year}"><div class="year-heading"><h4 id="${group}-year-${year}">${h(yearLabel(year))}</h4><span data-year-count>${papers.filter(paper => acceptanceYear(paper) === year).length}</span><span class="year-rule" aria-hidden="true"></span></div><ol class="publication-list" role="list">${papers.filter(paper => acceptanceYear(paper) === year).map(paper => paperRow(paper, t, locale, basePath, arena)).join('')}</ol></section>`).join('')}</section>`;
       }).join('')}</div>
       <div class="empty-state" data-empty-state hidden>${icon('search')}<h3>${h(t.noResults)}</h3><p>${h(t.noResultsHint)}</p><button class="button button-dark" type="button" data-reset-filters>${h(t.reset)}${icon('arrow')}</button></div>
     </section>
@@ -534,6 +538,7 @@ export function renderPage({
   <link rel="manifest" href="${basePath}/site.webmanifest">
   <link rel="stylesheet" href="${basePath}/assets/${assets.css}">
   ${(project || report || index) && assets.researchCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.researchCss}">` : ''}
+  ${index === 'paper-arena' && assets.arenaCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.arenaCss}">` : ''}
   ${assets.experienceCss ? `<link rel="stylesheet" href="${basePath}/assets/${assets.experienceCss}">` : ''}
   ${report && !report.venue && article ? `<meta name="citation_title" content="${h(report.manuscriptPdf ? report.title : name)}">
   ${report.manuscriptPdf ? `<meta name="citation_pdf_url" content="${h(profile.url + basePath + '/' + report.manuscriptPdf)}">` : ''}
@@ -541,6 +546,7 @@ export function renderPage({
   <meta name="citation_publication_date" content="${h(article.published)}">` : ''}
   ${notFound ? '' : `<script type="application/ld+json">${JSON.stringify(structured).replace(/</g, '\\u003c')}</script>`}
   <script type="module" src="${basePath}/assets/${assets.js}"></script>
+  ${index === 'paper-arena' && assets.arenaJs ? `<script type="module" src="${basePath}/assets/${assets.arenaJs}"></script>` : ''}
 </head>
 <body id="top" data-locale="${locale}" data-copy-success="${h(t.copied)}" data-copy-failed="${h(t.copyFailed)}">
   <a class="skip-link" href="#main">${h(t.skip)}</a>

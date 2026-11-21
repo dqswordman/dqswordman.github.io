@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "rubricDate": "2026-11-26",
+  "snapshotDate": "2026-11-21",
+  "tiers": [
+    {"tier": 1, "range": [9, 10], "label": {"zh": "突出贡献（Top Tier）", "en": "Top Tier"}, "meaning": {"zh": "提出了足以改变领域认识或研究实践的新发现、新方法或新能力，证据充分覆盖核心主张。", "en": "A new finding, method or capability could change how the field understands a problem or conducts research. The evidence covers the central claims."}},
+    {"tier": 2, "range": [8, 8.5], "label": {"zh": "强接收（Strong Accept）", "en": "Strong Accept"}, "meaning": {"zh": "核心贡献有说服力，关键比较充分，主要疑问得到回应。作为完整研究论文具有很强竞争力。", "en": "The central contribution is convincing, the key comparisons are thorough and the main questions are addressed. The work is highly competitive as a full research paper."}},
+    {"tier": 3, "range": [7, 7.5], "label": {"zh": "稳健接收（Solid Accept）", "en": "Solid Accept"}, "meaning": {"zh": "贡献明确、论证完整，结论在界定的范围内成立，值得以完整研究论文发表。", "en": "The contribution is clear and the argument is complete. The conclusions hold within the stated scope and merit publication as a full research paper."}},
+    {"tier": 4, "range": [5, 6.5], "label": {"zh": "边缘稿（Borderline）", "en": "Borderline"}, "meaning": {"zh": "已有可辨认的研究价值，但关键证据、比较或论证仍有缺口，影响完整论文的接收判断。", "en": "The work has identifiable research value. Gaps in key evidence, comparisons or reasoning affect the case for accepting it as a full paper."}},
+    {"tier": 5, "range": null, "label": {"zh": "技术报告或开放资源", "en": "Technical report or open resource"}, "meaning": {"zh": "主要价值在于可复用的数据、代码、实验记录或技术经验，适合以技术报告或开放资源形式分享。", "en": "The main value lies in reusable data, code, experimental records or technical experience. The work is suitable for sharing as a technical report or open resource."}},
+    {"tier": 6, "range": null, "label": {"zh": "归档", "en": "Archive"}, "meaning": {"zh": "当前材料尚未形成清晰的独立贡献，可供他人复用的成果也较有限，适合保留研究记录并归档。", "en": "The materials have yet to establish a clear independent contribution, and offer limited results for others to reuse. They are suitable for preservation as a research record."}}
+  ],
+  "reviews": [
+    {"id": "tbd-01", "rank": 1, "score": 8.5, "tier": 2},
+    {"id": "tbd-02", "rank": 2, "score": 8.5, "tier": 2},
+    {"id": "tbd-03", "rank": 3, "score": 8.5, "tier": 2},
+    {"id": "tbd-04", "rank": 4, "score": 8.5, "tier": 2},
+    {"id": "tbd-05", "rank": 5, "score": 8.0, "tier": 2},
+    {"id": "program-structure-certificates", "rank": 6, "score": 8.0, "tier": 2},
+    {"id": "decision-sufficiency", "rank": 7, "score": 8.0, "tier": 2},
+    {"id": "tbd-08", "rank": 8, "score": 8.0, "tier": 2},
+    {"id": "tbd-09", "rank": 9, "score": 8.0, "tier": 2},
+    {"id": "tbd-10", "rank": 10, "score": 8.0, "tier": 2},
+    {"id": "tbd-11", "rank": 11, "score": 7.5, "tier": 3},
+    {"id": "tbd-12", "rank": 12, "score": 7.5, "tier": 3},
+    {"id": "tbd-13", "rank": 13, "score": 7.5, "tier": 3},
+    {"id": "tbd-14", "rank": 14, "score": 7.5, "tier": 3},
+    {"id": "tbd-15", "rank": 15, "score": 7.5, "tier": 3},
+    {"id": "tbd-16", "rank": 16, "score": 7.0, "tier": 3},
+    {"id": "tbd-17", "rank": 17, "score": 7.0, "tier": 3},
+    {"id": "pairsafe", "rank": 18, "score": 6.5, "tier": 4},
+    {"id": "contract-governed-training", "rank": 19, "score": 6.0, "tier": 4},
+    {"id": "optimistic-feasible-search", "rank": 20, "score": 5.5, "tier": 4},
+    {"id": "paired-bootstrap", "rank": 21, "score": null, "tier": 5}
+  ]
+}

@@ -24,7 +24,8 @@ export function initExperience() {
   tools.setAttribute('role', 'group');
   tools.setAttribute('aria-label', t('页面工具', 'Page tools'));
   tools.innerHTML = `<button class="experience-top" type="button" aria-label="${t('返回顶部', 'Back to top')}" title="${t('返回顶部', 'Back to top')}" hidden>${symbol('<path d="m6 12 6-6 6 6M12 6v13"/>')}</button><button class="experience-motion" type="button"><span class="motion-icon">${symbol('<path d="M8 5v14M16 5v14"/>')}</span><span class="motion-label"></span></button>`;
-  document.body.append(tools);
+  const toolsHost = document.querySelector('[data-page-tools]') ?? document.body;
+  toolsHost.append(tools);
   const motion = tools.querySelector('.experience-motion');
   const top = tools.querySelector('.experience-top');
   let preference = storage.get('wd-motion');

@@ -16,7 +16,7 @@ const hash = (value) => createHash('sha256').update(value).digest('hex').slice(0
 
 export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {}) {
   basePath = normalizeBasePath(basePath);
-  const { profile, publications, projects } = await loadContent(projectRoot);
+  const { profile, publications, projects, arena } = await loadContent(projectRoot);
   validateHistory();
   validateHistory(localizedHistory('en'));
   if (historyCensus().hanCharacters < 200_000) throw new Error('The Full edition requires at least 200,000 unique Chinese narrative characters.');
@@ -25,6 +25,7 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
       readFile(new URL(`src/${name}`, projectRoot), 'utf8'),
     ),
   );
+  const [arenaCss, arenaJs] = await Promise.all(['arena.css', 'arena-client.js'].map(name => readFile(new URL('src/' + name, projectRoot), 'utf8')));
   const filterName = `filter.${hash(filter)}.js`;
   const visitorsName = `visitors.${hash(visitors)}.js`;
   const experienceName = `experience.${hash(experience)}.js`;
@@ -34,6 +35,7 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
     .replace("'./visitors.mjs'", `'./${visitorsName}'`)
     .replace("'./experience.mjs'", `'./${experienceName}'`);
   const assets = {
+    arenaCss: `arena.${hash(arenaCss)}.css`, arenaJs: `arena.${hash(arenaJs)}.js`,
     css: `site.${hash(css)}.css`,
     js: `site.${hash(js)}.js`,
     experienceCss: `experience.${hash(experienceCss)}.css`,
@@ -78,6 +80,8 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   await mkdir(new URL('assets/', outputRoot), { recursive: true });
   await cp(new URL('public/', projectRoot), outputRoot, { recursive: true });
   await Promise.all([
+    writeFile(new URL(`assets/${assets.arenaCss}`, outputRoot), arenaCss),
+    writeFile(new URL(`assets/${assets.arenaJs}`, outputRoot), arenaJs),
     writeFile(new URL(`assets/${assets.css}`, outputRoot), css),
     writeFile(new URL(`assets/${assets.js}`, outputRoot), js),
     writeFile(new URL(`assets/${filterName}`, outputRoot), filter),
@@ -97,20 +101,20 @@ export async function buildSite({ basePath = process.env.BASE_PATH || '' } = {})
   ]);
 
   const reportPapers = projects.flatMap(project => project.reports);
-  const indexes = ['research', 'open-research', ...researchIndexes];
+  const indexes = ['research', 'open-research', ...researchIndexes, 'paper-arena'];
   for (const locale of supportedLocales) {
     const folder = locale === 'en' ? outputRoot : new URL('zh/', outputRoot);
     await mkdir(folder, { recursive: true });
     await writeFile(
       new URL('index.html', folder),
-      renderPage({ profile, publications, projects, locale, basePath, assets }),
+      renderPage({ profile, publications, projects, arena, locale, basePath, assets }),
     );
     for (const index of indexes) {
       const indexFolder = new URL(researchIndexPath(index, locale).slice(1), outputRoot);
       await mkdir(indexFolder, { recursive: true });
       await writeFile(
         new URL('index.html', indexFolder),
-        renderPage({ profile, publications, projects, locale, basePath, assets, index }),
+        renderPage({ profile, publications, projects, arena, locale, basePath, assets, index }),
       );
     }
     for (const report of reportPapers) {
