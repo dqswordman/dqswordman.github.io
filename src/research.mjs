@@ -1,4 +1,5 @@
-import { renderReportCatalog, reportSearchText } from './report-catalog.mjs';
+import { renderReportCatalog, reportCategory, reportSearchText } from './report-catalog.mjs';
+import { directoryGroups, directoryHeader, directorySection } from './research-directory.mjs';
 import { escapeHtml as h, projectPath, reportKinds, researchIndexPath, technicalReportPath, venueLabel } from './content.mjs';
 import { icon } from './components.mjs';
 
@@ -56,74 +57,91 @@ export function paperSpotlight(paper, t, locale, basePath) {
   </article>`;
 }
 
-export function renderResearchIndex(index, papers, t, locale, home, basePath) {
-  const reports = index === 'technical-reports';
-  const title = reports ? t.reports : t.openSource;
-  const description = reports ? t.reportsDescription : t.codeDescription;
-  const entries = papers.filter((paper) => reports ? paper.technicalReport : paper.codeUrl);
-  if (reports) entries.sort((a, b) => b.technicalReport.article.published.localeCompare(a.technicalReport.article.published) || a.id.localeCompare(b.id));
+export function renderReportIndex(documents, featured, t, locale, basePath) {
+  const reports = documents.filter(paper => paper.technicalReport);
+  const groups = directoryGroups(reports, featured, t);
+  const back = researchIndexPath('research', locale, basePath);
   return `<main id="main" class="research-index" tabindex="-1">
-    <header class="research-banner">
-      <div class="container research-banner-inner">
-        <a class="text-link research-back" href="${home}">${icon('arrow')}${h(t.returnHome)}</a>
-        <h1>${h(title)}</h1>
-        <p class="research-deck">${h(description)}</p>
-      </div>
-    </header>
-    ${reports ? renderReportCatalog(entries, { ...t, kindLabels: reportKinds }, locale,
-      paper => reportIndexCard(paper, t, locale, basePath)) : `<div class="container research-list">
-      ${entries.length ? entries.map(paper => codeIndexCard(paper, t, locale, basePath)).join('') : `<p>${h(t.emptyResearch)}</p>`}</div>`}
+    ${directoryHeader(t.reports, t.reportsDescription, t.projectDirectory, back)}
+    ${renderReportCatalog(groups, t, locale, (paper, anchor) => reportIndexCard(paper, t, locale, basePath, anchor))}
   </main>`;
 }
 
-function reportIndexCard(paper, t, locale, basePath) {
+function actionLink(label, url, outside = false) {
+  return `<a class="text-link" href="${h(url)}"${outside ? ' ' + external : ''}>${h(label)}${icon(outside ? 'external' : 'arrow')}</a>`;
+}
+
+function reportIndexCard(paper, t, locale, basePath, anchor) {
   const report = paper.technicalReport;
-  const href = technicalReportPath(paper.id, locale, basePath);
   const copy = report.locales[locale];
-  const preview = reportPreview(report);
-  const kind = reportKinds[paper.documentType ?? 'paper-companion'][locale];
+  const href = technicalReportPath(paper.id, locale, basePath);
+  const kind = paper.documentType ?? 'paper-companion';
+  const tier = reportCategory(paper);
+  const meta = [paper.venue && venueLabel(paper), paper.venueRank && 'CCF ' + paper.venueRank, reportKinds[kind][locale]].filter(Boolean);
   const { version, published, updated } = report.article;
-  return `<article class="research-entry${preview ? ' research-entry-preview' : ''}" data-doc="${h(paper.id)}" data-venue="${h(paper.venue ?? '')}" data-keywords="${h(reportSearchText(paper))}" data-kind="${h(paper.documentType ?? 'paper-companion')}" data-published="${h(published)}" data-updated="${h(updated)}">
-    <div>
-      <p class="research-kicker">${h(kind)}${paper.venue ? ` · ${h(venueLabel(paper))}` : ''}</p>
-      <h3><a href="${h(href)}">${h(copy.title ?? paper.title)}</a></h3>
-      ${copy.title && paper.venue ? `<p class="research-entry-paper"><cite lang="en">${h(paper.title)}</cite></p>` : ''}
-      <p class="catalog-dates"><span>v${h(version)}</span><span>${h(updated === published ? t.sameReportDate : t.firstPublished)} <time datetime="${h(published)}">${h(published)}</time></span>${updated !== published ? `<span>${h(t.lastUpdated)} <time datetime="${h(updated)}">${h(updated)}</time></span>` : ''}</p>
-      <p class="research-entry-copy">${h(copy.summary)}</p>
-      <div class="research-actions">
-        <a class="button button-dark" href="${h(href)}">${h(t.readReport)}${icon('arrow')}</a>
-        ${pdfLink(paper,t,basePath)}
-        ${paper.codeUrl ? `<a class="text-link" href="${h(paper.codeUrl)}" ${external}>GitHub${icon('external')}</a>` : ''}
-        ${spaceBadge(report.artifact, t)}
-      </div>
-    </div>
-    ${preview ? `<a class="research-entry-figure" href="${h(href)}#${h(preview.sectionId)}" aria-label="${h(t.resultsPreview)}">${reportFigure(preview.figure, locale, basePath)}</a>` : ''}
+  const preview = reportPreview(report);
+  const manuscript = paper.manuscriptPdf ? pdfLink(paper, t, basePath) : paper.publicationUrl
+    ? actionLink(paper.status === 'preprint' ? t.preprint : t.publishedPaper, paper.publicationUrl, true) : '';
+  return `<article class="project-entry directory-entry" data-doc="${h(paper.id)}" data-report-tier="${h(tier)}"
+    data-venue="${h(paper.venue ?? '')}" data-keywords="${h(reportSearchText(paper))}" data-kind="${h(kind)}"
+    data-published="${h(published)}" data-updated="${h(updated)}"${anchor ? ` id="${h(anchor)}"` : ''}>
+    <p class="research-kicker">${h(meta.join(' · '))}</p>
+    <h3><a href="${h(href)}">${h(copy.title ?? paper.title)}</a></h3>
+    <p>${h(copy.summary)}</p>
+    <div class="directory-meta"><span>v${h(version)}</span><span>${h(t.firstPublished)} <time datetime="${h(published)}">${h(published)}</time></span>
+      ${updated !== published ? `<span>${h(t.lastUpdated)} <time datetime="${h(updated)}">${h(updated)}</time></span>` : ''}</div>
+    <div class="research-actions">
+      ${paper.projectId ? actionLink(t.projectOverview, projectPath(paper.projectId, locale, basePath)) : ''}
+      ${manuscript}
+      ${preview ? actionLink(t.reportFigures, href + '#' + preview.sectionId) : ''}
+    </div></article>`;
+}
+
+function repositoryResources(reports, t, locale, basePath) {
+  return reports.map(doc => {
+    const report = doc.technicalReport;
+    const release = report.artifact;
+    const links = [
+      release?.url && actionLink(t.release + ' ' + release.version, release.url, true),
+      release?.guide && actionLink(t.reproductionGuide, release.guide, true),
+      release?.space && actionLink('Hugging Face', release.space, true),
+    ].filter(Boolean).join('');
+    const reportUrl = technicalReportPath(doc.id, locale, basePath);
+    if (reports.length === 1)
+      return `<div class="research-actions">${links}${actionLink(t.report, reportUrl)}</div>`;
+    return `<div class="directory-resource"><a href="${h(reportUrl)}">${h(report.locales[locale].title ?? doc.title)}</a>
+      ${links && `<div class="research-actions">${links}</div>`}</div>`;
+  }).join('');
+}
+
+function codeIndexCard(project, t, locale, basePath) {
+  const { publication, reports } = project;
+  const artifact = reports.find(doc => doc.technicalReport.artifact)?.technicalReport.artifact;
+  const summary = artifact?.description?.[locale] ?? project.summary?.[locale];
+  const venue = publication?.venue ? venueLabel(publication) : project.collection === 'open-research' ? t.openReport : '';
+  return `<article class="project-entry directory-entry" data-repository="${h(project.codeUrl)}">
+    <p class="research-kicker">${h(['GitHub', venue].filter(Boolean).join(' · '))}</p>
+    <h3><a href="${h(project.codeUrl)}" ${external}>${h(project.title[locale])}${icon('external', 'directory-external')}</a></h3>
+    ${summary ? `<p>${h(summary)}</p>` : ''}
+    ${repositoryResources(reports, t, locale, basePath)}
+    ${!reports.length && publication?.publicationUrl ? `<div class="research-actions">${actionLink(publication.status === 'preprint' ? t.preprint : t.publishedPaper, publication.publicationUrl, true)}</div>` : ''}
   </article>`;
 }
 
-function codeIndexCard(paper, t, locale, basePath) {
-  const report = paper.technicalReport;
-  const artifact = report?.artifact;
-  const repo = new URL(paper.codeUrl).pathname.replace(/^\/|\/$/g, '');
-  return `<article class="research-entry research-entry-repo">
-    <div>
-      <p class="research-kicker">${h(paper.venue ? venueLabel(paper) : t.openSource)}</p>
-      <h2><a href="${h(paper.codeUrl)}" ${external}>${h(paper.title)}</a></h2>
-      ${artifact || report ? `<p class="research-entry-copy">${h(artifact?.description[locale] ?? report.locales[locale].summary)}</p>` : ''}
-      ${report ? `<a class="text-link" href="${h(technicalReportPath(paper.id, locale, basePath))}">${h(t.report)}${icon('arrow')}</a>` : ''}
-    </div>
-    <div class="repository-access">
-      <p class="repository-name">${icon('code')}<span>${h(repo)}</span></p>
-      <div class="repository-platforms">
-        <a class="platform-badge" href="${h(paper.codeUrl)}" ${external}>${h(t.githubRepository)}${icon('external')}</a>
-        ${spaceBadge(artifact, t)}
-      </div>
-      ${artifact ? `<div class="repository-links">
-        ${artifact.guide ? `<a class="text-link" href="${h(artifact.guide)}" ${external}>${h(t.reproductionGuide)}${icon('external')}</a>` : ''}
-        <a class="text-link" href="${h(artifact.url)}" ${external}>${h(t.release)} ${h(artifact.version)}${icon('external')}</a>
-      </div>` : ''}
-    </div>
-  </article>`;
+export function renderCodeIndex(projects, publications, featured, t, locale, basePath) {
+  const entries = projects.filter(project => project.codeUrl);
+  const known = new Set(entries.map(project => project.codeUrl));
+  for (const paper of publications) {
+    if (!paper.codeUrl || known.has(paper.codeUrl)) continue;
+    known.add(paper.codeUrl);
+    entries.push({ id: paper.id, title: { en: paper.title, zh: paper.title }, publication: paper, codeUrl: paper.codeUrl,
+      reports: paper.technicalReport?.locales ? [{ ...paper, id: paper.reportId ?? paper.id }] : [] });
+  }
+  const sections = directoryGroups(entries, featured, t).map(group =>
+    directorySection(group, group.entries.map(project => codeIndexCard(project, t, locale, basePath)).join('')));
+  return `<main id="main" class="research-index" tabindex="-1">
+    ${directoryHeader(t.openSource, t.codeDescription, t.projectDirectory, researchIndexPath('research', locale, basePath))}
+    <div class="container projects-list">${sections.join('') || `<p>${h(t.emptyResearch)}</p>`}</div></main>`;
 }
 
 function projectVenue(project, t) {
@@ -157,7 +175,8 @@ export function openReports(projects, t, locale, basePath, view) {
     const reportUrl = technicalReportPath(doc.id, locale, basePath);
     const projectUrl = projectPath(p.id, locale, basePath);
     const headingTag = view === 'page' ? 'h2' : 'h3';
-    return `<article class="open-report-card"><${headingTag}><a href="${h(projectUrl)}">${h(body.locales[locale].title)}</a></${headingTag}>
+    const title = view === 'directory' ? p.title[locale] : body.locales[locale].title;
+    return `<article class="open-report-card"><${headingTag}><a href="${h(projectUrl)}">${h(title)}</a></${headingTag}>
       <p>${h(p.summary[locale])}</p><div class="research-actions"><a class="text-link" href="${h(reportUrl)}">${h(t.readReport)}${icon('arrow')}</a>
       ${pdfLink(p,t,basePath)}${view === 'page' ? `<a class="text-link" href="${h(p.codeUrl)}" ${external}>GitHub</a>${spaceBadge(body.artifact,t)}` : ''}</div></article>`;
   }).join('');
@@ -172,24 +191,20 @@ export function openReports(projects, t, locale, basePath, view) {
 }
 
 export function renderProjects(projects, featured, t, locale, home, basePath) {
-  const selected = featured.map(id => projects.find(project => project.id === id)).filter(Boolean);
-  const rest = projects.filter(p => !featured.includes(p.id) && p.collection !== 'open-research');
+  const groups = directoryGroups(projects, featured, t);
   const cards = list => list.map(project => `<article class="project-entry">
     <p class="research-kicker">${h(projectVenue(project, t))}</p>
-    <h2><a href="${h(projectPath(project.id, locale, basePath))}">${h(project.title[locale])}</a></h2>
+    <h3><a href="${h(projectPath(project.id, locale, basePath))}">${h(project.title[locale])}</a></h3>
     <p>${h(project.summary[locale])}</p>
     <div class="research-actions"><a class="text-link" href="${h(projectPath(project.id, locale, basePath))}">${h(t.projectOverview)}${icon('arrow')}</a>
     ${project.reports.map(doc => `<a class="text-link" href="${h(technicalReportPath(doc.id, locale, basePath))}">${h(reportKinds[doc.documentType][locale])}${icon('arrow')}</a>`).join('')}
     ${project.codeUrl ? `<a class="text-link" href="${h(project.codeUrl)}" ${external}>GitHub${icon('external')}</a>` : ''}</div>
   </article>`).join('');
-  return `<main id="main" class="research-index" tabindex="-1"><header class="research-banner"><div class="container research-banner-inner">
-    <a class="text-link research-back" href="${home}">${icon('arrow')}${h(t.returnHome)}</a>
-    <h1>${h(t.projectDirectory)}</h1><p class="research-deck">${h(t.projectsDescription)}</p>
-    </div></header><div class="container projects-list">
-    ${selected.length ? `<section id="selected" aria-label="${h(t.selectedResearch)}">${rest.length ? `<h2 class="project-group-title">${h(t.selectedResearch)}</h2>` : ''}<div class="project-grid">${cards(selected)}</div></section>` : ''}
-    ${openReports(projects,t,locale,basePath,'directory')}
-    ${rest.length ? `<section aria-label="${h(t.moreProjects)}"><h2 class="project-group-title">${h(t.moreProjects)}</h2><div class="project-grid">${cards(rest)}</div></section>` : ''}
-    </div></main>`;
+  return `<main id="main" class="research-index" tabindex="-1">
+    ${directoryHeader(t.projectDirectory, t.projectsDescription, t.returnHome, home)}
+    <div class="container projects-list">${groups.map(group => group.key === 'open-research'
+      ? openReports(group.entries, t, locale, basePath, 'directory')
+      : directorySection(group, cards(group.entries))).join('')}</div></main>`;
 }
 
 export function renderProject(project, t, locale, home, basePath) {

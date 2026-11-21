@@ -3,7 +3,7 @@ import {
   researchIndexes, researchIndexPath, technicalReportPath, projectPath, venueLabel,
 } from './content.mjs';
 import { icon, monogram } from './components.mjs';
-import { paperSpotlight, renderResearchIndex, renderReport, reportPreview, selectedResearch, renderProjects, renderProject, openReports } from './research.mjs';
+import { paperSpotlight, renderReportIndex, renderCodeIndex, renderReport, reportPreview, selectedResearch, renderProjects, renderProject, openReports } from './research.mjs';
 
 export const ui = {
   en: {
@@ -29,13 +29,14 @@ export const ui = {
     reports: 'Technical reports',
     report: 'Technical report',
     openSource: 'Open source',
-    reportsDescription: 'Read the methods, inspect the figures and follow each report to its evidence.',
+    reportsDescription: 'Explore methods, figures and evidence by project. Search for a topic or browse reports by venue classification.',
+    reportFigures: 'Figures',
     openReports: 'Open Research Reports', openReport: 'Open research report', openIntro: 'I share completed studies here when I consider their evidence too narrow for the conference I had in mind. The manuscripts, code and recorded results are available for others to inspect, reuse and build on.', browseReports: 'Browse the collection', paperPdf: 'Manuscript PDF', projectDirectory: 'Research projects', selectedResearch: 'Selected research', projectOverview: 'Project overview',
     projectsDescription: 'Questions, results and public materials for each research project.',
     moreProjects: 'Other projects', researchProject: 'Research project', interpretation: 'Scope of the evidence',
     acceptedStatus: 'Accepted', publishedStatus: 'Published', calls: 'calls', orderBy: 'Sort by', documentType: 'Document type', allReports: 'All documents',
     sameConferenceDate: 'Conference reference date', keyResults: 'Selected results', sameReportDate: 'Published and updated',
-    codeDescription: 'Public code and versioned reproducibility releases for the publications.',
+    codeDescription: 'Open a project’s GitHub repository, download a release or explore the results on Hugging Face.',
     emptyResearch: 'No entries are available yet.',
     readReport: 'Read the report',
     resultsPreview: 'Read the results',
@@ -146,13 +147,14 @@ export const ui = {
     reports: '技术报告',
     report: '技术报告',
     openSource: '开源项目',
-    reportsDescription: '阅读研究方法、图表和局限，并从每份报告追溯到对应证据。',
+    reportsDescription: '按项目阅读方法、图表与实验证据，也可以搜索关键词，或按会议分级浏览。',
+    reportFigures: '查看图表',
     openReports: '开放研究报告', openReport: '开放研究报告', openIntro: '这里收录我已完成的研究。有些工作的证据范围还达不到我心中目标会议的投稿标准，但实验、代码和观察值得分享。我把论文与复现材料一并公开，供同行核查、复用，也方便后续工作从这里出发。', browseReports: '浏览本栏目', paperPdf: '论文 PDF', projectDirectory: '研究项目', selectedResearch: '精选研究', projectOverview: '项目概览',
     projectsDescription: '按项目查找研究问题、结果，以及已经公开的论文、报告和代码。',
     moreProjects: '其他项目', researchProject: '研究项目', interpretation: '结果适用于什么范围',
     acceptedStatus: '已录用', publishedStatus: '已发表', calls: '次测量', orderBy: '排序依据', documentType: '文档类型', allReports: '全部文档',
     sameConferenceDate: '同届会议参考日期', keyResults: '主要结果', sameReportDate: '首发及更新',
-    codeDescription: '查看已公开的论文代码、实验归档与复现版本。',
+    codeDescription: '点击项目名进入 GitHub，查看复现版本、指南和 Hugging Face 演示。',
     emptyResearch: '暂无条目。',
     readReport: '阅读技术报告',
     resultsPreview: '阅读实验结果',
@@ -372,10 +374,6 @@ export function renderPage({
   const shareAlt = figure?.alt[locale] ?? `${profile.name} · ${profile.locales.en.heroStatement.join(' ')}`;
   const orderedPapers = [...publications].sort((a, b) => (b.acceptedDate || b.postedDate || '').localeCompare(a.acceptedDate || a.postedDate || ''));
   const documents = projects.flatMap(p => p.reports);
-  const codeEntries = projects.filter(p => p.codeUrl).map(p => p.reports.find(d => d.documentType === 'paper-companion') ??
-    p.reports[0] ?? { ...p.publication, id: p.id, title: p.publication?.title ?? p.title[locale], codeUrl: p.codeUrl });
-  const linkedCode = new Set(codeEntries.map(p => p.codeUrl));
-  codeEntries.push(...publications.filter(p => p.codeUrl && !linkedCode.has(p.codeUrl)));
   const featuredReport = profile.featured.map(id => publications.find(paper => paper.id === id && paper.technicalReport)
     ?? projects.find(p => p.id === id)?.reports[0])
     .find(paper => paper?.technicalReport);
@@ -419,7 +417,8 @@ export function renderPage({
     : report ? renderReport(report, t, locale, home, basePath)
     : index === 'open-research' ? openReports(projects,t,locale,basePath,'page')
     : index === 'research' ? renderProjects(projects, profile.featured, t, locale, home, basePath)
-    : index ? renderResearchIndex(index, index === 'technical-reports' ? (projects.length ? documents : orderedPapers) : codeEntries, t, locale, home, basePath) : `
+    : index === 'technical-reports' ? renderReportIndex(projects.length ? documents : orderedPapers, profile.featured, t, locale, basePath)
+    : index === 'open-source' ? renderCodeIndex(projects, orderedPapers, profile.featured, t, locale, basePath) : `
   <main id="main" tabindex="-1">
     <section class="hero" aria-labelledby="hero-title">
       <div class="container hero-grid">

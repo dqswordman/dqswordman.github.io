@@ -330,69 +330,107 @@ for (const button of document.querySelectorAll('[data-print]')) {
 
 const catalogTools = document.querySelector('[data-catalog-tools]');
 if (catalogTools) {
-  const groups = Array.from(document.querySelectorAll('[data-report-list] [data-tier]'), section => ({
-    section,
-    body: section.querySelector('[data-group-entries]'),
-    entries: Array.from(section.querySelectorAll('[data-doc]')),
-  }));
-  const total = groups.reduce((n, group) => n + group.entries.length, 0);
-  const result = catalogTools.querySelector('[data-catalog-count]');
+  const list = document.querySelector('[data-report-list]');
   const fields = Array.from(catalogTools.querySelectorAll('[name]'));
-  const fold = text => text.normalize('NFKC').toLowerCase().replace(/[–—]/g, '-');
-  const index = new Map(groups.flatMap(g => g.entries.map(el => [el, fold(el.dataset.keywords)])));
+  const panel = catalogTools.querySelector('#report-filters');
+  const toggle = catalogTools.querySelector('[data-filter-toggle]');
+  const reset = catalogTools.querySelector('[type="reset"]');
+  const counter = catalogTools.querySelector('[data-catalog-count]');
+  const fold = value => value.normalize('NFKC').toLowerCase().replace(/[–—]/g, '-');
+  const defaultValue = field => field.options?.[0]?.value ?? '';
+  const isChanged = field => field.value !== defaultValue(field);
+  const sections = Array.from(list.querySelectorAll(':scope > section'), section => {
+    const axis = section.hasAttribute('data-tier') ? 'tier' : 'collection';
+    return { section, axis, key: section.dataset[axis], body: section.querySelector('[data-group-entries]') };
+  });
+  const documents = Array.from(list.querySelectorAll('[data-doc]'), element => ({
+    element, tier: element.dataset.reportTier, collection: element.closest('[data-collection]').dataset.collection,
+    keywords: fold(element.dataset.keywords),
+  }));
+  // The static list puts each historic fragment on its first report. With
+  // grouping available, that same fragment can lead to the whole category.
+  for (const { section, axis, key } of sections) {
+    if (axis !== 'tier') continue;
+    const anchor = document.getElementById('group-' + key);
+    if (anchor) {
+      section.id = anchor.id;
+      anchor.removeAttribute('id');
+    }
+  }
+
+  function expandFilters(expanded) {
+    panel.hidden = !expanded;
+    toggle.setAttribute('aria-expanded', String(expanded));
+  }
 
   function display() {
-    const { q, tier, venue, type, sort } = Object.fromEntries(new FormData(catalogTools));
+    const { q, group, tier, venue, type, sort } = Object.fromEntries(new FormData(catalogTools));
     const words = fold(q.trim()).split(/\s+/).filter(Boolean);
     let count = 0;
-    for (const {section, body, entries} of groups) {
-      const ordered = [...entries].sort((a,b) => b.dataset[sort].localeCompare(a.dataset[sort]) || a.dataset.doc.localeCompare(b.dataset.doc));
-      let visible = 0;
-      ordered.forEach((entry, pos) => {
-        entry.hidden = Boolean((tier && tier !== section.dataset.tier) || (venue && venue !== entry.dataset.venue) ||
-          (type && type !== entry.dataset.kind) || !words.every(w => index.get(entry).includes(w)));
-        if (!entry.hidden) visible++;
-        if (body.children[pos] !== entry) body.insertBefore(entry, body.children[pos] || null);
-      });
-      section.hidden = visible === 0;
-      section.querySelector('[data-group-size]').textContent = String(visible);
-      count += visible;
+    for (const doc of documents) {
+      const { element } = doc;
+      element.hidden = Boolean((tier && tier !== doc.tier) || (venue && venue !== element.dataset.venue) ||
+        (type && type !== element.dataset.kind) || !words.every(word => doc.keywords.includes(word)));
+      if (!element.hidden) count++;
     }
-    result.value = result.dataset.template.replace('{n}',count).replace('{total}',total);
+    const ordered = sort === 'directory' ? documents : [...documents].sort((a,b) =>
+      b.element.dataset[sort].localeCompare(a.element.dataset[sort]) || a.element.dataset.doc.localeCompare(b.element.dataset.doc));
+    for (const { section, axis, key, body } of sections) {
+      const members = axis === group ? ordered.filter(doc => doc[axis] === key) : [];
+      section.hidden = !members.some(doc => !doc.element.hidden);
+      members.forEach(({ element }, position) => {
+        if (body.children[position] !== element) body.insertBefore(element, body.children[position] ?? null);
+      });
+    }
+    const countLabel = count === documents.length ? counter.dataset.total : counter.dataset.template;
+    counter.value = countLabel.replace('{n}', count).replace('{total}', documents.length);
     document.querySelector('[data-catalog-empty]').hidden = count !== 0;
-    catalogTools.querySelector('[type="reset"]').disabled = fields.every(f => f.value === (f.name === 'sort' ? 'published' : ''));
+    reset.hidden = !fields.some(isChanged);
+    const advanced = Array.from(panel.querySelectorAll('select')).filter(isChanged).length;
+    toggle.querySelector('[data-filter-count]').textContent = advanced ? ' (' + advanced + ')' : '';
+    return advanced;
   }
 
   function restore() {
     const params = new URLSearchParams(location.search);
     for (const field of fields) {
-      const value = params.get(field.name) ?? '';
-      if (field.name === 'q') field.value = value.slice(0,180);
-      else field.value = [...field.options].some(o => o.value === value) ? value : field.options[0].value;
+      const value = params.get(field.name);
+      if (field.name === 'q') field.value = (value ?? '').slice(0,180);
+      else field.value = [...field.options].some(option => option.value === value) ? value : defaultValue(field);
     }
-    display();
+    const fragment = document.getElementById(location.hash.slice(1));
+    if (!params.has('group') && fragment?.hasAttribute('data-tier'))
+      catalogTools.elements.group.value = 'tier';
+    expandFilters(display() > 0);
     updateLanguageLink();
+    if (fragment && list.contains(fragment) && !fragment.hidden)
+      requestAnimationFrame(() => fragment.scrollIntoView({ block: 'start', behavior: 'instant' }));
   }
 
   function sync(replace = false) {
     const url = new URL(location.href);
     for (const field of fields) {
-      if (field.value && !(field.name === 'sort' && field.value === 'published')) url.searchParams.set(field.name,field.value);
+      if (isChanged(field)) url.searchParams.set(field.name,field.value);
       else url.searchParams.delete(field.name);
     }
+    if (url.hash && list.contains(document.getElementById(url.hash.slice(1)))) url.hash = '';
     if (url.href !== location.href) history[replace ? 'replaceState' : 'pushState'](null,'',url);
     display();
     updateLanguageLink();
   }
+  toggle.addEventListener('click', () => expandFilters(panel.hidden));
   catalogTools.elements.q.addEventListener('input', () => sync(true));
-  catalogTools.addEventListener('change', e => { if (e.target.tagName === 'SELECT') sync(); });
-  catalogTools.addEventListener('submit', e => { e.preventDefault(); sync(true); });
-  catalogTools.addEventListener('reset', e => {
-    e.preventDefault();
-    for (const field of fields) field.value = field.name === 'sort' ? 'published' : '';
+  catalogTools.addEventListener('change', event => { if (event.target.tagName === 'SELECT') sync(); });
+  catalogTools.addEventListener('submit', event => { event.preventDefault(); sync(true); });
+  catalogTools.addEventListener('reset', event => {
+    event.preventDefault();
+    for (const field of fields) field.value = defaultValue(field);
+    expandFilters(false);
     sync();
+    catalogTools.elements.q.focus();
   });
-  addEventListener('popstate',restore);
+  addEventListener('popstate', restore);
+  addEventListener('hashchange', restore);
   restore();
   catalogTools.hidden = false;
 }

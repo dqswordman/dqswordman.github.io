@@ -78,7 +78,9 @@ npm run dev -- --port 4174
 
 将双语正文保存为 `content/technical-reports/<报告 ID>.json`，沿用 `locales`、`sections`、`metrics` 和 `sources`。网页报告的版本、首发与更新日期分别填在 `article.version`、`published`、`updated`。稿件日期可另填 `manuscriptDate`，`artifact` 链接固定软件版本。[WSDM 报告](content/technical-reports/decision-sufficiency.json)
 
-报告目录按会议分级、其他会议、预印本及独立报告分组。经 CCF 目录核实的会议在论文记录填写 `venueRank`（A、B 或 C），预印本按其发布身份归类。读者可组合 `q`（跨语言关键词）、`tier` 和 `venue` 筛选，在各组内按首发日期或更新日期排序。筛选地址可以分享，切换语言时保留当前条件。[中文报告目录](https://dqswordman.github.io/zh/technical-reports/)
+研究项目、技术报告和开源项目共用「精选研究」「开放研究报告」「其他项目」三个栏目。精选顺序取自 `profile.featured`。研究目录的标题打开项目概览，报告目录的标题打开当前语言的正文，开源目录的标题直达 GitHub 仓库。开源条目还列出已公开的固定版本、复现指南、Hugging Face 和技术报告。
+
+在报告目录选择「按会议分级」可按 CCF 级别、其他会议、预印本及独立报告浏览。经核实的会议在论文记录填写 `venueRank`（A、B 或 C）。读者可以组合关键词 `q`、分级 `tier`、会议或平台 `venue`、文档类型 `type`，并在每组内按首发或更新日期排序。分组、筛选和排序随地址分享，切换语言时保留。[按研究栏目浏览](https://dqswordman.github.io/zh/technical-reports/) · [按会议分级浏览](https://dqswordman.github.io/zh/technical-reports/?group=tier)
 
 正式论文继续遵循从 WSDM 2027 起的配套约定。录用日期为 **2026-11-03** 及以后的论文同时提供公开 `codeUrl` 和登记为 `paper-companion` 的双语伴读。论文目录、复制引用和搜索共用同一会议名称。
 
