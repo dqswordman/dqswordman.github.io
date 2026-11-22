@@ -578,6 +578,7 @@ html[lang='zh-CN'] .paper-spotlight h2 { line-height: 1.4; }
   margin-bottom: 24px;
   font-weight: 400;
 }
+.about-body > p:last-child { margin-bottom: 0; }
 .about-links {
   display: flex;
   flex-wrap: wrap;
@@ -585,6 +586,26 @@ html[lang='zh-CN'] .paper-spotlight h2 { line-height: 1.4; }
   gap: 27px;
   padding-top: 7px;
 }
+.about-poem {
+  align-self: start;
+  margin: 0;
+  padding-inline-start: clamp(14px, 1.5vw, 20px);
+  border-inline-start: 2px solid var(--gold);
+  break-inside: avoid;
+}
+.about-poem blockquote {
+  margin: 0;
+  font: 400 clamp(1rem, 1.45vw, 1.1875rem)/1.85 var(--serif);
+  letter-spacing: .025em;
+}
+.about-poem figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font: 400 .8125rem/1.6 var(--sans);
+}
+.about-poem cite { font-style: normal; }
+.about-poem figcaption a { text-decoration: underline; text-underline-offset: 3px; }
+.about-poem figcaption a:hover { color: var(--accent); }
 .text-link,
 .text-button {
   display: inline-flex;
@@ -2062,6 +2083,21 @@ html[lang='zh-CN'] .research-card h3 {
   }
 }
 
+@media screen and (min-width: 761px) {
+  .about-section {
+    grid-template-areas: 'heading bio' 'poem bio' 'poem actions';
+    grid-template-rows: auto 1fr auto;
+    row-gap: 22px;
+  }
+  .about-section > .section-heading { grid-area: heading; }
+  .about-body { grid-area: bio; }
+  .about-poem { grid-area: poem; }
+  .about-links { grid-area: actions; }
+}
+@media screen and (max-width: 760px) {
+  .about-section { grid-template-columns: 1fr; row-gap: 26px; }
+}
+
 /* The two latest updates sit below the profile. Expanding keeps the normal page scroll. */
 .news-strip {
   padding-block: clamp(26px, 3.5vw, 46px) 22px;
@@ -2312,6 +2348,8 @@ html[lang='zh-CN'] .research-card h3 {
   .about-body > .body-lead {
     font-size: 12pt;
   }
+  .about-poem { margin-top: 4mm; }
+  .about-poem blockquote { font-size: 11pt; }
   .research-section,
   .experience-section {
     background: white;

@@ -247,6 +247,15 @@ export const ui = {
 const navigationIds = ['about-me', 'research', 'publications', 'paper-arena', ...researchIndexes, 'experience'];
 const external = 'target="_blank" rel="noopener noreferrer"';
 
+function profilePoem(poem, locale) {
+  if (!poem) return '';
+  const title = locale === 'zh' ? `《${poem.title.zh}》` : poem.title.en;
+  return `<figure class="about-poem" id="poem">
+    <blockquote lang="zh-CN" cite="${h(poem.source)}"><p>${poem.lines.map(h).join('<br>')}</p></blockquote>
+    <figcaption>${h(poem.author[locale])}${locale === 'en' ? ', ' : ''}<cite><a href="${h(poem.source)}" ${external}>${h(title)}</a></cite></figcaption>
+  </figure>`;
+}
+
 function dateLabel(value, locale) {
   if (!value) return '';
   if (/^\d{4}$/.test(value)) return value;
@@ -454,7 +463,9 @@ export function renderPage({
     <div class="container news-strip">${newsPanel(profile, publications, t, locale, basePath)}</div>
     <section class="section about-section container" id="about-me" aria-labelledby="about-title" data-section>
       <div class="section-heading"><h2 id="about-title">${h(t.about)}</h2></div>
-      <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p><p>${h(copy.heroIntro)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}<div class="about-links"><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div></div>
+      <div class="about-body"><p class="body-lead">${h(copy.aboutLead)}</p><p>${h(copy.heroIntro)}</p>${copy.aboutParagraphs.map((p) => `<p>${h(p)}</p>`).join('')}</div>
+      ${profilePoem(profile.poem, locale)}
+      <div class="about-links"><button class="text-button print-button" type="button" data-print hidden>${icon('print')}${h(t.print)}</button></div>
     </section>
     <section class="research-section" id="research-profile" aria-labelledby="research-title" data-section>
       <div class="container section">

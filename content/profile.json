@@ -22,6 +22,17 @@
     "label": { "en": "Late April 2026", "zh": "2026年4月底" }
   },
   "featured": ["decision-sufficiency", "program-structure-certificates"],
+  "poem": {
+    "title": { "en": "Liupan Mountain", "zh": "清平乐·六盘山" },
+    "author": { "en": "Mao Zedong", "zh": "毛泽东" },
+    "source": "https://www.neixiang.gov.cn/wsdx/xx/2015-02-12/875.html",
+    "lines": [
+      "天高云淡，望断南飞雁。",
+      "不到长城非好汉，屈指行程二万。",
+      "六盘山上高峰，红旗漫卷西风。",
+      "今日长缨在手，何时缚住苍龙？"
+    ]
+  },
   "news": [
     {
       "id": "program-structure-public-release",

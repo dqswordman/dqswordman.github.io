@@ -170,6 +170,12 @@ export function newsItems(profile, publications) {
 export function validateContent(profile, publications, projects = []) {
   for (const key of ['url', 'github', 'scholar']) safeHttps(profile[key]);
   if (profile.huggingFace !== undefined) safeHttps(profile.huggingFace);
+  if (profile.poem) {
+    const { author, title, lines, source } = profile.poem;
+    if (!isBilingual(author) || !isBilingual(title) || !textList(lines))
+      throw new Error('The profile poem needs an author, a title in each language and lines of verse');
+    safeHttps(source);
+  }
   if (profile.url !== new URL(profile.url).origin)
     throw new Error('profile.url must be the site origin; use BASE_PATH for a subdirectory.');
   if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(profile.email))
