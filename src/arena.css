@@ -37,7 +37,8 @@
 .arena-rules table, .arena-board { border-collapse: collapse; width: 100%; text-align: start; }
 .arena-rules th, .arena-rules td { text-align: start; border-top: 1px solid var(--line); padding: 10px 12px 10px 0; font: 14px/1.65 var(--sans); vertical-align: top; }
 .arena-rules th { font-weight: 600; }
-.arena-rules th:first-child { width: 29%; } .arena-rules td:nth-child(2) { width: 13%; }
+.arena-rules th:first-child { width: clamp(4.25rem, 10vw, 7rem); }
+.arena-rules td:nth-child(2) { width: clamp(5.5rem, 12vw, 8rem); }
 .arena-rules thead th, .arena-board thead th { font: 600 12px/1.5 var(--sans); letter-spacing: .015em; color: var(--arena-muted); }
 .arena-board-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 5px 18px; flex-wrap: wrap; }
 .arena-board-heading h2, html[lang] .arena-board-heading h2 { font: 500 clamp(27px,3vw,39px)/1.22 var(--serif); letter-spacing: -.035em; }
@@ -94,7 +95,8 @@
   .arena-search { grid-column: 1/-1; }
   .arena-scopes label > span { min-height: 40px; }
   .arena-rules th,.arena-rules td { font-size: 12px; padding-right: 6px; }
-  .arena-rules td:nth-child(2) { width: 16%; }
+  .arena-rules th:first-child { width: 4em; }
+  .arena-rules td:nth-child(2) { width: 5.8em; }
   .arena-board { display: block; } .arena-board tbody { display: block; }
   .arena-board thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .arena-board tbody tr { display: grid; align-items: baseline; grid-template-columns: 24px minmax(0,1fr) auto; grid-template-areas: 'rank work score' 'rank date tier'; gap: 6px 7px; border-bottom: 1px solid var(--line); padding: 11px 0; }

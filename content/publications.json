@@ -82,17 +82,6 @@
     "topics": ["earth"]
   },
   {
-    "id": "satellite-scheduling",
-    "title": "A Reproducible Potential-Game Baseline for Multi-Satellite Scheduling on Hyperspectral Benchmarks",
-    "authors": ["Wenzhang Du"],
-    "venue": "IGARSS",
-    "year": 2026,
-    "acceptedDate": "2026-03-19",
-    "group": "major",
-    "topics": ["earth"],
-    "scholarUrl": "https://scholar.google.com/scholar?hl=en&q=%22A%20Reproducible%20Potential-Game%20Baseline%20for%20Multi-Satellite%20Scheduling%20on%20Hyperspectral%20Benchmarks%22"
-  },
-  {
     "id": "autocompress",
     "title": "AutoCompress: Mixed-Precision Quantization-Aware NAS under Strict Memory Budgets",
     "authors": ["Wenzhang Du", "Suphongsa Khetkeeree"],

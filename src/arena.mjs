@@ -50,7 +50,7 @@ function histogram(arena, t, locale) {
   const max = Math.max(1,...counts);
   return `<figure class="arena-distribution" aria-labelledby="distribution-title">
     <figcaption><h2 id="distribution-title">${t.distribution}</h2><span>${t.reviewed} <strong>${arena.reviews.length}</strong></span></figcaption>
-    <ol>${counts.map((n,i) => `<li><a href="?scope=all&amp;tier=${i+1}#leaderboard" title="${h(arena.tiers[i].label[locale])}" aria-label="${h(t.shortTier(i+1))} · ${h(arena.tiers[i].label[locale])} · ${n} ${locale === 'zh' ? '篇' : 'papers'}">
+    <ol>${counts.map((n,i) => `<li><a href="?scope=all&amp;tier=${i+1}#leaderboard" aria-label="${h(t.shortTier(i+1))} · ${n} ${locale === 'zh' ? '篇' : n === 1 ? 'paper' : 'papers'}">
       <span class="arena-bar-space"><span class="arena-bar" style="--bar:${(100*n/max).toFixed(2)}%"><b>${n}</b></span></span>
       <span class="arena-bar-name">${h(t.chartTier(i+1))}</span></a></li>`).join('')}</ol></figure>`;
 }
@@ -58,7 +58,7 @@ function histogram(arena, t, locale) {
 function rubric(arena, t, locale) {
   return `<details class="arena-rubric" id="rubric"><summary><span>${t.rubric}</span><small>v${h(arena.version)} · <time datetime="${arena.rubricDate}">${arena.rubricDate}</time></small>${icon('down')}</summary>
     <div class="arena-rules"><table><thead><tr><th scope="col">${t.tier}</th><th scope="col">${t.score}</th><th scope="col">${t.meaning}</th></tr></thead><tbody>
-      ${arena.tiers.map(b => `<tr><th scope="row">${h(t.shortTier(b.tier))} · ${h(b.label[locale])}</th><td>${b.range ? h(b.range.join('–') + (t.points ? ' ' + t.points : '')) : t.qualitative}</td><td>${h(b.meaning[locale])}</td></tr>`).join('')}
+      ${arena.tiers.map(b => `<tr><th scope="row">${h(t.shortTier(b.tier))}</th><td>${b.range ? h(b.range.join('–') + (t.points ? ' ' + t.points : '')) : t.qualitative}</td><td>${h(b.meaning[locale])}</td></tr>`).join('')}
     </tbody></table></div></details>`;
 }
 

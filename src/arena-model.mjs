@@ -8,8 +8,8 @@ const inReviewScope = work => work?.paper?.group !== 'ei' && work?.project?.coll
 export function resolveArena(spec, publications, projects) {
   if (!/^\d+\.\d+\.\d+$/.test(spec.version) || !isoDate(spec.rubricDate) || !isoDate(spec.snapshotDate))
     throw new Error('Invalid arena version or date');
-  if (spec.tiers.length !== 6 || spec.tiers.some(({tier, range, label, meaning}, i) => tier !== i + 1 ||
-      !translated(label) || !translated(meaning) || (tier > 4 ? range !== null :
+  if (spec.tiers.length !== 6 || spec.tiers.some(({tier, range, meaning}, i) => tier !== i + 1 ||
+      !translated(meaning) || (tier > 4 ? range !== null :
         !Array.isArray(range) || range.length !== 2 || !range.every(Number.isFinite) || range[0] > range[1])))
     throw new Error('Invalid arena rubric');
 

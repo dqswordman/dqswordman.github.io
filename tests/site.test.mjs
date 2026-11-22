@@ -68,10 +68,10 @@ test('the internship ends when the current independent research role begins in b
   }
 });
 
-test('publications retain one explicit Scholar URL and generate precise title searches for the others', () => {
-  const explicit = publications.filter((paper) => paper.scholarUrl);
-  assert.equal(explicit.length, 1);
-  for (const paper of publications) {
+test('publication links honor a supplied Scholar URL and otherwise search for the exact title', () => {
+  const scholarUrl = 'https://scholar.google.com/scholar?cluster=12345';
+  assert.equal(paperUrl({ title: 'Example paper', scholarUrl }), scholarUrl);
+  for (const paper of publications.filter(paper => !paper.scholarUrl)) {
     const url = new URL(paperUrl(paper));
     assert.equal(url.hostname, 'scholar.google.com');
     assert.equal(url.searchParams.get('q'), `"${paper.title}"`);
@@ -208,8 +208,9 @@ test('new dated papers require a bilingual technical report and a GitHub reposit
 });
 
 test('publication groups contain every paper once and presentation classifications stay out of venue records', () => {
-  const groups = Object.fromEntries(['major', 'ei'].map(g => [g, publications.filter(p => p.group === g)]));
-  assert.equal(groups.major.length, 7);
+  const groups = Object.fromEntries(['preprint', 'major', 'ei'].map(g => [g, publications.filter(p => p.group === g)]));
+  assert.equal(groups.preprint.length, 1);
+  assert.equal(groups.major.length, 6);
   assert.equal(groups.ei.length, 8);
   for (const p of publications) {
     assert.doesNotMatch(p.venue, /\b(?:oral|poster|main)\b/i);
@@ -373,11 +374,11 @@ test('both language pages index both languages for stable search during language
     const indexes = [...html.matchAll(/data-search="([^"]+)"/g)].map((match) => match[1]);
     assert.equal(
       indexes.filter((search) => normalizeSearch(search).includes('对地观测')).length,
-      4,
+      3,
     );
     assert.equal(
       indexes.filter((search) => normalizeSearch(search).includes('earth observation')).length,
-      4,
+      3,
     );
   }
 });
@@ -387,7 +388,7 @@ test('year and topic constraints combine with text search', () => {
   assert.equal(records.filter((paper) => matchesPaper(paper, { year: '2025' })).length, 4);
   assert.equal(
     records.filter((paper) => matchesPaper(paper, { year: '2026', topic: 'earth' })).length,
-    4,
+    3,
   );
   assert.equal(
     records.filter((paper) =>

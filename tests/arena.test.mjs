@@ -28,7 +28,13 @@ test('both arenas and home badges resolve to the same scores including qualitati
       if (row.work) assert.ok(home.includes('href="'+route+'#entry-'+row.id+'"'));
       else assert.ok(tr.includes('>TBD</th>') && tr.includes('data-keywords="TBD"') && !tr.includes('href='));
     }
-    for (const band of spec.tiers) assert.ok(board.includes(escapeHtml(band.meaning[locale])));
+    for (const band of spec.tiers) {
+      const tier = locale === 'zh' ? `第 ${band.tier} 档` : `Tier ${band.tier}`;
+      const score = band.range
+        ? band.range.join('–') + (locale === 'zh' ? ' 分' : '')
+        : (locale === 'zh' ? '定性评价' : 'Qualitative');
+      assert.ok(board.includes(`<tr><th scope="row">${tier}</th><td>${score}</td><td>${escapeHtml(band.meaning[locale])}</td></tr>`));
+    }
     assert.ok(!home.includes('src="/profile/assets/arena.js"'));
   }
 });
