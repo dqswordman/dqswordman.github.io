@@ -1,21 +1,21 @@
 {
   "article": {
-    "version": "1.0.1",
+    "version": "1.0.2",
     "published": "2026-11-21",
-    "updated": "2026-11-21",
+    "updated": "2026-11-22",
     "updateNote": {
-      "en": "Added the original method implementation and an independent CPU check.",
-      "zh": "补充原方法实现及独立 CPU 校验。"
+      "en": "This edition distinguishes choosing passages from ordering them and gives the question count for each comparison.",
+      "zh": "本版分别说明段落选择与呈现顺序的作用，并标明各项比较的问题数。"
     }
   },
   "locales": {
     "en": {
-      "title": "Which evidence decision changed the answer?",
-      "summary": "Two selection paths separate passage budget, combination search and presentation order. A saved answer at each step shows where an apparent gain originates."
+      "title": "Which change in the evidence changed the answer?",
+      "summary": "How much of a gain comes from finding a better trio of passages, and how much from letting the model use fewer? Across 539 multi-hop questions, the option to use fewer passages accounts for 4.79 of Mistral’s 5.91 token-F1 points of improvement. In a separate 30-question comparison, changing the order of the same passages can reverse the apparent gain from choosing a new set."
     },
     "zh": {
-      "title": "哪一步证据选择改变了 RAG 的答案？",
-      "summary": "沿两条配对路径，分别改变段落预算、组合搜索和呈现顺序。每一步都有已保存的回答，可以追查最终得分从哪里来。"
+      "title": "是哪一步证据选择改变了回答？",
+      "summary": "给模型更好的三段证据，和允许它少用几段，哪一步更有用？在 539 道多跳问题上，Mistral 的答案词元 F1 提高了 5.91 分，其中 4.79 分来自放宽段数限制。另取 30 道问题做交叉比较，同一组新证据换个排列顺序，得分变化的方向就可能翻转。"
     }
   },
   "keywords": [
@@ -54,15 +54,15 @@
     {
       "id": "worked-example",
       "title": {
-        "en": "One question, three answers",
-        "zh": "一道问题的三次作答"
+        "en": "One question, the same two passages, a different band",
+        "zh": "同一道题、同两段证据，模型却答出了另一支乐队"
       },
       "paragraphs": {
         "en": [
-          "The question asks which band was founded by Devilment’s eventual vocalist. With the selected passages in their original order, Qwen answers “Cradle of Filth.” Present the same two passages in reverse and its answer becomes “Falling in Reverse.” Select again under the reversed scoring order and the answer returns to “Cradle of Filth.” Comparing the first and last answers alone hides both transitions."
+          "Which band did the musician who would later sing for Devilment found? Qwen answers “Cradle of Filth” with the two selected passages in their original order. Swapping those passages changes the answer to “Falling in Reverse.” If the selector can choose passages again under the new order, Qwen returns to “Cradle of Filth.” A comparison of the first and last answers would record no change."
         ],
         "zh": [
-          "题目问的是，后来担任 Devilment 主唱的人创立过哪支乐队。Qwen 按原顺序读取选中的两段材料，答出 Cradle of Filth。把相同材料倒过来，答案变成 Falling in Reverse。按反序下的评分重新选择材料，答案又回到 Cradle of Filth。只比较起点与终点，看不到中间发生的两次变化。"
+          "后来担任 Devilment 主唱的音乐人成立过哪支乐队？按原顺序读两段选中的证据，Qwen 答“Cradle of Filth”。把这两段对调，它改答“Falling in Reverse”。再允许选择器按新顺序重新选段，它又答回“Cradle of Filth”。只看首尾，会把这两次变化都漏掉。"
         ]
       },
       "blocks": [
@@ -72,8 +72,8 @@
           "width": 1360,
           "height": 1141,
           "caption": {
-            "en": "Figure 1 follows the same question across the original, reversed and reselected evidence. Passage identities travel with the selected set.",
-            "zh": "图 1 沿同一道题跟踪原顺序、反序及重选。段落编号标明每一步实际使用的证据。"
+            "en": "Figure 1. Read the saved Qwen answers from left to right. The first change reverses the same two passages. The second allows the selector to replace a passage under the reversed order.",
+            "zh": "图 1。从左到右是 Qwen 实际生成的三个答案。第一步只对调原来的两段，第二步才允许选择器在反序条件下更换段落。"
           },
           "alt": {
             "en": "Three saved answers to the Devilment question across changes in order and membership.",
@@ -86,16 +86,16 @@
     {
       "id": "design",
       "title": {
-        "en": "Hold the passage pool fixed",
-        "zh": "先固定候选段落"
+        "en": "Separate the search for three passages from the option to use fewer",
+        "zh": "先比较怎样选三段，再比较能否少选"
       },
       "paragraphs": {
         "en": [
-          "Each pool contains six passages. Greedy selection adds a passage three times. Exact search tries all three-passage combinations. Relaxing the budget then permits zero, one or two passages as well. The two differences isolate the contribution of search at a fixed size and the contribution of size flexibility. Scoring uses the likelihood of the reference answer; saved generations give a separate token-F1 readout.",
+          "Start with six candidate passages. A greedy selector picks three, one at a time. An exhaustive selector scores every three-passage combination. Comparing the two measures what better search buys at the same size. The next step allows the exhaustive selector to choose zero, one or two passages as well. All selections use the reference answer’s likelihood. Token F1 measures the answer the generator actually produced.",
           "The 539-question panel spans HotpotQA, 2WikiMultiHopQA and MuSiQue, with two pool constructions for each question. The analysis averages the two tracks within question before estimating uncertainty. A nested panel of 89 questions has all 64 canonical subset answers for Qwen and Gemma. On 30 matched questions, each of the 42 sets of size at most three has an answer in both orders."
         ],
         "zh": [
-          "每个池固定六段候选。贪心方案逐次加入一段，共选三次。精确搜索遍历所有三段组合。随后放宽预算，允许使用零段、一段或两段。两个相邻差值分别衡量固定长度时的搜索变化，以及允许更短上下文带来的变化。选择依据是参考答案的似然，另用已生成答案计算 token F1。",
+          "每道题给定六段候选。贪心法逐段选满三段，穷举法给每一种三段组合打分。先比较这两种选法，就能估计段数相同时搜索有多少用。然后只放宽段数，允许穷举法也选择零段、一段或两段。选段依据是参考答案的似然，最终得分则用模型实际回答的词元 F1 计算。",
           "539 道题来自三个多跳问答基准，每题有两种候选池构造。统计先在同一问题内平均两条轨道，再估计不确定性。嵌套的 89 道题保存了 Qwen 和 Gemma 对全部 64 个子集的常规顺序回答。另有 30 道配对题，最多三段的 42 种组合均有两种顺序的回答。"
         ]
       },
@@ -104,23 +104,23 @@
     {
       "id": "results",
       "title": {
-        "en": "Budget flexibility helps one generator most",
-        "zh": "放宽预算对哪种模型帮助最大"
+        "en": "Most of Mistral’s gain comes from the option to use fewer passages",
+        "zh": "Mistral 的提升主要来自可以少选几段"
       },
       "paragraphs": {
         "en": [
-          "Mistral gains 5.91 token-F1 points along the full path. Allowing shorter contexts contributes 4.79 points, with a paired 95% interval from 3.12 to 6.53. Searching more thoroughly while keeping three passages contributes 1.11 points. For Qwen and Gemma the intervals for budget flexibility include zero. Each component below is rounded independently."
+          "Mistral gains 1.11 token-F1 points when exhaustive search replaces greedy selection at exactly three passages. Allowing shorter selections adds 4.79 points (paired 95% interval 3.12 to 6.53). The total gain is 5.91 points before the components are rounded. For Qwen and Gemma, the intervals for allowing fewer passages span both gains and losses."
         ],
         "zh": [
-          "Mistral 在整条路径上提高 5.91 个 token-F1 点。其中，允许用更短的上下文贡献 4.79 点，配对 95% 区间为 3.12 至 6.53。保持三段、加强搜索贡献 1.11 点。Qwen 和 Gemma 的预算效应区间都覆盖零。下表各项分别取整。"
+          "固定选三段时，用穷举替代贪心，Mistral 提高 1.11 个词元 F1 分。允许少选后再提高 4.79 分，配对 95% 区间为 3.12 至 6.53 分。总增益为 5.91 分，各项数值分别四舍五入到小数点后两位。对 Qwen 和 Gemma，放宽段数的区间同时覆盖上升和下降。"
         ]
       },
       "blocks": [
         {
           "type": "table",
           "caption": {
-            "en": "Table 2 of the manuscript. Paired changes in token-F1 points on 539 questions.",
-            "zh": "原稿表 2。539 道题上的配对 token-F1 点数变化。"
+            "en": "Paired changes in token F1 (points) on 539 questions. “Search” changes how a trio is chosen and “Budget” allows shorter sets. Each question contributes the mean of its two pools. Manuscript Table 2.",
+            "zh": "539 道题的配对词元 F1 差值，单位为分。搜索项改变三段组合的选法，预算项允许选择更短的组合。每道题先取两个候选池的均值。见原稿表 2。"
           },
           "columns": [
             {
@@ -167,16 +167,16 @@
     {
       "id": "order",
       "title": {
-        "en": "The same membership change can switch sign",
-        "zh": "同一组替换，顺序不同，效应会反向"
+        "en": "A new set of passages can help in one order and hurt in the other",
+        "zh": "同一组新段落带来的收益取决于排列顺序"
       },
       "paragraphs": {
         "en": [
-          "On the 30-question exact-three panel, reversing Gemma’s original set costs 20.56 points. Reselecting under reverse order recovers 16.54. Placing that newly selected membership in canonical order instead costs 23.35 points relative to the original set. The four crossed readouts reveal an interaction between membership and order.",
+          "On 30 matched questions with exactly three passages, reversing Gemma’s original selection costs 20.56 F1 points. With that reversed order fixed, choosing a new set recovers 16.54 points. Compare the very same old and new sets in the original order and the new set loses 23.35 points. The effect attributed to changing membership therefore depends on the order used for the comparison.",
           "An answer-blind cross-encoder offers a check on a different selection objective. On the 89 retrieval-built pools, greedy and exact three-passage search choose identical sets in 75 cases. The observed answer changes still differ by generator. The size of the pool, the short-answer format and the single reversal bound the interpretation."
         ],
         "zh": [
-          "在 30 道题、精确选三段的设置下，直接反转 Gemma 原来的集合使 F1 下降 20.56 点。按反序重新选择可回升 16.54 点；把重选集合放回常规顺序，相对原集合却下降 23.35 点。四种交叉读数显示，成员替换的效果取决于排列顺序。",
+          "在固定三段的 30 道配对题上，只把 Gemma 原选的段落反序，答案 F1 就下降 20.56 分。保持反序再重新选段，可挽回 16.54 分。但把同一对新旧组合都按原顺序呈现，新组合反而低 23.35 分。判断换段是否有益，必须同时说明两组段落是按什么顺序读的。",
           "另用无需参考答案的交叉编码器检查不同选择目标。在 89 个检索构造的池中，贪心与精确搜索有 75 次选中相同三段，实际答案变化仍因生成器而异。候选池大小、短答案形式及单一反序限定了结论的范围。"
         ]
       },
@@ -185,16 +185,16 @@
     {
       "id": "reproduction",
       "title": {
-        "en": "Reconstruct the result on CPU",
-        "zh": "用 CPU 重建结果"
+        "en": "Trace an answer back to its selected passages",
+        "zh": "从归档回答追查当时选中的段落"
       },
       "paragraphs": {
         "en": [
-          "On CPU the release re-scores archived generations, checks 9,702 selected-answer records and recomputes 279 paired statistics. It includes passage identifiers and text hashes for joining the original benchmarks. Original benchmark sources supply the passage bodies.",
+          "The CPU replay checks 9,702 records that link a selected set to its generated answer, then recomputes 279 paired statistics. Passage IDs and text hashes identify the inputs in the source benchmarks. Use those benchmarks for the original passage text.",
           "The original selection code independently finds masks 5 and 33 on the two saved utility surfaces for the Figure 1 question. The archived model loader, likelihood scorer and greedy generation routines are provided alongside it."
         ],
         "zh": [
-          "CPU 回放重新计算归档回答的分数，核验 9,702 条选中答案，并重算 279 项配对统计。包内保存段落标识和文本哈希，可回到上游基准核对段落正文。",
+          "CPU 回放先核对 9,702 条选段与生成回答的对应记录，再复算 279 项配对统计。可凭段落编号和文本哈希回到原始基准查阅正文。",
           "用原始选择代码在图 1 问题的两个效用曲面上独立搜索，会分别得到掩码 5 和 33。包内同时提供当时的模型加载、似然评分与贪心生成实现。"
         ]
       },
@@ -249,8 +249,8 @@
     "guide": "https://github.com/dqswordman/rag-evidence-selection-paths/blob/v1.0.1/docs/reproduction.md",
     "space": "https://huggingface.co/spaces/DQSWORDMAN/rag-evidence-selection-paths",
     "description": {
-      "en": "Two selection paths separate passage budget, combination search and presentation order. A saved answer at each step shows where an apparent gain originates.",
-      "zh": "沿两条配对路径，分别改变段落预算、组合搜索和呈现顺序。每一步都有已保存的回答，可以追查最终得分从哪里来。"
+      "en": "Replay the archived answers on CPU, from the two passages shown in Figure 1 to the paired F1 comparisons across generators.",
+      "zh": "在 CPU 上复查归档回答，从图 1 中的两段证据一直核对到各模型的配对 F1 差值。"
     }
   }
 }

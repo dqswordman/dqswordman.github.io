@@ -54,43 +54,43 @@
   ],
   "locales": {
     "en": {
-      "description": "Wenzhang Du is an independent researcher interested in data mining, retrieval-augmented generation, and trustworthy machine learning.",
+      "description": "Wenzhang Du studies how language models use retrieved evidence and how reliably evaluations measure their behavior.",
       "identity": "Independent Researcher",
       "role": "Data mining, RAG & trustworthy machine learning",
       "location": "Daqing, China",
       "heroEyebrow": "INDEPENDENT RESEARCHER",
-      "heroStatement": ["AI advances faster than our ability to measure, verify, and understand it.", "I work to close those gaps."],
-      "heroIntro": "I’m interested in how systems find and use information, and in how we can assess the reliability of their behavior.",
+      "heroStatement": ["What evidence changes an answer?", "I test one change at a time."],
+      "heroIntro": "I work on retrieval and model evaluation. I compare answers to the same question as I vary a passage, an example or a scoring rule.",
       "degree": "B.Eng. in Computer Engineering and Artificial Intelligence",
       "graduate": "Graduated",
       "internshipRole": "Research Intern",
       "internshipTeam": "Earth and Space Center",
       "present": "Present",
-      "aboutLead": "My research starts with a simple question: how do we know an AI system is behaving reliably?",
+      "aboutLead": "Two systems can earn the same score for different reasons. I use paired tests to find out which decisions produced that score.",
       "aboutParagraphs": [
-        "I hold a B.Eng. in Computer Engineering and Artificial Intelligence. My research background includes model auditing, language model safety, efficient deep learning, computer vision, and remote sensing."
+        "I have a B.Eng. in Computer Engineering and Artificial Intelligence. My work on language-model evaluation draws on earlier research in model auditing, efficient deep learning, computer vision and remote sensing."
       ],
       "research": [
         {
           "id": "data-mining",
           "title": "Data mining & RAG",
-          "description": "I’m interested in discovering useful patterns in data, finding relevant information, and using retrieved evidence to support generation.",
+          "description": "With the question fixed, I vary which passages enter the context, how many are allowed and the order the generator reads them in.",
           "tags": ["Information retrieval", "Ranking", "Evidence use"],
           "icon": "search"
         },
         {
           "id": "trustworthy-ml",
           "title": "Trustworthy machine learning",
-          "description": "I’m interested in how to test model behavior, whether results hold across conditions, and how to quantify uncertainty in evaluations.",
+          "description": "I build paired tests that distinguish ranking from deciding, and fitting the examples from generalizing to new inputs. I report how much uncertainty remains in each comparison.",
           "tags": ["Model evaluation", "Robustness", "Uncertainty"],
           "icon": "chart"
         }
       ],
       "recentResearch": [
-        "Since my WSDM work on evidence selection, I’ve used matched comparisons to understand which decisions explain changes in scores. I separate choices that usually change together and trace changes in individual examples that aggregate scores can hide.",
-        "In retrieval, I test the effect of document layout while keeping facts and relevance fixed. In RAG, I separate the effects of evidence budget, subset search, and passage order. In factuality audits, I compare how claim pairing affects precision at the same verification budget. In reasoning evaluations, I check what the examples actually require before interpreting the model scores."
+        "My WSDM study began with a practical choice in retrieval-augmented generation. When a model proposes several passages, is it worth spending one more scoring call to check them together? I compared that extra call with returning the best context already measured, then checked whether the generated answer also improved.",
+        "I use the same approach to ask what an evaluation actually tests. In program induction, changing one demonstration can rule out every single-rule solution. In refusal evaluation, a model can rank a safe and an unsafe prompt correctly yet apply the wrong decision to one of them. Each comparison makes a different failure visible."
       ],
-      "publicationIntro": "Conference papers and preprints on trustworthy learning, evaluation, and applied AI.",
+      "publicationIntro": "Conference papers and preprints. Search by title, author or venue, or narrow the list by year and topic.",
       "awards": [
         { "date": "2025", "title": "Best Paper Award", "detail": "ICPEI 2025", "kind": "award" },
         {
@@ -124,46 +124,46 @@
           "text": "Computer vision, remote sensing, model compression, quantization-aware learning, edge-aware ML"
         }
       ],
-      "contactIntro": "I’d be glad to exchange ideas about related research."
+      "contactIntro": "I welcome questions about the experiments, their limitations and ways to reuse the released materials."
     },
     "zh": {
-      "description": "独立研究者 Wenzhang Du 的个人学术主页。研究兴趣包括数据挖掘、检索增强生成与可信机器学习。",
+      "description": "Wenzhang Du，独立研究者，研究语言模型如何使用检索到的证据，以及如何可靠地评估模型行为。",
       "identity": "独立研究者",
       "role": "数据挖掘、检索增强生成与可信机器学习",
       "location": "中国 · 大庆",
       "heroEyebrow": "独立研究者 · 个人学术主页",
-      "heroStatement": ["AI 的发展速度，超越了我们衡量、验证与理解它的能力。", "我致力于弥合这些缺口。"],
-      "heroIntro": "我对系统如何发现和利用信息感兴趣，也关心怎样评估模型行为的可靠性。",
+      "heroStatement": ["哪些证据会改变模型的回答？", "我一次改变一个条件，追查原因。"],
+      "heroIntro": "我研究检索和模型评估。我会固定问题，只改一段证据、一个示例或一条评分规则，再比较答案怎样变化。",
       "degree": "计算机工程与人工智能学士学位",
       "graduate": "已毕业",
       "internshipRole": "研究实习生",
       "internshipTeam": "地球与空间中心",
       "present": "至今",
-      "aboutLead": "我的研究始于一个朴素的问题：我们如何知道一个人工智能系统的行为是可靠的？",
+      "aboutLead": "两个系统得到同样的分数，背后的原因可能很不一样。我用配对实验追查，是哪些具体决定产生了这个结果。",
       "aboutParagraphs": [
-        "我拥有计算机工程与人工智能学士学位。此前的研究涉及模型审计、大语言模型安全、高效深度学习、计算机视觉和遥感。"
+        "我拥有计算机工程与人工智能学士学位。此前在模型审计、高效深度学习、计算机视觉和遥感方面的研究，也影响了我今天评估语言模型的方式。"
       ],
       "research": [
         {
           "id": "data-mining",
           "title": "数据挖掘与 RAG",
-          "description": "我对怎样从数据中发现有用的模式，以及怎样用检索到的证据辅助生成感兴趣。",
+          "description": "我固定问题，分别改变模型能读几段证据、读到哪些段落，以及先读哪一段。",
           "tags": ["信息检索", "排序", "证据使用"],
           "icon": "search"
         },
         {
           "id": "trustworthy-ml",
           "title": "可信机器学习",
-          "description": "我也关心怎样检验模型行为、判断评估结论在不同条件下是否成立，并衡量其中的不确定性。",
+          "description": "我用配对测试区分排对顺序与作对决定，也区分通过已给样例与推广到新输入，并估计每项比较的不确定性。",
           "tags": ["模型评估", "鲁棒性", "不确定性"],
           "icon": "chart"
         }
       ],
       "recentResearch": [
-        "从 WSDM 的证据选择研究到最近几项工作，我一直关心分数变化究竟来自哪一步。我用配对比较拆开通常一起变化的因素，再回到逐例结果，查看哪些差异被总体分数掩盖。",
-        "在检索研究中，我固定事实和相关性标签，比较不同文档布局的影响。在 RAG 中，我区分证据预算、组合搜索和段落顺序各自的作用。在事实性审计中，我固定核验预算，比较事实陈述的配对方式如何影响估计精度。在推理评估中，我先检查样例实际要求什么，再解读模型分数。"
+        "我的 WSDM 研究从检索增强生成中的一个决定开始。模型提出一组段落后，值不值得再花一次评分调用，把它们放在一起测？我用已有测量中得分最高的上下文作对照，然后检查生成的答案是否也有改善。",
+        "我也用类似的比较追问，一项评估究竟测到了什么。在程序归纳中，更换一个示例就可能排除全部单规则解。在拒答评估中，即使把安全与不安全提示排对了，模型也可能对其中一条作出错误决定。两种实验各自揭示一种容易被总分掩盖的失败。"
       ],
-      "publicationIntro": "会议论文与预印本，涵盖可信学习、实证评估与人工智能应用。",
+      "publicationIntro": "这里收录会议论文与预印本，可按题名、作者或会议搜索，也可按年份与主题筛选。",
       "awards": [
         { "date": "2025", "title": "最佳论文奖", "detail": "ICPEI 2025", "kind": "award" },
         {
@@ -197,7 +197,7 @@
           "text": "计算机视觉、遥感、模型压缩、量化感知学习、边缘设备机器学习"
         }
       ],
-      "contactIntro": "如果你也关注这些方向，欢迎交流。"
+      "contactIntro": "欢迎交流实验设计、结论的适用范围，以及怎样在其他研究中复用这些材料。"
     }
   }
 }

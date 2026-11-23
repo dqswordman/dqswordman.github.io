@@ -1,22 +1,22 @@
 {
   "article": {
-    "version": "1.1",
+    "version": "1.1.1",
     "published": "2026-11-11",
-    "updated": "2026-11-11",
+    "updated": "2026-11-22",
     "manuscriptDate": "2026-11-11",
     "updateNote": {
-      "en": "Expanded the archived examples, matched-budget comparisons, and CPU replay instructions.",
-      "zh": "补全真实案例、同预算对照与 CPU 复现步骤。"
+      "en": "This edition separates the cost of checking a proposed context from its effects on reference-answer likelihood and on the generated answer.",
+      "zh": "本版分别说明补测候选段落组合的成本、对参考答案似然的影响，以及实际生成答案的变化。"
     }
   },
   "locales": {
     "en": {
-      "title": "One extra measurement for RAG evidence selection",
-      "summary": "The same nine target scores can produce a measured baseline or an additive proposal. Checking the proposed context once changes which evidence the selector returns."
+      "title": "When is one more measurement worth making in RAG evidence selection?",
+      "summary": "A selector can return the best passage it has measured or propose a combination from the same scores. Across 180 held-out questions, checking a new combination when needed costs 9.61 scoring calls on average, up from nine. Mean normalized regret falls from 0.213 to 0.162. The change in generated-answer F1 against the best measured nine-call choice is +0.006, with a paired 95% interval of −0.003 to +0.015."
     },
     "zh": {
-      "title": "RAG 证据选择，多测一次会怎样？",
-      "summary": "同样九次目标测量，可以直接选出已测最优，也可以推算出一个组合。对候选组合补测一次，看看最后该选哪些证据。"
+      "title": "选择 RAG 证据时，值得为一个新组合多测一次吗？",
+      "summary": "选择器可以直接采用得分最高的已测段落，也可以用同一批分数推算新的组合。在 180 道留出问题上，仅在组合尚未测过时补测一次，平均评分调用由 9 次增至 9.61 次，与最优可选组合之间的平均归一化差距由 0.213 降到 0.162。相对九次测量中的最优选择，生成答案的 F1 差值为 +0.006，配对 95% 区间为 −0.003 至 +0.015。"
     }
   },
   "artifact": {
@@ -24,8 +24,8 @@
     "url": "https://github.com/dqswordman/rag-decision-sufficiency/releases/tag/v1.0.0",
     "space": "https://huggingface.co/spaces/DQSWORDMAN/rag-decision-sufficiency",
     "description": {
-      "en": "Run one archived decision in standard-library Python, or replay the four manuscript tables and paired results on CPU from the fixed release.",
-      "zh": "用 Python 标准库查看一条真实归档决策，或用固定版本在 CPU 上复现四张论文表与配对结果。"
+      "en": "Inspect either saved decision with standard-library Python. The tagged CPU release rebuilds the four manuscript tables from the archived measurements.",
+      "zh": "用 Python 标准库可查看两个已存决策案例。带版本标签的 CPU 发布包还能从归档测量重建四张论文表格。"
     },
     "guide": "https://github.com/dqswordman/rag-decision-sufficiency/blob/main/docs/reproduction.md"
   },
@@ -33,15 +33,15 @@
     {
       "value": "0.213 / 0.272",
       "label": {
-        "en": "Mean regret at nine calls, BO9 / P1",
-        "zh": "九次测量下的平均遗憾值，BO9 / P1"
+        "en": "Mean regret at nine calls, best measured / additive choice",
+        "zh": "九次调用的平均归一化遗憾值，已测最优 / 加性预测"
       }
     },
     {
       "value": "0.162",
       "label": {
-        "en": "Mean regret with one check, 9.61 calls",
-        "zh": "补测一次的平均遗憾值，平均 9.61 次测量"
+        "en": "Mean regret after a check, 9.61 calls on average",
+        "zh": "有需要时补测，平均 9.61 次调用的遗憾值"
       }
     },
     {
@@ -56,19 +56,19 @@
     {
       "id": "overview",
       "title": {
-        "en": "The King Arthur decision",
-        "zh": "King Arthur 这一题怎么选"
+        "en": "Which passage should answer the King Arthur question?",
+        "zh": "回答亚瑟王的问题，该用哪段证据？"
       },
       "paragraphs": {
         "en": [
           "Which actor plays King Arthur in Once Upon a Time? In one archived MuSiQue case, Mistral had eight retrieved passages and could keep up to three. Its best initial context was the Liam Garrigan biography. The additive model recommended putting the biography together with the King Arthur passage. The pair looked stronger on the singleton scores.",
           "The extra measurement changed the decision. The pair was estimated at 1.574 and measured at 0.206. The biography alone had already measured 0.918, so the check kept it. All three scores use centered reference-answer likelihood, in nats per answer token.",
-          "The decoded answer gives another view of this decision. The pair produced an exact short answer. The biography alone produced an answer with token F1 of 0.444. These two outcomes motivate tracking both measured utility and answer quality throughout the study."
+          "The biography wins on the score used for selection. When asked to generate an answer, however, Mistral gives an exact match with the pair and earns only 0.444 token F1 with the biography alone. A context can make the reference answer more likely and still produce a worse answer under greedy decoding. The study therefore measures both outcomes."
         ],
         "zh": [
           "《Once Upon a Time》中的 King Arthur 由哪位演员扮演？在这条 MuSiQue 归档案例中，Mistral 有八段候选证据，最终最多选三段。初始已测最优是 Liam Garrigan 的人物传记。加性模型建议把传记与 King Arthur 相关段落一起选入，单看各段分数，这个组合更有吸引力。",
           "补测改变了选择。两段组合的估计效用为 1.574，实测为 0.206。单独使用传记已经测得 0.918，因此核验后选回传记。这里的效用以空上下文为基准，单位是每个参考答案词元的奈特。",
-          "解码后的答案给出了另一层证据。两段组合生成了完全匹配的简短答案，传记单段生成的答案词元 F1 为 0.444。这也是整个研究同时记录实测效用和答案质量的原因。"
+          "按选段时使用的分数，人物传记胜出。让 Mistral 真正作答时，两段一起用却能完全答对，只给传记的答案词元 F1 为 0.444。提高参考答案的似然，仍可能在贪心解码时得到较差的回答。因此下文分别跟踪两种结果。"
         ]
       },
       "blocks": [
@@ -116,40 +116,40 @@
     {
       "id": "method",
       "title": {
-        "en": "A predictor can nominate the next measurement",
-        "zh": "让预测器决定下一次测什么"
+        "en": "Use the prediction to choose what to measure",
+        "zh": "用预测决定下一次该测什么"
       },
       "paragraphs": {
         "en": [
           "For a context S, the target generator scores each reference-answer token conditioned on the question, the passages in canonical order, and earlier reference tokens. Let ℓ(S) be the mean of these token log probabilities. The centered utility is U(S) = ℓ(S) − ℓ(∅). One probe is one target score of a context.",
           "The initial observation set contains ∅ and the eight singletons. BO9 takes the best measured context in that set. P1 adds singleton gains to predict the utility of a candidate subset and chooses the best prediction among the 93 feasible sets of at most three passages. Because the utility is centered at the empty set, each singleton gain is its measured utility.",
           "P1 + one check uses the same proposal. If the proposal is a new context, it scores it once. The final choice maximizes measured utility over the initial observations and the proposal. This set contains both base choices after the check, so its best measured utility is at least as high as either. Equal scores are resolved by the smallest integer mask.",
-          "The evaluator uses the complete array only after the decision. Normalized regret is the utility gap to the best feasible subset divided by the frozen scale for the dataset, generator and pool construction. The check’s utility guarantee concerns the observed contexts. The remaining regret measures the gap to the feasible optimum."
+          "After the selector commits to a context, the evaluator uses the fully measured pool to find the best feasible subset. Normalized regret measures how much utility the chosen context gives up relative to that optimum, divided by a scale fixed for the dataset, generator and pool construction. The extra check guarantees the best measured choice among the contexts it has seen. Other feasible subsets can still score higher."
         ],
         "zh": [
           "给定上下文 S，目标生成模型对参考答案逐词元打分。每个词元的条件包括问题、按固定次序排列的证据，以及之前的参考词元。记这些对数概率的均值为 ℓ(S)，中心化效用为 U(S) = ℓ(S) − ℓ(∅)。每测一个上下文就记一次目标测量。",
           "初始观测包含空上下文和八个单段上下文。BO9 取其中实测效用最高者。P1 将单段增益相加，在最多选三段的 93 个可行子集中选出估计分数最高的组合。空上下文是中心化基准，因此单段增益就是单段的实测效用。",
           "P1 + 一次核验沿用同一个候选组合。若候选此前未测过，就补测一次，再从初始观测与补测结果中选实测效用最高者。核验后的候选集合包含两种基础策略各自的选择，因此最终实测效用至少达到两者的水平。分数并列时取整数掩码最小者。",
-          "选择完成后，评估器才使用完整效用数组。归一化遗憾值是所选集合与可行最优集合的效用差，除以数据集、生成模型及候选池构造对应的冻结尺度。核验保证的是已测集合中的实测效用，遗憾值衡量与全部可行子集中最优者的距离。"
+          "选择器确定上下文后，评估程序才用完整测量找出可行范围内的最优子集。所选组合比最优子集少了多少效用，再除以针对该数据集、生成器和候选池构造预先固定的尺度，就是归一化遗憾值。补测可以保证从已经测过的组合中选出最优者，尚未测过的可行组合仍可能更好。"
         ]
       }
     },
     {
       "id": "results",
       "title": {
-        "en": "How the nine-call choices compare",
-        "zh": "同样九次测量，怎样选？"
+        "en": "What improves when a new proposal is checked?",
+        "zh": "补测新组合，改善的是哪项指标？"
       },
       "paragraphs": {
         "en": [
           "The primary comparison holds each question, eight-passage pool and generator fixed, with at most three passages in the selected context. There are 1,440 matched settings across 180 held-out questions, two pool constructions and four generators. At nine calls, the best measured context averages 0.213 normalized regret and the additive choice averages 0.272. The additive choice wins on measured utility in 324 settings, loses in 552 and ties in 564.",
           "Measuring a new proposal costs one extra call in 876 settings. Keeping the highest measured context then gives mean regret 0.162 at 9.61 calls. The paired difference versus P1 is −0.109 with a 95% interval of [−0.138, −0.085]. Versus BO9 it is −0.051 [−0.078, −0.031].",
-          "Greedy answer F1 improves by 0.038 [0.020, 0.056] against P1. The gain against the already strong BO9 baseline is 0.006 [−0.003, 0.015]. The answer exact-match interval against BO9 also includes zero. The same measurement rule can therefore produce a clear utility improvement while the answer metric shows a smaller, less precise change."
+          "Compared with the unchecked additive proposal, the checked choice gains 0.038 in greedy-decoded answer F1 (paired 95% interval 0.020 to 0.056). Against the best context already measured in nine calls, the gain is 0.006 (−0.003 to 0.015). That interval allows a small loss as well as a gain. The corresponding exact-match interval also crosses zero. The clearer improvement in this comparison is in the utility used to pick passages."
         ],
         "zh": [
           "主比较固定每个问题、八段候选池和生成模型，最终上下文至多选三段。180 道留出问题、两种候选池和四个生成模型构成 1,440 个配对设置。在同样九次测量下，已测最优的平均归一化遗憾值为 0.213，加性策略为 0.272。按实测效用比较，加性策略有 324 次更好、552 次更差、564 次相同。",
           "有 876 个设置需要对新候选补测一次。之后从已测上下文中选最优，平均遗憾值为 0.162，平均目标测量次数为 9.61。相对 P1，配对差为 −0.109，95% 区间为 [−0.138, −0.085]。相对 BO9，配对差为 −0.051 [−0.078, −0.031]。",
-          "贪心解码的词元 F1 相对 P1 提高 0.038 [0.020, 0.056]，相对 BO9 提高 0.006 [−0.003, 0.015]。对 BO9 的答案完全匹配率区间也包含零。这说明在这批案例里，效用遗憾值的改善比答案指标的变化更明确。"
+          "相对未经核验的加性预测，补测使贪心解码答案的 F1 提高 0.038，配对 95% 区间为 0.020 至 0.056。若对照改为九次调用中得分最高的已测上下文，F1 提高 0.006，区间为 −0.003 至 0.015，同时容许小幅下降和上升。完全匹配率的对应区间也跨零。在这个更强的对照下，证据更明确的是选段效用得到改善。"
         ]
       },
       "blocks": [
@@ -163,8 +163,8 @@
             "zh": "BO9、P1、P1 加一次核验的平均归一化遗憾值分别为 0.213、0.272、0.162。"
           },
           "caption": {
-            "en": "The three policies on the same 1,440 eight-passage settings with a three-passage budget. Lower normalized regret is better. The cost of each policy is in the table below.",
-            "zh": "同一批 1,440 个八段候选设置，最多选三段。平均归一化遗憾值越低越好，各策略的测量成本见下表。"
+            "en": "Mean normalized regret across 1,440 matched settings, lower is better. Each question contributes two eight-passage pools and four generators. The checked policy uses 9.61 calls on average, compared with nine for the other two.",
+            "zh": "1,440 个配对设置的平均归一化遗憾值，越低越好。每道题有两种八段候选池和四个生成器。补测策略平均调用 9.61 次，另两种各用 9 次。"
           },
           "source": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/reference/results/selection_overall.csv",
           "afterParagraph": 1
@@ -179,8 +179,8 @@
           },
           "previewColumn": 2,
           "caption": {
-            "en": "Primary-budget results across 1,440 cases",
-            "zh": "主预算下 1,440 个组合的结果"
+            "en": "Three policies with up to three passages per answer. Calls count target-model scores per setting. Token F1 and exact match score the greedily decoded answers on a 0–1 scale.",
+            "zh": "三种策略均最多选三段。调用数指每个设置中目标模型的评分次数。词元 F1 与完全匹配率依据贪心解码的实际回答，均按 0 至 1 计。"
           },
           "columns": [
             {
@@ -259,8 +259,8 @@
           "type": "table",
           "key": "paired",
           "caption": {
-            "en": "Paired mean differences with 95% query-cluster bootstrap intervals",
-            "zh": "配对均值差与按问题聚类的 95% Bootstrap 区间"
+            "en": "First policy minus second. The 95% intervals resample questions and keep each question’s pools and generators together.",
+            "zh": "各项差值均为前一策略减后一策略。95% 区间以问题为单位重抽样，同一道题的候选池与生成器同时保留。"
           },
           "columns": [
             {
@@ -326,17 +326,17 @@
     {
       "id": "worked-examples",
       "title": {
-        "en": "When the proposal survives the check",
-        "zh": "哪些组合在补测后会被保留"
+        "en": "A case where the proposed combination survives",
+        "zh": "哪种情况下补测会保留新组合？"
       },
       "paragraphs": {
         "en": [
-          "The other archived case asks for the birth date of the creator of A Burial at Ornans. For Qwen on this MuSiQue question, the painting passage alone measures 3.953. P1’s three-passage proposal measures 4.491, the feasible optimum, so the check keeps all three. Both selected contexts receive zero token F1.",
-          "The Ornans example and the opening King Arthur example come from 720 Track B settings. The selection rule restricts P1 to multi-passage proposals and looks for utility changes of at least 0.05 normalized regret in either direction relative to BO9. It takes the example nearest the median in each stratum. There are 105 qualifying gains and 185 qualifying losses. The table connects their archive keys to the actual decisions and answer scores."
+          "A second MuSiQue question asks for the birth date of the artist who painted A Burial at Ornans. With Qwen, the passage about the painting alone scores 3.953. The three passages proposed by the additive model score 4.491, the highest utility among feasible subsets, so the check keeps them. Neither context produces a matching answer token. Both score zero on token F1.",
+          "The Ornans and King Arthur examples come from 720 Track B settings. Among settings where P1 proposed several passages, normalized regret improved by at least 0.05 over BO9 in 105 cases and worsened by at least 0.05 in 185. The figure shows the case nearest the median of each group. The table gives the selected passages and the answer scores for both cases."
         ],
         "zh": [
-          "另一条归档案例询问《奥尔南的葬礼》创作者的出生日期。对这条 MuSiQue 问题，Qwen 使用画作相关单段时效用为 3.953。P1 提出的三段组合实测为 4.491，达到可行最优，因此核验后保留三段。两种上下文的词元 F1 都是 0。",
-          "奥尔南画作案例与开篇的 King Arthur 案例来自 Track B 的 720 个设置。选例只考虑 P1 提出多段的情况，按相对 BO9 的归一化遗憾值至少改善或恶化 0.05 分组，再分别取最接近组内中位数的案例。两组分别有 105 个改善设置与 185 个恶化设置。表中列出了归档键、实际选择及答案评分。"
+          "另一道 MuSiQue 题问《奥尔南的葬礼》作者的出生日期。对 Qwen，单用画作条目的效用为 3.953，加性模型提出的三段组合实测为 4.491，在可行子集中最高，因此补测后保留三段。两种上下文实际生成的答案都没有匹配到参考答案词元，F1 均为零。",
+          "奥尔南画作和亚瑟王两个案例选自 Track B 的 720 个设置。在 P1 提出多段组合的设置中，归一化遗憾值比 BO9 至少降低 0.05 的有 105 个，至少升高 0.05 的有 185 个。图中各取一例，分别最接近两组的中位数。下表列出每种策略实际选中的段落和生成答案的得分。"
         ]
       },
       "blocks": [
@@ -350,8 +350,8 @@
             "zh": "MuSiQue 案例 A 中，候选组合实测效用高于初始最优。案例 B 的结果相反。"
           },
           "caption": {
-            "en": "A is MuSiQue query 2hop__107905_110222 with Qwen. B is 2hop__10620_49084 with Mistral. The green bar is the context returned after the check. Each panel has its own horizontal scale.",
-            "zh": "A 为 MuSiQue 问题 2hop__107905_110222（Qwen），B 为 2hop__10620_49084（Mistral）。绿色条是核验后的选择，两图横轴独立。"
+            "en": "Green marks the context kept after checking. For Ornans (A, Qwen, 2hop__107905_110222), the three-passage proposal survives. For King Arthur (B, Mistral, 2hop__10620_49084), the check returns to the biography. Each panel has its own utility scale.",
+            "zh": "绿色表示补测后采用的上下文。奥尔南问题（A，Qwen，2hop__107905_110222）保留了三段组合，亚瑟王问题（B，Mistral，2hop__10620_49084）则回到人物传记。两图的效用刻度各自独立。"
           },
           "source": "https://github.com/dqswordman/rag-decision-sufficiency/blob/v1.0.0/data/m8_raw_mean_logprobs.csv",
           "afterParagraph": 1
@@ -465,18 +465,18 @@
     {
       "id": "pair-budget",
       "title": {
-        "en": "The next measurements can reveal better contexts",
-        "zh": "多测候选对时，哪一步带来收益"
+        "en": "What do additional pair measurements buy at the same cost?",
+        "zh": "同样多测几对段落，怎样使用这些分数更合算？"
       },
       "paragraphs": {
         "en": [
           "The adaptive rule uses the negative no-context score as a trigger. When that score reaches the pooled development median of about 7.2883, it scores every distinct pair found in the top four additive contenders. The quadratic fit adds each measured pair’s excess utility over its two singleton scores, with unseen pair effects set to zero.",
-          "The fitted policy and best measured after pairs see the same scores and both average 11.43 calls. The fitted choice averages 0.213 normalized regret. Keeping the best of the measured contexts reaches 0.122, a paired improvement of 0.091 [0.066, 0.122]. Checking the quadratic proposal adds another operating point, 0.109 regret at 11.94 calls.",
+          "At an equal mean cost of 11.43 calls, fitting pair interactions and returning the predicted winner gives mean regret 0.213. Simply returning the best context measured along the same search gives 0.122. The paired gap is 0.091 (95% interval 0.066 to 0.122). Checking the fitted proposal as well takes 11.94 calls on average and reaches 0.109 regret.",
           "Two controls spend the same number of calls on hash-ordered pairs or subsets. Their mean regret is 0.277 and 0.377, respectively. Measuring all 28 pairs plus the initial nine contexts takes 37 calls. The all-pairs fit averages 0.271 regret, and its paired difference from P1 includes zero. In the matched pair experiment, the additional scores sometimes directly reveal a better context that the policy can keep."
         ],
         "zh": [
           "自适应规则以无上下文分数的相反数作为触发指标。达到开发数据的合并中位数（约 7.2883）时，就测量加性模型排名前四的候选组合中出现的所有不重复证据对。二次拟合在加性分数上加入每个实测对超出两个单段分数之和的效用，未测对的效应设为零。",
-          "二次拟合策略与「补测对后取已测最优」看到完全相同的分数，平均都是 11.43 次测量。拟合策略选出的集合平均归一化遗憾值为 0.213，保留已测最优可到 0.122，配对改善 0.091 [0.066, 0.122]。再核验二次模型提出的候选，则得到另一个成本点，平均 11.94 次测量、遗憾值 0.109。",
+          "平均成本同为 11.43 次调用时，拟合两段之间的交互并采用预测最优组合，平均遗憾值为 0.213。直接采用同一轮搜索中实测最优的组合，则为 0.122。配对差值为 0.091，95% 区间为 0.066 至 0.122。若再核验拟合所得的候选，平均调用增至 11.94 次，遗憾值降至 0.109。",
           "两个同成本对照分别按哈希顺序补测证据对或子集，平均遗憾值为 0.277 和 0.377。测完 28 个证据对再加初始九个上下文，共需 37 次测量。全证据对拟合的平均遗憾值为 0.271，与 P1 的配对差区间包含零。在这组同测量对照中，补测有时会直接找到可以保留的更好上下文。"
         ]
       },
@@ -580,17 +580,17 @@
     {
       "id": "geometry",
       "title": {
-        "en": "Complex utility can still give a simple decision",
-        "zh": "效用有交互，选择仍可以很简单"
+        "en": "Which interactions can change the selected evidence?",
+        "zh": "哪些段落交互足以改变选择？"
       },
       "paragraphs": {
         "en": [
           "A passage can lower the utility of an existing set. A pair can also add more utility than the sum of its two individual additions at the same base set. Table 4 tests both effects within the feasible domain and counts changes beyond the frozen materiality threshold. With a three-passage budget, the mean rates are 34.7% for harmful additions and 45.2% for increasing returns.",
-          "The decision depends on interactions at the competing sets. If A is the additive prediction and I = U − A is its residual, a challenger beats the additive winner when its extra residual exceeds the additive lead of the winner. The proposed pair in the King Arthur example loses that lead once it is measured. An interaction elsewhere in the pool can be large while leaving those two contenders in the same order."
+          "An interaction changes the choice only if it can overturn the lead between two competing subsets. Write the measured utility as an additive prediction A plus a residual I = U − A. A challenger overtakes the predicted winner when its advantage in residual utility exceeds the winner’s predicted lead. In the King Arthur example the pair loses its lead when measured. A large interaction in another part of the pool need never change this decision."
         ],
         "zh": [
           "给已有集合再加入一段证据，有时会降低效用。在同一个基底集合上，两段同时加入的增益也可能超过分别加入的增益之和。论文表 4 在可行域内检验这两种效应，只计入幅度超过冻结实质阈值的变化。三段预算下，有害边际增益的平均比例为 34.7%，递增收益为 45.2%。",
-          "选择由实际竞争的集合决定。设 A 是加性预测，I = U − A 是残差。一个候选要超过加性最优，必须用额外的残差增益抵消加性分数的劣势。King Arthur 案例中，两段组合的加性优势在补测后消失。候选池其他地方即使存在很强的交互，也可能不改变这两个集合的顺序。"
+          "一处交互要改变选择，必须足以抵消两个候选之间的领先幅度。把实测效用写成加性预测 A 加上残差 I = U − A。若挑战者的残差优势大于预测第一名的领先值，实测排序就会翻转。亚瑟王例子中的两段组合正是在补测后失去优势。候选池其他位置即使存在很强的交互，也未必会改变这项决定。"
         ]
       },
       "blocks": [
@@ -649,19 +649,19 @@
     {
       "id": "pool-width",
       "title": {
-        "en": "Does the check help when the pool grows?",
-        "zh": "候选池变大后，核验还有帮助吗"
+        "en": "What carries over to a twelve-passage pool?",
+        "zh": "候选增至十二段后，补测还有用吗？"
       },
       "paragraphs": {
         "en": [
           "First, the same original pools were shortened to prefixes of four, six or eight passages while keeping the selection budget at three. The checked policy’s mean regret rises from 0.074 to 0.126 to 0.162. At all three widths it has lower mean regret than the best initial measurement.",
           "The separate matched expansion uses 20 hash-selected MuSiQue questions with Qwen and Gemma in Track B. The original eight positions are preserved and four retrieval ranks are appended. There are 40 matched question–generator settings per width and 299 feasible contexts at width 12. At that width the check reaches 0.227 regret at 13.80 calls. The best initial measurement reaches 0.275 at 13.00 calls. The paired regret difference is −0.048 [−0.099, −0.017].",
-          "These measurements extend the comparison to twelve candidates in one retrieval setting. The four-passage comparison in the original eight-passage experiment is a separate budget check. There, mean regret is 0.186 for the checked additive choice and 0.142 for best measured after adaptive probes."
+          "The twelve-candidate result comes from one retrieval setting and 20 questions. A different test changes the maximum context size while keeping the original eight candidates. With up to four passages selected, the checked additive choice has mean regret 0.186 and the best context measured after adaptive pair probes has 0.142. These comparisons vary different constraints on the selector."
         ],
         "zh": [
           "第一项检验在同一批原始候选池上取前四、六、八段，选择预算仍为三段。核验策略的平均遗憾值依次为 0.074、0.126、0.162，在三种候选池大小下都低于初始已测最优策略。",
           "另一个配对扩展在 Track B 中按哈希选取 20 道 MuSiQue 问题，并用 Qwen 和 Gemma 评分。保留原八个位置，再追加四个检索名次。每个候选池大小都有 40 个配对的问题–模型设置，十二段下有 299 个可行上下文。此时核验策略平均测量 13.80 次、遗憾值 0.227，初始已测最优平均测量 13.00 次、遗憾值 0.275。配对遗憾值差为 −0.048 [−0.099, −0.017]。",
-          "这些结果把比较扩展到了一个检索设置下的十二段候选。原八段实验的四段选择预算是另一项检查。在该预算下，加性核验的平均遗憾值为 0.186，选测候选对后保留已测最优为 0.142。"
+          "十二段候选的结果来自一种检索设置和 20 道问题。另一项检验保留原来的八段候选，只放宽最后能选的段数。最多能选四段时，加性候选补测后的平均遗憾值为 0.186，自适应测量段落对后直接采用已测最优组合则为 0.142。两项实验改变的是选择器面对的不同约束。"
         ]
       },
       "blocks": [
@@ -736,35 +736,35 @@
     {
       "id": "evaluation",
       "title": {
-        "en": "What the measurements cover",
-        "zh": "这些测量的适用范围"
+        "en": "What does a scoring call measure, and when is it available?",
+        "zh": "一次评分调用测的是什么，何时能获得这个分数？"
       },
       "paragraphs": {
         "en": [
           "The original evaluation held out 60 questions each from HotpotQA, 2WikiMultiHopQA and MuSiQue. Track A includes annotated support and BGE fills the remaining slots. Track B uses reciprocal rank fusion of dataset-local BM25 and BGE ranks. The fixed passage representation is capped at 256 Qwen2.5 tokens. Each pool is evaluated with Qwen2.5-7B-Instruct, Gemma-3-4B-IT, Mistral-7B-Instruct-v0.3 and Phi-4-Mini-Instruct.",
           "Regret scales are frozen from six-passage calibration arrays. The 95% paired intervals use 10,000 bootstrap resamples of 180 questions and keep the two pools and four generators for each question together. Answer F1 and exact match come from greedy decoding and normalized reference aliases. The public archive provides the scores associated with each context key.",
-          "The measured quantity requires reference answers, which places the decision rule in labelled offline evaluation. Probe counts measure target scoring calls. Wall-clock cost also depends on passage lengths and decoding. Extending the study to online retrieval would require an answer-independent utility and separate evaluation."
+          "Each scoring call requires a reference answer, so the decision policies can be evaluated on labelled questions offline. The call count measures how many contexts the target model scores. Elapsed time also depends on passage length and decoding. An online selector would need a score available before the answer is known and a separate test of the resulting decisions."
         ],
         "zh": [
           "原实验从 HotpotQA、2WikiMultiHopQA、MuSiQue 各取 60 道留出题。Track A 保留标注支持段并用 BGE 补齐，Track B 对数据集内 BM25 与 BGE 名次做倒数排名融合。固定段落表示最多使用 256 个 Qwen2.5 词元。每个候选池都在 Qwen2.5-7B-Instruct、Gemma-3-4B-IT、Mistral-7B-Instruct-v0.3 和 Phi-4-Mini-Instruct 上测量。",
           "遗憾值的尺度来自冻结的六段校准数组。95% 配对区间按 180 个问题做 10,000 次 Bootstrap 重抽样，同一道题的两个候选池和四个模型始终成组。答案 F1 和完全匹配率使用贪心解码和规范化参考答案别名。公开归档按上下文键提供对应分数。",
-          "该效用需要参考答案，因此选择规则适用于带标注的离线评估。测量次数对应目标打分调用，实际耗时还取决于段落长度与解码。若要用于在线检索，需要独立于参考答案的效用信号和对应验证。"
+          "每次评分都需要参考答案，因此这些策略适合在带标签的问题上离线评估。调用数只统计目标模型给多少个上下文打了分。实际耗时还受段落长度和解码影响。若想用于在线选段，必须先找到作答前就可获得的分数，并单独检验由它作出的选择。"
         ]
       }
     },
     {
       "id": "reproduce",
       "title": {
-        "en": "Run the case, then replay the paper results",
-        "zh": "先跑通一个案例，再复现论文结果"
+        "en": "Reproduce one decision, then the aggregate comparisons",
+        "zh": "先回放一次选段，再核对总体比较"
       },
       "paragraphs": {
         "en": [
-          "The example command runs with Python 3.9 or newer and the standard library. It prints the King Arthur proposal, measured context, and recorded answer scores using the public archive. Add --case ornans to reproduce the second decision.",
+          "Run the example below with Python 3.9 or later and the standard library. It prints the proposed context for the King Arthur question, the context retained after measurement and the archived answer scores. Add --case ornans to inspect a proposal that survives the check.",
           "For the paper results, use the tagged v1.0.0 release. A clean CPU run verified 41 input hashes, matched 22 result CSVs and all four manuscript table bodies, and regenerated the regret plot. The reproduction guide identifies the settings and output file behind each paper table."
         ],
         "zh": [
-          "下面的案例入口使用 Python 3.9 或更新版本的标准库。它从公开归档读出 King Arthur 案例的候选组合、实测效用与答案分数。加上 --case ornans 可复现另一条案例。",
+          "用 Python 3.9 或更高版本及标准库运行下方示例，可依次查看亚瑟王问题的候选组合、实测后采用的上下文和归档答案分数。加上 --case ornans，可查看一个补测后被保留的组合。",
           "复现论文结果时使用固定的 v1.0.0 版本。干净环境的 CPU 验证检查了 41 个输入哈希，匹配 22 份结果 CSV 与 4 张论文表，并重新生成了遗憾值分布图。复现指南列出每张论文表对应的设置和输出文件。"
         ]
       },

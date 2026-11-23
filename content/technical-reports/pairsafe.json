@@ -1,22 +1,22 @@
 {
   "article": {
-    "version": "1.0",
+    "version": "1.0.1",
     "published": "2026-11-19",
-    "updated": "2026-11-19",
+    "updated": "2026-11-22",
     "manuscriptDate": "2026-09-22",
     "updateNote": {
-      "en": "This edition links the published paper to the submission archives and a verified CPU replay. Figures use the archived scores.",
-      "zh": "本版对照已发表论文和投稿补充材料，图表依据逐例分数的 CPU 复算结果绘制。"
+      "en": "This edition follows the same pairs through ranking, threshold decisions and generated responses, and states which results the released scores can reproduce.",
+      "zh": "本版沿同一批样本区分排序、阈值决策和生成回答，并标明哪些结果可由公开分数复算。"
     }
   },
   "locales": {
     "en": {
       "title": "Why a refusal score can rank a pair correctly and still misclassify it",
-      "summary": "Qwen ranked 148 of 150 matched pairs correctly. A threshold fitted on other pairs classified both members correctly in 132. PAIRSAFE traces the difference from individual scores to threshold decisions and generated responses."
+      "summary": "A refusal score can put the unsafe prompt above its safe partner even when the model would refuse both. Qwen ordered 148 of 150 matched pairs correctly. A threshold learned on other pairs put both members on the correct sides in 132 pairs. An automatic reading of Qwen’s generated answers found the desired behavior on both sides in 105 pairs."
     },
     "zh": {
       "title": "拒答分数排对了，为什么仍会判错？",
-      "summary": "在 150 对匹配样本上，Qwen 有 148 对排对了顺序。换用其他配对学出的阈值后，只有 132 对的两个成员都判对了。PAIRSAFE 用逐例分数解释这 16 对的差距，并另行核对模型实际生成的回答。"
+      "summary": "同一对提示中，即使不安全提示的拒答分数更高，安全提示也可能越过拒答阈值。Qwen 在 150 对中排对了 148 对。用其他样本学到的阈值判定时，两侧均判对的有 132 对。再按自动规则检查实际生成的回答，同时满足安全侧作答、不安全侧拒答的有 105 对。"
     }
   },
   "artifact": {
@@ -25,8 +25,8 @@
     "space": "https://huggingface.co/spaces/DQSWORDMAN/pairsafe",
     "guide": "https://github.com/dqswordman/pairsafe/blob/v1.0.0/docs/reproduction.md",
     "description": {
-      "en": "Replay 150 matched pairs from archived scores and generation labels with the Python standard library. The Space lets you vary one threshold and inspect aggregate outcomes.",
-      "zh": "用 Python 标准库从逐例分数和生成标签复算 150 对样本。在 Space 调整阈值，可直接查看有多少对同时判对。"
+      "en": "Recompute threshold decisions from the released scores and compare them with the saved Qwen generation labels. The Space lets the reader move a threshold and inspect the resulting counts.",
+      "zh": "用公开分数复算阈值决策，并与归档的 Qwen 生成标签对照。在 Space 中移动阈值即可查看对应的计数。"
     }
   },
   "metrics": [
@@ -56,16 +56,16 @@
     {
       "id": "worked-pair",
       "title": {
-        "en": "One pair, the right order, one wrong decision",
-        "zh": "一对样本，顺序正确，良性一侧被误拒"
+        "en": "A correct ordering can still reject the safe prompt",
+        "zh": "排序正确，安全提示仍会被误拒"
       },
       "paragraphs": {
         "en": [
-          "Consider pair 093 in the safe-contexts category. Qwen assigned refusal margins of 1.2035 to its safe member and 1.7531 to its unsafe member. The unsafe member sits higher, so this pair earns full credit for ordering.",
+          "Pair 093 contains a safe prompt and a matched unsafe one. Qwen assigns refusal margins of 1.2035 and 1.7531, respectively. The higher score belongs to the unsafe member, which is all the ordering metric asks. The scores alone do not tell us whether the safe member falls below a usable refusal threshold.",
           "Pair 093 belongs to the first held-out fold. Its threshold, learned from the other 120 pairs, was 0.1582. Both scores exceed it. The decision rule therefore marks both members for refusal, including the safe one. The same two numbers pass the ranking test and fail the paired decision test."
         ],
         "zh": [
-          "先看「安全语境」类的第 093 对。Qwen 给良性一侧的拒答分数是 1.2035，给非安全一侧的是 1.7531。后者比前者高，这一对在排序指标上得满分。",
+          "第 093 对来自安全语境类别，由一条安全提示和一条与之匹配的不安全提示组成。Qwen 给出的拒答分差依次为 1.2035 和 1.7531。不安全一侧得分更高，这一对便通过排序检查。要知道安全一侧会不会被误拒，还要看阈值落在哪里。",
           "第 093 对属于第一组留出样本。这一折只用另外 120 对选阈值，得到 0.1582。两个分数都高于阈值，按规则两侧都会被判为拒答。排序上的正确，掩盖了良性一侧被误拒。"
         ]
       },
@@ -112,8 +112,8 @@
             ]
           ],
           "caption": {
-            "en": "First-fold held-out example. Scores are rounded here. The release keeps full precision.",
-            "zh": "第一折的真实留出案例。表中四舍五入，发布包保留完整精度。"
+            "en": "Pair 093, held out in the first fold. Both margins exceed the threshold of 0.1582 fitted on the other 120 pairs. Values shown here are rounded.",
+            "zh": "第一折留出的第 093 对。用另外 120 对拟合的阈值为 0.1582，两侧分差都超过了它。表中数值经四舍五入。"
           },
           "source": "https://github.com/dqswordman/pairsafe/blob/v1.0.0/reference/replay.json"
         }
@@ -122,16 +122,16 @@
     {
       "id": "protocol",
       "title": {
-        "en": "How a pair earns credit",
-        "zh": "同一对样本怎样计分"
+        "en": "What is matched, and what earns a point?",
+        "zh": "配对时匹配什么，计分时要求什么？"
       },
       "paragraphs": {
         "en": [
-          "The official XSTest table has 450 rows. Deterministic matching without replacement produced 150 pairs, with 25 per category. A pair shares its source and normalized category. Focus matches for 148 pairs and the note matches for 95. Fifty unsafe privacy or discrimination contrasts had no eligible category counterpart. The results describe this matched subset.",
+          "Starting from 450 XSTest rows, the study matched prompts without replacement into 150 pairs, 25 in each of six categories. Members share the source and normalized category. The focus field agrees in 148 pairs and the note field in 95. Fifty unsafe examples involving privacy or discrimination had no eligible counterpart in their category. All rates below refer to the matched subset.",
           "For each prompt, the primary score compares the highest length-normalized candidate log-likelihood among two fixed refusal strings with the highest among two fixed answer strings. A larger margin favors refusal. The metrics ask different questions of those same scores."
         ],
         "zh": [
-          "原始 XSTest 有 450 条记录。按固定规则无放回匹配后，得到六类、每类 25 对。每对来自同一来源，归一化类别相同。150 对中有 148 对的焦点字段一致，95 对的备注一致。另有 50 条涉及隐私或歧视的非安全样本缺少合适的同类对应项。以下结果适用于这批匹配样本。",
+          "研究从 XSTest 的 450 条记录出发，按确定性规则无放回地组成 150 对，六类各 25 对。每对的来源和规范化类别相同，另有 148 对的 focus 字段一致、95 对的 note 字段一致。50 条涉及隐私或歧视的不安全提示在所属类别中没有合格的匹配项。下文各项比例都以配对成功的子集为对象。",
           "每条提示各有两个固定拒答候选、两个固定回答候选。主评分取两组中最高的按长度归一化对数似然，再用前者减后者。分数越大，越倾向拒答。同一批分数可以回答三种不同的问题。"
         ]
       },
@@ -178,17 +178,17 @@
     {
       "id": "results",
       "title": {
-        "en": "Where the counts change",
-        "zh": "从排序到决策，少了多少对"
+        "en": "Where 148 correctly ordered pairs become 132 correct decisions",
+        "zh": "从 148 对排序正确到 132 对决策正确"
       },
       "paragraphs": {
         "en": [
           "With Qwen, 148 pairs are ordered correctly, 133 satisfy the best threshold on the full sample, and 132 satisfy their held-out thresholds. For SmolLM2 the counts are 146, 120 and 114. Neither model has a tied pair in the primary comparison.",
-          "O-Mixed gives separate credit to each member and optimizes balanced accuracy. Moving from O-Mixed to Oracle-PCDA costs 0.053 for Qwen and 0.100 for SmolLM2. Fitting the paired threshold on other pairs costs a further 0.007 and 0.040. The first difference changes the success criterion. The second tests how the threshold transfers."
+          "O-Mixed credits each member separately and selects the threshold with the highest balanced accuracy. When both members must be correct at the best full-sample threshold (Oracle-PCDA), the score falls by 0.053 for Qwen and 0.100 for SmolLM2. Fitting the threshold on other pairs (Cal-PCDA) costs another 0.007 and 0.040, respectively. The first change makes success harder to earn. The second measures how well a learned threshold carries over."
         ],
         "zh": [
           "Qwen 排对了 148 对；在全样本最优阈值下，有 133 对同时判对；改用留出阈值后，还有 132 对。SmolLM2 对应为 146、120 和 114 对。两种模型在主评分上都没有出现对内同分。",
-          "O-Mixed 逐条给分，选择平衡准确率最高的阈值。由 O-Mixed 改为全样本 Oracle-PCDA，Qwen 和 SmolLM2 分别下降 0.053 和 0.100。用其他配对来选阈值，再分别下降 0.007 和 0.040。前一段落差来自成功标准的变化，后一段检验阈值能否迁移到留出样本。"
+          "O-Mixed 分别给每个成员计分，并选取平衡准确率最高的阈值。改成整对必须全对、同时仍在全样本上选最佳阈值（Oracle-PCDA），Qwen 和 SmolLM2 的分数分别下降 0.053 和 0.100。再改成用其他样本拟合阈值（Cal-PCDA），分别再降 0.007 和 0.040。前一次改变了成功标准，后一次检验学到的阈值能否迁移。"
         ]
       },
       "blocks": [
@@ -202,8 +202,8 @@
             "zh": "Qwen 与 SmolLM2 从排序、全样本最优阈值到留出判定的三项配对结果。"
           },
           "caption": {
-            "en": "Each point summarizes the same 150 pairs. The count for PSA is integral here because no primary pair ties.",
-            "zh": "每个点对应相同的 150 对样本。主评分没有平局，因此 PSA 可以直接换算为整数对数。"
+            "en": "All points use the same 150 matched pairs. Ordering credits the relative scores within a pair. A threshold decision earns credit only if it separates the members in the intended direction. Neither model has a tied pair here.",
+            "zh": "所有点都来自同一批 150 对。排序只看一对内部谁的分数更高。阈值判定则要求把两侧分到各自正确的一边。两种模型在这批主比较中均无同分对。"
           },
           "source": "https://github.com/dqswordman/pairsafe/blob/v1.0.0/scripts/render_figures.py"
         },
@@ -259,16 +259,16 @@
     {
       "id": "metadata",
       "title": {
-        "en": "What metadata can explain",
-        "zh": "元数据能解释多少"
+        "en": "How much can fields in the dataset predict?",
+        "zh": "只看数据集字段，能预测多少？"
       },
       "paragraphs": {
         "en": [
-          "A source, normalized category or pair ID shared by the twins gives both members the same proxy score. Ties yield PSA 0.500, and no threshold can separate the twins, giving PCDA 0.000. The raw category includes a label-coded prefix. As an intentional leakage control it reaches 1.000 on both metrics.",
+          "Assign both members the same score from their shared source, normalized category or pair ID. Every pair ties, giving 0.500 for ordering (PSA) and 0.000 for separating both members with a threshold (PCDA). As a check for label leakage, the raw category includes a prefix that encodes the label and scores 1.000 on both measures.",
           "The published nested analysis learns preprocessing and thresholds inside training pairs, with five outer folds, four inner folds and five split seeds. A probe combining the permitted residual fields still reaches 0.397 nested Cal-PCDA. After removing score components predictable from these fields, Qwen retains PSA 0.827 and SmolLM2 retains 0.821. Those associations concern the measured fields and the fitted model. The primary comparison uses different folds."
         ],
         "zh": [
-          "来源、归一化类别和配对 ID 在对内相同。只用其中一个字段评分，两个成员同分，PSA 因半分规则为 0.500；没有阈值能把它们分开，PCDA 为 0.000。原始类别含有直接编码标签的前缀，作为刻意保留的泄漏对照，两项指标均为 1.000。",
+          "如果只用一对成员共有的来源、规范化类别或配对编号给分，两侧必然同分。因此排序指标 PSA 为 0.500，阈值要把两侧同时判对的 PCDA 为 0.000。作为标签泄漏对照，原始类别带有编码标签的前缀，在两项指标上均达到 1.000。",
           "定稿中的嵌套分析只在训练配对上做预处理并选阈值，使用五个外层折、四个内层折和五个划分种子。组合允许使用的残余字段后，探针的嵌套 Cal-PCDA 仍有 0.397。从模型分数中扣除能被这些字段预测的部分后，Qwen 的 PSA 为 0.827，SmolLM2 为 0.821。它们描述已测字段与分数的关联；主结果采用另一套划分。"
         ]
       },
@@ -341,8 +341,8 @@
             ]
           ],
           "caption": {
-            "en": "Selected rows from published Table 1. The archive contains an earlier metadata audit. The final nested results are transcribed from the paper.",
-            "zh": "选自已发表论文表 1。原始补充材料包含较早的元数据审计，表中最终嵌套审计数值按定稿列示。"
+            "en": "Published Table 1, selected rows. The final nested analysis is transcribed from the paper. The released scores support the separate primary threshold analysis, and the archive retains an earlier metadata audit.",
+            "zh": "摘自正式论文表 1。末版嵌套分析的数值按论文转录。公开的逐例分数可复算另行报告的主要阈值实验，归档同时保留较早版的元数据审计。"
           },
           "source": "https://github.com/dqswordman/pairsafe/blob/v1.0.0/reference/paper-table-1.csv"
         }
@@ -351,17 +351,17 @@
     {
       "id": "generation",
       "title": {
-        "en": "What did the model actually generate?",
-        "zh": "模型实际生成了什么样的回答？"
+        "en": "What the generated answers show",
+        "zh": "直接看生成回答，两侧有多少对都符合预期？"
       },
       "paragraphs": {
         "en": [
           "For Qwen, the archived rule marked 129 of 150 unsafe responses and 26 of 150 safe responses as refusals. Pairing those labels back together leaves 105 pairs with the desired outcome on both sides. A separate rule assigned these labels from deterministic responses. It counts recognizable refusal phrasing and has no manual validation for this run.",
-          "The resulting PCGA is 0.700. Treat it as a second observation on Qwen. The scoring candidates and generated continuations are different measurements. The archive contains generation labels for Qwen only."
+          "The 105 pairs give a generation-based paired accuracy (PCGA) of 0.700. This check covers Qwen only. A rule that recognizes refusal wording labeled the generated text, and the labels have no manual validation for this run. Comparing them with the score-based decisions shows how two ways of measuring refusal can diverge."
         ],
         "zh": [
           "在 Qwen 的生成记录中，固定规则把 150 条非安全回答中的 129 条、150 条良性回答中的 26 条标为拒答。按配对重新合并后，两侧均符合预期的有 105 对。这批确定性生成回答由独立的措辞匹配规则判定，这次实验没有逐条人工验证其标签。",
-          "对应的 PCGA 为 0.700。这是针对 Qwen 的另一项观察。固定候选的似然与模型自由生成的续写测量的是不同对象。归档中只有 Qwen 的生成标签。"
+          "这 105 对对应的生成配对准确率（PCGA）为 0.700。生成检查只覆盖 Qwen，标签来自识别拒答措辞的规则，这批标签未经人工复核。把这些结果与分数阈值的判定并排比较，可以看到两种测量拒答的方法会在哪些地方分开。"
         ]
       },
       "blocks": [
@@ -429,8 +429,8 @@
             ]
           ],
           "caption": {
-            "en": "All 150 pairs, partitioned by the archived generation labels. The first row contributes to PCGA.",
-            "zh": "按归档生成标签划分的全部 150 对；第一行计入 PCGA。"
+            "en": "The four rows partition all 150 Qwen pairs by the automatic labels on their generated answers. Only “safe answered, unsafe refused” contributes to generation-based paired accuracy.",
+            "zh": "按实际生成回答的自动标签，把 Qwen 的 150 对分为四种互斥情形。只有“安全侧作答、不安全侧拒答”计入生成配对准确率。"
           },
           "source": "https://github.com/dqswordman/pairsafe/blob/v1.0.0/reference/replay.json"
         }
@@ -439,16 +439,16 @@
     {
       "id": "robustness",
       "title": {
-        "en": "Where the threshold results vary",
-        "zh": "哪些类别和评分选择会改变结果"
+        "en": "How sensitive are the results to category and scoring choices?",
+        "zh": "类别和评分候选怎样影响结果？"
       },
       "paragraphs": {
         "en": [
-          "A category-specific oracle fits a separate threshold within each group of 25 pairs. Both models resolve all 25 definition pairs in this setting. Qwen resolves 19 of 25 safe-context pairs and SmolLM2 resolves 18 of 25 figurative-language pairs. One pair moves a category estimate by four percentage points. The pooled headline uses a shared threshold over all categories.",
+          "Allow a different threshold for each category and fit it on that category’s 25 observed pairs. Both models resolve all 25 definition pairs. Qwen resolves 19 of the 25 safe-context pairs and SmolLM2 resolves 18 of the 25 figurative-language pairs. These are within-category upper bounds. One pair changes a category rate by four percentage points, and the headline results use one shared threshold.",
           "Keeping only the 148 pairs with exact focus agreement gives held-out PCDA of 0.878 for Qwen and 0.757 for SmolLM2. In a separate Qwen cache with four candidates per side, max-minus-max gives PSA 0.973 and held-out PCDA 0.773. The candidate choice therefore matters to the numerical result. The primary table uses two candidates per side."
         ],
         "zh": [
-          "逐类 Oracle 在每组 25 对中各选一个阈值。两个模型都判对了全部 25 对定义类样本。Qwen 的安全语境类为 19/25；SmolLM2 的比喻语言类为 18/25。这些小组里，每一对就占四个百分点。主结果则要求所有类别共用阈值。",
+          "若为每个类别单独选阈值，并在该类已有的 25 对上取最优，两种模型都能判对全部 25 对定义类提示。Qwen 在安全语境类判对 19 对，SmolLM2 在比喻用语类判对 18 对。这是各类内部的描述性上界，一对就相当于四个百分点。主结果使用所有类别共用的阈值。",
           "只保留焦点字段完全对齐的 148 对后，Qwen 与 SmolLM2 的留出 PCDA 分别为 0.878 和 0.757。另一份 Qwen 缓存每侧有四个候选，按两侧最大值之差评分，PSA 为 0.973，留出 PCDA 为 0.773。候选的选取会影响结果；主表固定使用每侧两个候选。"
         ]
       },
@@ -463,8 +463,8 @@
             "zh": "两个模型在六个类别上分别选择阈值的 Oracle-PCDA，每类 25 对。"
           },
           "caption": {
-            "en": "Each category gets its own best threshold on the observed pairs. These are descriptive upper bounds within categories.",
-            "zh": "图中每类都用本组数据选最优阈值，数值是该类别内的描述性上界。"
+            "en": "Within-category upper bounds for six groups of 25. Each group gets its own threshold chosen on those same pairs.",
+            "zh": "六个类别各含 25 对。图中每个类别用本类样本选取最优阈值，得到类内上界。"
           },
           "source": "https://github.com/dqswordman/pairsafe/blob/v1.0.0/scripts/render_figures.py"
         }
@@ -473,17 +473,17 @@
     {
       "id": "reproduce",
       "title": {
-        "en": "Replay the evidence",
-        "zh": "从逐例记录复算"
+        "en": "Which results can be recomputed from the release?",
+        "zh": "哪些结果可以从公开包复算？"
       },
       "paragraphs": {
         "en": [
           "Unzip the v1.0.0 release, enter its top-level folder and run the command below with Python 3.9 or newer. It verifies the submission checksums and pair identities before checking primary methods, fold thresholds, focus-matched results, category summaries, four Qwen margin variants and the Qwen generation labels. The JSON includes the fold ledger and the worked pair.",
-          "The release directly stores sanitized indices, numeric scores, generation labels and aggregate tables. Thresholds and counts can be recovered offline. The final nested audit in Table 1 is available as a cited transcription. Replaying model inference or reclassifying generated text would require artifacts outside this archive."
+          "The archive stores sanitized pair indices, numerical scores, generation labels and aggregate tables. These recover the reported threshold decisions and counts offline. For the final nested metadata analysis, the evidence available here is the published Table 1 transcription. Rerunning a model or assigning new labels to its output requires additional materials."
         ],
         "zh": [
           "解压 v1.0.0 发布包，进入顶层目录，用 Python 3.9 或更新版本运行下方命令。程序先核对投稿文件校验值与两侧样本身份，再检查主评分、各折阈值、焦点对齐子集、逐类汇总、四种 Qwen 候选分差及生成标签。输出 JSON 含各折记录和文首的真实案例。",
-          "包内直接保存脱敏配对索引、逐条数值分数、生成判定和汇总表。阈值和计数均可离线复算。定稿表 1 的嵌套审计以标明出处的转录表提供。若要重跑模型推理或重新判读生成文本，还需要归档以外的材料。"
+          "归档保存脱敏配对索引、数值分数、生成标签和汇总表，可离线恢复阈值判定与计数。对于最终的嵌套元数据分析，这里提供的是正式论文表 1 的转录。重新运行模型或给回答重新标注，还需要其他材料。"
         ]
       },
       "blocks": [

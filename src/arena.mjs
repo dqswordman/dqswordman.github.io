@@ -3,7 +3,7 @@ import { icon } from './components.mjs';
 
 export const arenaCopy = {
   zh: {
-    title: '论文竞技场', description: '按同一套六档标准比较研究贡献、证据和可复用价值。分数来自独立评阅。',
+    title: '论文竞技场', description: '按同一套六档标准查看各篇研究的贡献、证据和可复用价值。分数与顺位取自独立评阅记录。',
     home: '返回首页', distribution: '各档篇数', snapshot: '评阅记录', rubric: '评分标准',
     board: '论文榜单', public: '公开论文', all: '全部条目', scope: '榜单范围', search: '搜索标题或会议',
     score: '综合分', anyScore: '全部评分', tier: '档位', anyTier: '全部档位', sort: '排序',
@@ -11,13 +11,13 @@ export const arenaCopy = {
     rank: '顺位', work: '论文', date: '作品日期', accepted: '录用', posted: '预印本上线',
     reference: '同届会议参考日期', released: '报告发布', datePending: '日期待公开', points: '分',
     showing: '显示 {n} / {total} 条', empty: '没有符合这些条件的条目。', reset: '重置筛选',
-    guide: '顺位沿用评阅总表，同分保留原顺序。TBD 表示题名尚未与主页关联，可包含在审或已完成待投稿的稿件。under view 表示已纳入评审，评分待补。',
+    guide: '同分条目沿用原评阅顺序。TBD 表示题名尚未公开对应，可能是在审或已完成待投的稿件。标有 under view 的论文已进入评审范围，评分待补。',
     dateNote: '时间排序采用每篇论文注明的日期，日期待公开的条目排在最后。',
     report: '研究稿件', meaning: '含义', reviewed: '已评阅', pending: '待评分',
     shortTier: n => '第 ' + n + ' 档', chartTier: n => n + ' 档', minimum: '最低分', exact: '具体分数', above: n => n + ' 分及以上',
   },
   en: {
-    title: 'Paper Arena', description: 'Compare research contributions, evidence and reusable work on a six-tier rubric. Scores come from an independent review.',
+    title: 'Paper Arena', description: 'Explore research contributions, the evidence behind them and what others can reuse. Scores and ranks follow an independent review using a six-tier rubric.',
     home: 'Back to home', distribution: 'Papers by tier', snapshot: 'Review snapshot', rubric: 'Scoring rubric',
     board: 'Paper leaderboard', public: 'Public papers', all: 'All entries', scope: 'Leaderboard scope', search: 'Search titles or venues',
     score: 'Score', anyScore: 'All scores', tier: 'Tier', anyTier: 'All tiers', sort: 'Sort',
@@ -25,7 +25,7 @@ export const arenaCopy = {
     rank: 'Rank', work: 'Paper', date: 'Work date', accepted: 'Accepted', posted: 'Preprint posted',
     reference: 'Conference reference date', released: 'Report released', datePending: 'Date pending', points: '',
     showing: 'Showing {n} of {total} entries', empty: 'No entries match these filters.', reset: 'Reset filters',
-    guide: 'Ranks and ties follow the review record. TBD marks a title awaiting a match to the site and may include work under review or awaiting submission. Papers marked “under view” are in scope and await an arena rating.',
+    guide: 'Tied papers keep their order in the review record. TBD marks a title awaiting a public match and can include work under review or ready for submission. An entry marked “under view” is awaiting its arena rating.',
     dateNote: 'Date order uses the date shown for each paper. Entries with a pending date appear last.',
     report: 'Research manuscript', meaning: 'Interpretation', reviewed: 'Reviewed', pending: 'Awaiting a rating',
     shortTier: n => 'Tier ' + n, chartTier: n => 'T' + n, minimum: 'Minimum score', exact: 'Exact score', above: n => n + ' and above',

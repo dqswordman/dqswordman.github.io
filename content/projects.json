@@ -7,12 +7,12 @@
       "zh": "何时需要更复杂的程序结构？"
     },
     "summary": {
-      "en": "Change one demonstration and certify when the shortest legal solution grows from one rule to two. Follow the consequences across displayed tasks, hidden witnesses and new inputs.",
-      "zh": "改变一个展示样例，认证最短合法解何时从一条规则变成两条，再比较题面、隐藏见证与新输入上的模型表现。"
+      "en": "Replace one demonstration and check exhaustively whether any single replacement rule still fits. The resulting task pairs test what a model can solve on the prompt and what its program does on new strings.",
+      "zh": "只更换一个展示样例，再穷举检查是否还有单条替换规则能解释题面。用这样配成的两道题，可以分别检验模型能否完成题面，以及它写的程序在新字符串上会做什么。"
     },
     "scope": {
-      "en": "The certificates apply to a bounded string-replacement language. Witness gains coexist with low agreement on new inputs that activate both rules.",
-      "zh": "证书适用于有界字符串替换语言。隐藏见证成功率上升的同时，模型在实际触发两条规则的新输入上一致率仍然很低。"
+      "en": "The minimum is certified within a bounded string-replacement language. On new strings that activate both reference rules, agreement with the reference program is 1.93–5.78% across the tested settings.",
+      "zh": "最短解的证明限于规定的字符串替换语言。在同时触发两条参考规则的新输入上，所测各设置与参考程序的输出一致率为 1.93%–5.78%。"
     },
     "reports": [
       {
@@ -29,12 +29,12 @@
       "zh": "RAG 证据选择"
     },
     "summary": {
-      "en": "When a model proposes a set of passages, is it worth measuring that set once before returning it? The study compares that check with choosing the best context already measured.",
-      "zh": "模型推算出一组候选段落后，值得再测一次吗？研究将这种核验与直接采用已测最优上下文作对照。"
+      "en": "A retrieval system can return the best passage it has scored or propose a combination. On 180 held-out questions, one additional check when needed reduces the average gap to the best feasible set.",
+      "zh": "检索系统可以直接采用已测最优段落，也可以提出新的段落组合。在 180 道留出题上，只在需要时补测一次，缩小了所选组合与最优可行组合之间的平均差距。"
     },
     "scope": {
-      "en": "The offline score requires a reference answer. Against the best measured nine-call baseline, the paired 95% interval for the change in answer F1 includes zero.",
-      "zh": "离线评分需要参考答案。与九次测量下的已测最优策略相比，答案 F1 差值的配对 95% 区间包含零。"
+      "en": "The score uses a reference answer and is available in offline evaluation. Compared with the best context measured in nine calls, the generated-answer F1 change is +0.006 (paired 95% interval −0.003 to +0.015).",
+      "zh": "这项离线评分需要参考答案。与九次调用中实测最优的上下文相比，实际答案 F1 差值为 +0.006，配对 95% 区间为 −0.003 至 +0.015。"
     },
     "reports": [
       {
@@ -51,12 +51,12 @@
       "zh": "PAIRSAFE"
     },
     "summary": {
-      "en": "A refusal score can rank two prompts correctly and still misclassify the safe one. PAIRSAFE follows both decisions across 150 matched pairs, comparing scores, held-out thresholds and generated responses.",
-      "zh": "拒答分数可以把两个提示排对，却仍然误拒良性一侧。PAIRSAFE 沿着 150 对匹配样本，分别检查分数排序、留出阈值和实际生成。"
+      "en": "For each safe prompt, ask two questions. Does its unsafe partner receive a higher refusal score? Can a single threshold also make the right decision for both? Qwen meets the first criterion in 148 of 150 pairs and the second in 132 on held-out pairs.",
+      "zh": "给每条安全提示匹配一条不安全提示。后一条的拒答分数更高吗？同一个阈值能把两条都判对吗？Qwen 在 150 对中排对 148 对，用留出阈值两侧都判对的有 132 对。"
     },
     "scope": {
-      "en": "The generation check covers Qwen and uses archived rule-based labels. The release reproduces the main table from scores and identifies the final nested metadata audit as a transcription from the paper.",
-      "zh": "生成检查只覆盖 Qwen，采用归档的规则标签。发布包可从逐例分数复算主表，并标出了定稿嵌套元数据审计的转录来源。"
+      "en": "The release reconstructs threshold decisions from saved scores. Generated-answer labels come from an automatic rule for Qwen only. The paper is the source for the final nested metadata audit.",
+      "zh": "公开分数可复算阈值决策。生成回答的标签来自自动规则，只覆盖 Qwen。最终嵌套元数据审计的数值以正式论文为来源。"
     },
     "reports": [
       {
@@ -73,8 +73,8 @@
       "zh": "用配对自助法评估小幅改进"
     },
     "summary": {
-      "en": "A paired bootstrap protocol for evaluating small reported improvements.",
-      "zh": "用配对自助法评估小幅提升，研究对象是常见的微小性能差异。"
+      "en": "When two systems are evaluated on the same cases, how uncertain is a small difference in score? This work examines paired bootstrap comparisons for that question.",
+      "zh": "两个系统在同一批样本上的得分只差一点，这个差值有多大不确定性？这项工作用配对自助法考察这个问题。"
     }
   },
   {
@@ -85,8 +85,8 @@
       "zh": "ARC-CTRL"
     },
     "summary": {
-      "en": "Audit-guided trust control in surrogate-assisted evolutionary hyperparameter optimization.",
-      "zh": "研究如何在代理辅助的进化式超参数优化中，利用审计反馈调整信任程度。"
+      "en": "A surrogate can make an evolutionary search for hyperparameters cheaper. ARC-CTRL studies how audit feedback can guide how much the search trusts that surrogate.",
+      "zh": "代理模型可以降低进化搜索超参数的评估成本。ARC-CTRL 研究如何利用审计反馈，调整搜索过程对代理估计的信任程度。"
     }
   },
   {
@@ -100,12 +100,12 @@
       "zh": "从证据评分到 RAG 回答：预算、搜索与呈现"
     },
     "summary": {
-      "en": "Two selection paths separate passage budget, combination search and presentation order. A saved answer at each step shows where an apparent gain originates.",
-      "zh": "沿两条配对路径，分别改变段落预算、组合搜索和呈现顺序。每一步都有已保存的回答，可以追查最终得分从哪里来。"
+      "en": "With the same six passages available, is it more useful to search harder or to allow a shorter context? Across 539 questions, shorter contexts account for 4.79 of Mistral’s 5.91 token-F1 points of improvement.",
+      "zh": "给定同样六段候选，更仔细地搜索组合和允许少选几段，哪一种更有用？在 539 道问题上，Mistral 的答案词元 F1 共提高 5.91 分，其中 4.79 分来自允许少选。"
     },
     "scope": {
-      "en": "Six passages, short-answer multi-hop QA and one global reversal define the experiment. Reference-answer likelihood is an offline selection objective.",
-      "zh": "实验覆盖六段候选、短答案多跳问答和一次整体反序。使用参考答案计算的似然属于离线选择目标。"
+      "en": "Selections use the reference answer’s likelihood. The order comparison tests one reversal per selected set on 30 matched short-answer questions.",
+      "zh": "选段时使用参考答案似然。顺序实验在 30 道配对短答案问题上，对每组选中的段落做一次整体反转。"
     },
     "codeUrl": "https://github.com/dqswordman/rag-evidence-selection-paths",
     "manuscriptPdf": "assets/reports/rag-evidence-selection-paths/manuscript.pdf",
@@ -129,12 +129,12 @@
       "zh": "超越两两重叠：组合文本嵌入的共享值观测"
     },
     "summary": {
-      "en": "Two sets of 23 observations see the same pairwise overlap pattern. Following the identity of the shared city changes how well they reconstruct a held-out directory.",
-      "zh": "两种方案各观察 23 个状态，编辑之间的两两重叠图相同。追踪重叠处是否指向同一座城市，会改变未见名录的嵌入重建误差。"
+      "en": "Two plans each observe 23 directory versions. For BGE and E5 on records written as individual facts, observing swaps that share one city gives a closer reconstruction than observing swaps that overlap in a cycle.",
+      "zh": "两种方案都只观察名录的 23 个版本。在单句事实文本上，对 BGE 和 E5，观察共享同一城市的交换，比观察环状相交的交换更能还原未见版本的嵌入。"
     },
     "scope": {
-      "en": "The study concerns a finite synthetic directory and fixed encoders. Qwen uses a preselected subset of the original test pool.",
-      "zh": "结论来自有限的合成名录和固定编码器。Qwen 实验使用原测试池中预先选定的子集。"
+      "en": "The primary comparison pairs 2,048 synthetic worlds. A 512-world Qwen check uses a preselected subset. Finding a fact in the directory is evaluated separately from identifying the directory itself.",
+      "zh": "主比较包含 2,048 个合成世界，Qwen 复核使用其中预选的 512 个。认出某个名录版本和从中查出一项事实分别评估。"
     },
     "codeUrl": "https://github.com/dqswordman/shared-value-embeddings",
     "manuscriptPdf": "assets/reports/shared-value-embeddings/manuscript.pdf",
@@ -158,12 +158,12 @@
       "zh": "文档回放何时有助于证据状态问答？"
     },
     "summary": {
-      "en": "Adapters replay the same questions with or without supporting documents. Switching the unrelated attachment at test time reverses which specialist leads.",
-      "zh": "两组适配器复习相同的问题与答案，一组带文档，一组闭卷。测试时更换一份与问题无关的附件，两组的领先顺序随之翻转。"
+      "en": "Two adapters practise the same answers, one with documents and one closed book. On 32 paired worlds, their ranking reverses when an unrelated synthetic attachment is replaced with a WikiText excerpt of matched length.",
+      "zh": "两个适配器复习同样的答案，一个带文档，一个闭卷。在 32 个配对世界上，只把测试时的无关合成附件换成等长的 WikiText 节选，两者的领先顺序就翻转了。"
     },
     "scope": {
-      "en": "The evaluation uses a single 1.7B backbone, synthetic inventory worlds and multiple-choice readouts. The mixed continuation matches updates and supervised answers while reading different token counts.",
-      "zh": "评估使用一个 1.7B 基座、合成库存世界和选项式读出。混合续训对齐了更新次数与监督答案数，各分支读取的 token 数仍有差别。"
+      "en": "The tasks use synthetic inventories and one 1.7B model. Continued mixed practice matches the specialists on updates and supervised answers. Training token counts differ.",
+      "zh": "实验使用合成库存和一个 1.7B 模型。混合续训与专门化分支的更新次数和监督答案数相同，读取的训练词元数有差异。"
     },
     "codeUrl": "https://github.com/dqswordman/document-replay-evidence-qa",
     "manuscriptPdf": "assets/reports/document-replay-evidence-qa/manuscript.pdf",
